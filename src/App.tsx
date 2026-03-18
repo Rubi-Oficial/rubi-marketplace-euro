@@ -35,6 +35,7 @@ import ClientSettings from "@/pages/dashboard/client/ClientSettings";
 // Escort
 import EscortDashboard from "@/pages/dashboard/escort/EscortDashboard";
 import EscortProfile from "@/pages/dashboard/escort/EscortProfile";
+import EscortOnboarding from "@/pages/dashboard/escort/EscortOnboarding";
 import EscortPhotos from "@/pages/dashboard/escort/EscortPhotos";
 import EscortSubscription from "@/pages/dashboard/escort/EscortSubscription";
 import EscortMetrics from "@/pages/dashboard/escort/EscortMetrics";
