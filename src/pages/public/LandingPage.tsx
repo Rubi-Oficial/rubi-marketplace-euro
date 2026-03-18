@@ -28,10 +28,10 @@ export default function LandingPage() {
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Button variant="premium" size="lg" asChild>
-              <Link to="/register?role=escort">Anunciar Agora</Link>
+              <Link to="/cadastro?role=escort">Anunciar Agora</Link>
             </Button>
             <Button variant="outline-gold" size="lg" asChild>
-              <Link to="/register">Criar Conta Grátis</Link>
+              <Link to="/cadastro">Criar Conta Grátis</Link>
             </Button>
           </div>
         </div>
