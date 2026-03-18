@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Shield, Star, Users, Zap } from "lucide-react";
+import { useReferralCapture } from "@/hooks/useReferralCapture";
 
 export default function LandingPage() {
+  useReferralCapture();
   return (
     <div className="min-h-screen">
       {/* Hero */}

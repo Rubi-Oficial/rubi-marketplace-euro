@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { lovable } from "@/integrations/lovable";
 import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
+import { getStoredReferralCode } from "@/hooks/useReferralCapture";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +17,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const referralCode = searchParams.get("ref");
+  const referralCode = searchParams.get("ref") || getStoredReferralCode();
   const presetRole = searchParams.get("role");
   const { user, userRole, loading: authLoading } = useAuth();
 
