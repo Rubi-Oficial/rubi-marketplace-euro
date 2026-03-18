@@ -55,8 +55,13 @@ export default function RegisterPage() {
     }
 
     if (data.user) {
-      toast.success("Conta criada! Verifique seu email para confirmar.");
-      navigate("/login");
+      toast.success("Conta criada com sucesso!");
+      // Redirect based on chosen role
+      if (role === "professional") {
+        navigate("/app/onboarding", { replace: true });
+      } else {
+        navigate("/cliente", { replace: true });
+      }
     }
   };
 

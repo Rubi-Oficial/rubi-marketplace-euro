@@ -106,6 +106,7 @@ const App = () => (
               }
             >
               <Route path="/app" element={<EscortDashboard />} />
+              <Route path="/app/onboarding" element={<EscortOnboarding />} />
               <Route path="/app/perfil" element={<EscortProfile />} />
               <Route path="/app/fotos" element={<EscortPhotos />} />
               <Route path="/app/plano" element={<EscortSubscription />} />
