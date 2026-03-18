@@ -92,7 +92,7 @@ export default function LoginPage() {
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Não tem conta?{" "}
-            <Link to="/register" className="text-primary hover:underline">
+            <Link to="/cadastro" className="text-primary hover:underline">
               Cadastre-se
             </Link>
           </p>
