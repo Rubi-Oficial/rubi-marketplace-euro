@@ -28,7 +28,7 @@ export function useReferralCapture() {
       if (!referrerId) return;
 
       await supabase.from("referral_clicks").insert({
-        referrer_user_id: referrer.id,
+        referrer_user_id: referrerId,
         referral_code: ref,
         visitor_id: crypto.randomUUID(),
         landing_page: window.location.pathname,
