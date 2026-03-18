@@ -1,16 +1,12 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LogOut, LayoutDashboard, Search } from "lucide-react";
 
 export default function Navbar() {
   const { user, userRole, signOut } = useAuth();
 
-  const dashboardPath = userRole === "admin"
-    ? "/admin"
-    : userRole === "professional"
-      ? "/app"
-      : "/cliente";
+  const dashboardPath = getRoleDashboard(userRole as any);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">

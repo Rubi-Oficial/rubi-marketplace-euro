@@ -28,7 +28,7 @@ export default function LandingPage() {
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Button variant="premium" size="lg" asChild>
-              <Link to="/cadastro?role=escort">Anunciar Agora</Link>
+              <Link to="/cadastro?role=professional">Anunciar Agora</Link>
             </Button>
             <Button variant="outline-gold" size="lg" asChild>
               <Link to="/cadastro">Criar Conta Grátis</Link>
@@ -52,20 +52,17 @@ export default function LandingPage() {
               {
                 icon: <Shield className="h-6 w-6" />,
                 title: "Verificação Real",
-                description:
-                  "Cada perfil passa por moderação humana. Sem perfis falsos, sem surpresas.",
+                description: "Cada perfil passa por moderação humana. Sem perfis falsos, sem surpresas.",
               },
               {
                 icon: <Star className="h-6 w-6" />,
                 title: "Visibilidade Premium",
-                description:
-                  "Anúncios otimizados com fotos de alta qualidade e posicionamento prioritário.",
+                description: "Anúncios otimizados com fotos de alta qualidade e posicionamento prioritário.",
               },
               {
                 icon: <Users className="h-6 w-6" />,
                 title: "Programa de Afiliados",
-                description:
-                  "Indique profissionais e ganhe comissões recorrentes sobre suas assinaturas.",
+                description: "Indique profissionais e ganhe comissões recorrentes sobre suas assinaturas.",
               },
             ].map((feature) => (
               <div
@@ -86,14 +83,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border py-8">
-        <div className="container mx-auto flex items-center justify-between px-4 text-sm text-muted-foreground">
-          <span className="font-display font-bold text-primary">AURA</span>
-          <span>© {new Date().getFullYear()} AURA. Todos os direitos reservados.</span>
-        </div>
-      </footer>
     </div>
   );
 }

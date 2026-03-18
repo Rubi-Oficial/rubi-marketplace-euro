@@ -1,29 +1,53 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { lovable } from "@/integrations/lovable";
+import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { Navigate } from "react-router-dom";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect");
+  const { user, userRole, loading: authLoading } = useAuth();
+
+  // Already logged in → redirect to dashboard
+  if (!authLoading && user && userRole) {
+    const target = redirectTo || getRoleDashboard(userRole as any);
+    return <Navigate to={target} replace />;
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
 
     if (error) {
       toast.error(error.message);
-    } else {
+      return;
+    }
+
+    if (data.user) {
       toast.success("Login realizado com sucesso");
-      navigate("/");
+      // Fetch role to redirect correctly
+      const { data: userData } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", data.user.id)
+        .single();
+
+      const role = userData?.role ?? "client";
+      const target = redirectTo || getRoleDashboard(role as any);
+      navigate(target, { replace: true });
     }
   };
 
@@ -38,7 +62,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="mb-8 text-center">
-          <h1 className="font-display text-3xl font-bold text-primary">AURA</h1>
+          <Link to="/" className="font-display text-3xl font-bold text-primary">AURA</Link>
           <p className="mt-2 text-muted-foreground">Acesse sua conta</p>
         </div>
 
