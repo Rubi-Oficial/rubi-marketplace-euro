@@ -113,7 +113,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={() => setRole("professional")}
                   className={`rounded-md border px-4 py-3 text-sm transition-all ${
-                    role === "escort"
+                    role === "professional"
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border text-muted-foreground hover:border-primary/40"
                   }`}
