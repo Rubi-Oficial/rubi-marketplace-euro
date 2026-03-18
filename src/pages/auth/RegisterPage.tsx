@@ -111,7 +111,7 @@ export default function RegisterPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setRole("escort")}
+                  onClick={() => setRole("professional")}
                   className={`rounded-md border px-4 py-3 text-sm transition-all ${
                     role === "escort"
                       ? "border-primary bg-primary/10 text-primary"
