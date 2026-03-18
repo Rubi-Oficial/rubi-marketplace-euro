@@ -4,27 +4,27 @@ import { supabase } from "@/lib/supabase";
 
 export default function EscortAffiliates() {
   const { user } = useAuth();
-  const [affiliateCode, setAffiliateCode] = useState<string | null>(null);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
   const [referralCount, setReferralCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
     supabase
-      .from("profiles")
-      .select("affiliate_code")
+      .from("users")
+      .select("referral_code")
       .eq("id", user.id)
       .single()
-      .then(({ data }) => setAffiliateCode(data?.affiliate_code ?? null));
+      .then(({ data }) => setReferralCode(data?.referral_code ?? null));
 
     supabase
-      .from("profiles")
+      .from("referral_conversions")
       .select("id", { count: "exact", head: true })
-      .eq("referred_by", user.id)
+      .eq("referrer_user_id", user.id)
       .then(({ count }) => setReferralCount(count ?? 0));
   }, [user]);
 
-  const referralLink = affiliateCode
-    ? `${window.location.origin}/cadastro?ref=${affiliateCode}`
+  const referralLink = referralCode
+    ? `${window.location.origin}/cadastro?ref=${referralCode}`
     : null;
 
   return (
@@ -40,7 +40,7 @@ export default function EscortAffiliates() {
           </p>
         </div>
         <div className="rounded-lg border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Indicações realizadas</p>
+          <p className="text-sm text-muted-foreground">Conversões realizadas</p>
           <p className="mt-1 font-display text-3xl font-bold tabular-nums text-foreground">
             {referralCount}
           </p>
