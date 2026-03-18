@@ -21,15 +21,11 @@ export function useReferralCapture() {
 
     sessionStorage.setItem(REFERRAL_KEY, ref);
 
-    // Find the referrer user and log the click
+    // Look up referrer via secure RPC (no direct user table access needed)
     (async () => {
-      const { data: referrer } = await supabase
-        .from("users")
-        .select("id")
-        .eq("referral_code", ref)
-        .maybeSingle();
+      const { data: referrerId } = await supabase.rpc("get_referrer_id_by_code", { _code: ref });
 
-      if (!referrer) return;
+      if (!referrerId) return;
 
       await supabase.from("referral_clicks").insert({
         referrer_user_id: referrer.id,
