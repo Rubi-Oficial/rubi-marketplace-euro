@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
+import AuthRedirectHandler from "@/components/shared/AuthRedirectHandler";
 import PublicLayout from "@/layouts/PublicLayout";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
@@ -62,9 +63,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Public */}
+            {/* Post-OAuth redirect handler */}
             <Route element={<PublicLayout />}>
-              <Route path="/" element={<LandingPage />} />
+              <Route path="/" element={<><AuthRedirectHandler /><LandingPage /></>} />
               <Route path="/cidade/:slug" element={<CityPage />} />
               <Route path="/categoria/:slug" element={<CategoryPage />} />
               <Route path="/buscar" element={<SearchPage />} />

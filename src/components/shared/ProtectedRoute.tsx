@@ -1,5 +1,5 @@
-import { Navigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth, getRoleDashboard, getRolePrefix } from "@/contexts/AuthContext";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -8,6 +8,7 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { user, userRole, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -17,12 +18,15 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     );
   }
 
+  // Not authenticated → redirect to login with return path
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
+  // Authenticated but wrong role → redirect to correct dashboard
   if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
-    return <Navigate to="/" replace />;
+    const correctPath = getRoleDashboard(userRole as any);
+    return <Navigate to={correctPath} replace />;
   }
 
   return <>{children}</>;

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { lovable } from "@/integrations/lovable";
+import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,18 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const referralCode = searchParams.get("ref");
+  const presetRole = searchParams.get("role");
+  const { user, userRole, loading: authLoading } = useAuth();
+
+  // Already logged in → redirect
+  if (!authLoading && user && userRole) {
+    return <Navigate to={getRoleDashboard(userRole as any)} replace />;
+  }
+
+  // Pre-select role from URL
+  if (presetRole === "professional" && role !== "professional") {
+    setRole("professional");
+  }
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +51,10 @@ export default function RegisterPage() {
 
     if (error) {
       toast.error(error.message);
-    } else if (data.user) {
+      return;
+    }
+
+    if (data.user) {
       toast.success("Conta criada! Verifique seu email para confirmar.");
       navigate("/login");
     }
@@ -55,7 +71,7 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="mb-8 text-center">
-          <h1 className="font-display text-3xl font-bold text-primary">AURA</h1>
+          <Link to="/" className="font-display text-3xl font-bold text-primary">AURA</Link>
           <p className="mt-2 text-muted-foreground">Crie sua conta</p>
         </div>
 
@@ -118,7 +134,7 @@ export default function RegisterPage() {
                       : "border-border text-muted-foreground hover:border-primary/40"
                   }`}
                 >
-                  Acompanhante
+                  Profissional
                 </button>
               </div>
             </div>
