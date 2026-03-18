@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, LayoutDashboard } from "lucide-react";
+import { LogOut, LayoutDashboard, Search } from "lucide-react";
 
 export default function Navbar() {
   const { user, userRole, signOut } = useAuth();
@@ -9,15 +9,29 @@ export default function Navbar() {
   const dashboardPath = userRole === "admin"
     ? "/admin"
     : userRole === "escort"
-      ? "/escort"
-      : "/client";
+      ? "/app"
+      : "/cliente";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="font-display text-2xl font-bold tracking-tight text-primary">
-          AURA
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link to="/" className="font-display text-2xl font-bold tracking-tight text-primary">
+            AURA
+          </Link>
+          <div className="hidden items-center gap-4 md:flex">
+            <Link to="/buscar" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Search className="h-3.5 w-3.5" />
+              Buscar
+            </Link>
+            <Link to="/planos" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Planos
+            </Link>
+            <Link to="/sobre" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Sobre
+            </Link>
+          </div>
+        </div>
 
         <div className="flex items-center gap-3">
           {user ? (
@@ -38,7 +52,7 @@ export default function Navbar() {
                 <Link to="/login">Entrar</Link>
               </Button>
               <Button variant="premium" size="sm" asChild>
-                <Link to="/register">Cadastrar</Link>
+                <Link to="/cadastro">Cadastrar</Link>
               </Button>
             </>
           )}

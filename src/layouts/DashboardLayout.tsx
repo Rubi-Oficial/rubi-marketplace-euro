@@ -13,6 +13,9 @@ import {
   Shield,
   BarChart3,
   Link2,
+  ClipboardList,
+  Wallet,
+  LineChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,25 +26,30 @@ interface NavItem {
 }
 
 const clientNav: NavItem[] = [
-  { label: "Painel", path: "/client", icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: "Favoritos", path: "/client/favorites", icon: <Heart className="h-4 w-4" /> },
-  { label: "Configurações", path: "/client/settings", icon: <Settings className="h-4 w-4" /> },
+  { label: "Painel", path: "/cliente", icon: <LayoutDashboard className="h-4 w-4" /> },
+  { label: "Afiliados", path: "/cliente/afiliados", icon: <Link2 className="h-4 w-4" /> },
+  { label: "Configurações", path: "/cliente/configuracoes", icon: <Settings className="h-4 w-4" /> },
 ];
 
 const escortNav: NavItem[] = [
-  { label: "Painel", path: "/escort", icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: "Meu Anúncio", path: "/escort/listing", icon: <FileText className="h-4 w-4" /> },
-  { label: "Fotos", path: "/escort/photos", icon: <Image className="h-4 w-4" /> },
-  { label: "Assinatura", path: "/escort/subscription", icon: <CreditCard className="h-4 w-4" /> },
-  { label: "Configurações", path: "/escort/settings", icon: <Settings className="h-4 w-4" /> },
+  { label: "Painel", path: "/app", icon: <LayoutDashboard className="h-4 w-4" /> },
+  { label: "Meu Perfil", path: "/app/perfil", icon: <FileText className="h-4 w-4" /> },
+  { label: "Fotos", path: "/app/fotos", icon: <Image className="h-4 w-4" /> },
+  { label: "Plano", path: "/app/plano", icon: <CreditCard className="h-4 w-4" /> },
+  { label: "Métricas", path: "/app/metricas", icon: <LineChart className="h-4 w-4" /> },
+  { label: "Afiliados", path: "/app/afiliados", icon: <Link2 className="h-4 w-4" /> },
+  { label: "Configurações", path: "/app/configuracoes", icon: <Settings className="h-4 w-4" /> },
 ];
 
 const adminNav: NavItem[] = [
   { label: "Painel", path: "/admin", icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: "Moderação", path: "/admin/moderation", icon: <Shield className="h-4 w-4" /> },
-  { label: "Usuários", path: "/admin/users", icon: <Users className="h-4 w-4" /> },
-  { label: "Analytics", path: "/admin/analytics", icon: <BarChart3 className="h-4 w-4" /> },
-  { label: "Afiliados", path: "/admin/affiliates", icon: <Link2 className="h-4 w-4" /> },
+  { label: "Perfis", path: "/admin/perfis", icon: <Users className="h-4 w-4" /> },
+  { label: "Pendentes", path: "/admin/perfis/pendentes", icon: <Shield className="h-4 w-4" /> },
+  { label: "Planos", path: "/admin/planos", icon: <ClipboardList className="h-4 w-4" /> },
+  { label: "Pagamentos", path: "/admin/pagamentos", icon: <Wallet className="h-4 w-4" /> },
+  { label: "Afiliados", path: "/admin/afiliados", icon: <Link2 className="h-4 w-4" /> },
+  { label: "Relatórios", path: "/admin/relatorios", icon: <BarChart3 className="h-4 w-4" /> },
+  { label: "Configurações", path: "/admin/configuracoes", icon: <Settings className="h-4 w-4" /> },
 ];
 
 function SidebarNav({ items }: { items: NavItem[] }) {
@@ -79,7 +87,6 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-border bg-card">
         <div className="flex h-16 items-center px-6">
           <Link to="/" className="font-display text-xl font-bold tracking-tight text-primary">
@@ -108,7 +115,6 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
         </div>
       </aside>
 
-      {/* Main content */}
       <main className="ml-60 flex-1 p-8">
         <Outlet />
       </main>

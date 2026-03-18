@@ -10,25 +10,45 @@ import DashboardLayout from "@/layouts/DashboardLayout";
 
 // Public
 import LandingPage from "@/pages/public/LandingPage";
+import CityPage from "@/pages/public/CityPage";
+import CategoryPage from "@/pages/public/CategoryPage";
+import SearchPage from "@/pages/public/SearchPage";
+import ProfilePage from "@/pages/public/ProfilePage";
+import PlansPage from "@/pages/public/PlansPage";
+import AboutPage from "@/pages/public/AboutPage";
+import ContactPage from "@/pages/public/ContactPage";
+import BlogPage from "@/pages/public/BlogPage";
+import TermsPage from "@/pages/public/TermsPage";
+import PrivacyPage from "@/pages/public/PrivacyPage";
+import CookiesPage from "@/pages/public/CookiesPage";
+
 // Auth
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
+
 // Client
 import ClientDashboard from "@/pages/dashboard/client/ClientDashboard";
-import ClientFavorites from "@/pages/dashboard/client/ClientFavorites";
+import ClientAffiliates from "@/pages/dashboard/client/ClientAffiliates";
 import ClientSettings from "@/pages/dashboard/client/ClientSettings";
+
 // Escort
 import EscortDashboard from "@/pages/dashboard/escort/EscortDashboard";
-import EscortListing from "@/pages/dashboard/escort/EscortListing";
+import EscortProfile from "@/pages/dashboard/escort/EscortProfile";
 import EscortPhotos from "@/pages/dashboard/escort/EscortPhotos";
 import EscortSubscription from "@/pages/dashboard/escort/EscortSubscription";
+import EscortMetrics from "@/pages/dashboard/escort/EscortMetrics";
+import EscortAffiliates from "@/pages/dashboard/escort/EscortAffiliates";
 import EscortSettings from "@/pages/dashboard/escort/EscortSettings";
+
 // Admin
 import AdminDashboard from "@/pages/dashboard/admin/AdminDashboard";
-import AdminModeration from "@/pages/dashboard/admin/AdminModeration";
 import AdminUsers from "@/pages/dashboard/admin/AdminUsers";
-import AdminAnalytics from "@/pages/dashboard/admin/AdminAnalytics";
+import AdminPendingProfiles from "@/pages/dashboard/admin/AdminPendingProfiles";
+import AdminPlans from "@/pages/dashboard/admin/AdminPlans";
+import AdminPayments from "@/pages/dashboard/admin/AdminPayments";
 import AdminAffiliates from "@/pages/dashboard/admin/AdminAffiliates";
+import AdminReports from "@/pages/dashboard/admin/AdminReports";
+import AdminSettings from "@/pages/dashboard/admin/AdminSettings";
 
 import NotFound from "@/pages/NotFound";
 
@@ -45,11 +65,22 @@ const App = () => (
             {/* Public */}
             <Route element={<PublicLayout />}>
               <Route path="/" element={<LandingPage />} />
+              <Route path="/cidade/:slug" element={<CityPage />} />
+              <Route path="/categoria/:slug" element={<CategoryPage />} />
+              <Route path="/buscar" element={<SearchPage />} />
+              <Route path="/perfil/:slug" element={<ProfilePage />} />
+              <Route path="/planos" element={<PlansPage />} />
+              <Route path="/sobre" element={<AboutPage />} />
+              <Route path="/contato" element={<ContactPage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/termos" element={<TermsPage />} />
+              <Route path="/privacidade" element={<PrivacyPage />} />
+              <Route path="/cookies" element={<CookiesPage />} />
             </Route>
 
             {/* Auth */}
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/cadastro" element={<RegisterPage />} />
 
             {/* Client Dashboard */}
             <Route
@@ -59,9 +90,9 @@ const App = () => (
                 </ProtectedRoute>
               }
             >
-              <Route path="/client" element={<ClientDashboard />} />
-              <Route path="/client/favorites" element={<ClientFavorites />} />
-              <Route path="/client/settings" element={<ClientSettings />} />
+              <Route path="/cliente" element={<ClientDashboard />} />
+              <Route path="/cliente/afiliados" element={<ClientAffiliates />} />
+              <Route path="/cliente/configuracoes" element={<ClientSettings />} />
             </Route>
 
             {/* Escort Dashboard */}
@@ -72,11 +103,13 @@ const App = () => (
                 </ProtectedRoute>
               }
             >
-              <Route path="/escort" element={<EscortDashboard />} />
-              <Route path="/escort/listing" element={<EscortListing />} />
-              <Route path="/escort/photos" element={<EscortPhotos />} />
-              <Route path="/escort/subscription" element={<EscortSubscription />} />
-              <Route path="/escort/settings" element={<EscortSettings />} />
+              <Route path="/app" element={<EscortDashboard />} />
+              <Route path="/app/perfil" element={<EscortProfile />} />
+              <Route path="/app/fotos" element={<EscortPhotos />} />
+              <Route path="/app/plano" element={<EscortSubscription />} />
+              <Route path="/app/metricas" element={<EscortMetrics />} />
+              <Route path="/app/afiliados" element={<EscortAffiliates />} />
+              <Route path="/app/configuracoes" element={<EscortSettings />} />
             </Route>
 
             {/* Admin Dashboard */}
@@ -88,10 +121,13 @@ const App = () => (
               }
             >
               <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/moderation" element={<AdminModeration />} />
-              <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/analytics" element={<AdminAnalytics />} />
-              <Route path="/admin/affiliates" element={<AdminAffiliates />} />
+              <Route path="/admin/perfis" element={<AdminUsers />} />
+              <Route path="/admin/perfis/pendentes" element={<AdminPendingProfiles />} />
+              <Route path="/admin/planos" element={<AdminPlans />} />
+              <Route path="/admin/pagamentos" element={<AdminPayments />} />
+              <Route path="/admin/afiliados" element={<AdminAffiliates />} />
+              <Route path="/admin/relatorios" element={<AdminReports />} />
+              <Route path="/admin/configuracoes" element={<AdminSettings />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
