@@ -1,25 +1,25 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-interface SubscriptionRow {
+interface SubRow {
   id: string;
   user_id: string;
   status: string;
-  current_period_end: string | null;
+  expires_at: string | null;
   created_at: string;
 }
 
 export default function AdminPayments() {
-  const [subs, setSubs] = useState<SubscriptionRow[]>([]);
+  const [subs, setSubs] = useState<SubRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     supabase
       .from("subscriptions")
-      .select("*")
+      .select("id, user_id, status, expires_at, created_at")
       .order("created_at", { ascending: false })
       .then(({ data }) => {
-        setSubs((data as SubscriptionRow[]) ?? []);
+        setSubs((data as SubRow[]) ?? []);
         setLoading(false);
       });
   }, []);
@@ -64,7 +64,7 @@ export default function AdminPayments() {
                     </span>
                   </td>
                   <td className="px-4 py-3 tabular-nums text-muted-foreground">
-                    {s.current_period_end ? new Date(s.current_period_end).toLocaleDateString("pt-BR") : "—"}
+                    {s.expires_at ? new Date(s.expires_at).toLocaleDateString("pt-BR") : "—"}
                   </td>
                   <td className="px-4 py-3 tabular-nums text-muted-foreground">
                     {new Date(s.created_at).toLocaleDateString("pt-BR")}

@@ -8,7 +8,7 @@ export default function Navbar() {
 
   const dashboardPath = userRole === "admin"
     ? "/admin"
-    : userRole === "escort"
+    : userRole === "professional"
       ? "/app"
       : "/cliente";
 

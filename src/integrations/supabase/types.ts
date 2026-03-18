@@ -14,122 +14,146 @@ export type Database = {
   }
   public: {
     Tables: {
-      analytics_events: {
+      admin_actions: {
         Row: {
+          action_type: string
+          admin_user_id: string
           created_at: string
-          event_type: string
           id: string
-          listing_id: string | null
-          viewer_id: string | null
+          notes: string | null
+          target_profile_id: string | null
+          target_user_id: string | null
         }
         Insert: {
+          action_type: string
+          admin_user_id: string
           created_at?: string
-          event_type: string
           id?: string
-          listing_id?: string | null
-          viewer_id?: string | null
+          notes?: string | null
+          target_profile_id?: string | null
+          target_user_id?: string | null
         }
         Update: {
+          action_type?: string
+          admin_user_id?: string
           created_at?: string
-          event_type?: string
           id?: string
-          listing_id?: string | null
-          viewer_id?: string | null
+          notes?: string | null
+          target_profile_id?: string | null
+          target_user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "analytics_events_listing_id_fkey"
-            columns: ["listing_id"]
+            foreignKeyName: "admin_actions_admin_user_id_fkey"
+            columns: ["admin_user_id"]
             isOneToOne: false
-            referencedRelation: "listings"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "analytics_events_viewer_id_fkey"
-            columns: ["viewer_id"]
+            foreignKeyName: "admin_actions_target_profile_id_fkey"
+            columns: ["target_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_actions_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          source: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_profile_id_fkey"
+            columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      favorites: {
+      plans: {
         Row: {
+          billing_period: Database["public"]["Enums"]["billing_period"]
           created_at: string
+          features_json: Json
           id: string
-          listing_id: string
-          user_id: string
+          is_active: boolean
+          name: string
+          price: number
         }
         Insert: {
+          billing_period?: Database["public"]["Enums"]["billing_period"]
           created_at?: string
+          features_json?: Json
           id?: string
-          listing_id: string
-          user_id: string
+          is_active?: boolean
+          name: string
+          price: number
         }
         Update: {
+          billing_period?: Database["public"]["Enums"]["billing_period"]
           created_at?: string
+          features_json?: Json
           id?: string
-          listing_id?: string
-          user_id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "favorites_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "favorites_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      listings: {
+      profile_images: {
         Row: {
           created_at: string
-          description: string | null
           id: string
-          location_city: string | null
-          photos: string[] | null
-          rate_per_hour: number | null
-          status: string
-          title: string
-          updated_at: string
-          user_id: string
+          moderation_status: Database["public"]["Enums"]["moderation_status"]
+          profile_id: string
+          sort_order: number
+          storage_path: string
         }
         Insert: {
           created_at?: string
-          description?: string | null
           id?: string
-          location_city?: string | null
-          photos?: string[] | null
-          rate_per_hour?: number | null
-          status?: string
-          title: string
-          updated_at?: string
-          user_id: string
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          profile_id: string
+          sort_order?: number
+          storage_path: string
         }
         Update: {
           created_at?: string
-          description?: string | null
           id?: string
-          location_city?: string | null
-          photos?: string[] | null
-          rate_per_hour?: number | null
-          status?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          profile_id?: string
+          sort_order?: number
+          storage_path?: string
         }
         Relationships: [
           {
-            foreignKeyName: "listings_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "profile_images_profile_id_fkey"
+            columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -138,44 +162,182 @@ export type Database = {
       }
       profiles: {
         Row: {
-          affiliate_code: string | null
-          avatar_url: string | null
+          age: number | null
+          bio: string | null
+          category: string | null
+          city: string | null
+          country: string | null
           created_at: string
-          full_name: string | null
+          display_name: string | null
+          featured_until: string | null
           id: string
-          is_verified: boolean | null
-          referred_by: string | null
-          role: Database["public"]["Enums"]["user_role"]
+          is_featured: boolean
+          languages: string[] | null
+          pricing_from: number | null
+          slug: string | null
+          status: Database["public"]["Enums"]["profile_status"]
+          telegram: string | null
+          updated_at: string
+          user_id: string
+          whatsapp: string | null
+        }
+        Insert: {
+          age?: number | null
+          bio?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          display_name?: string | null
+          featured_until?: string | null
+          id?: string
+          is_featured?: boolean
+          languages?: string[] | null
+          pricing_from?: number | null
+          slug?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
+          telegram?: string | null
+          updated_at?: string
+          user_id: string
+          whatsapp?: string | null
+        }
+        Update: {
+          age?: number | null
+          bio?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          display_name?: string | null
+          featured_until?: string | null
+          id?: string
+          is_featured?: boolean
+          languages?: string[] | null
+          pricing_from?: number | null
+          slug?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
+          telegram?: string | null
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_clicks: {
+        Row: {
+          created_at: string
+          id: string
+          ip_hash: string | null
+          landing_page: string | null
+          referral_code: string
+          referrer_user_id: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_source: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          landing_page?: string | null
+          referral_code: string
+          referrer_user_id: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_source?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          landing_page?: string | null
+          referral_code?: string
+          referrer_user_id?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_source?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_clicks_referrer_user_id_fkey"
+            columns: ["referrer_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_conversions: {
+        Row: {
+          commission_amount: number
+          commission_rate: number
+          conversion_type: string
+          created_at: string
+          id: string
+          referral_code: string
+          referred_user_id: string
+          referrer_user_id: string
+          status: Database["public"]["Enums"]["referral_conversion_status"]
+          subscription_id: string | null
           updated_at: string
         }
         Insert: {
-          affiliate_code?: string | null
-          avatar_url?: string | null
+          commission_amount?: number
+          commission_rate?: number
+          conversion_type: string
           created_at?: string
-          full_name?: string | null
-          id: string
-          is_verified?: boolean | null
-          referred_by?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
+          id?: string
+          referral_code: string
+          referred_user_id: string
+          referrer_user_id: string
+          status?: Database["public"]["Enums"]["referral_conversion_status"]
+          subscription_id?: string | null
           updated_at?: string
         }
         Update: {
-          affiliate_code?: string | null
-          avatar_url?: string | null
+          commission_amount?: number
+          commission_rate?: number
+          conversion_type?: string
           created_at?: string
-          full_name?: string | null
           id?: string
-          is_verified?: boolean | null
-          referred_by?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
+          referral_code?: string
+          referred_user_id?: string
+          referrer_user_id?: string
+          status?: Database["public"]["Enums"]["referral_conversion_status"]
+          subscription_id?: string | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "profiles_referred_by_fkey"
-            columns: ["referred_by"]
+            foreignKeyName: "referral_conversions_referred_user_id_fkey"
+            columns: ["referred_user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_conversions_referrer_user_id_fkey"
+            columns: ["referrer_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_conversions_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -183,40 +345,106 @@ export type Database = {
       subscriptions: {
         Row: {
           created_at: string
-          current_period_end: string | null
+          expires_at: string | null
           id: string
-          price_id: string | null
-          status: string
+          plan_id: string
+          starts_at: string | null
+          status: Database["public"]["Enums"]["subscription_status"]
+          stripe_checkout_session_id: string | null
+          stripe_customer_id: string | null
           stripe_subscription_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
-          current_period_end?: string | null
+          expires_at?: string | null
           id?: string
-          price_id?: string | null
-          status?: string
+          plan_id: string
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
-          current_period_end?: string | null
+          expires_at?: string | null
           id?: string
-          price_id?: string | null
-          status?: string
+          plan_id?: string
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "subscriptions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          google_auth_enabled: boolean
+          id: string
+          phone: string | null
+          referral_code: string | null
+          referral_link: string | null
+          referred_by_user_id: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          google_auth_enabled?: boolean
+          id: string
+          phone?: string | null
+          referral_code?: string | null
+          referral_link?: string | null
+          referred_by_user_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          google_auth_enabled?: boolean
+          id?: string
+          phone?: string | null
+          referral_code?: string | null
+          referral_link?: string | null
+          referred_by_user_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_referred_by_user_id_fkey"
+            columns: ["referred_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -226,16 +454,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       has_role: {
         Args: {
-          _role: Database["public"]["Enums"]["user_role"]
+          _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
       }
     }
     Enums: {
-      user_role: "admin" | "escort" | "client"
+      app_role: "client" | "professional" | "admin"
+      billing_period: "monthly" | "quarterly"
+      moderation_status: "pending" | "approved" | "rejected"
+      profile_status:
+        | "draft"
+        | "pending_review"
+        | "approved"
+        | "rejected"
+        | "paused"
+      referral_conversion_status: "pending" | "approved" | "paid" | "rejected"
+      subscription_status:
+        | "pending"
+        | "active"
+        | "past_due"
+        | "canceled"
+        | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -363,7 +610,24 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      user_role: ["admin", "escort", "client"],
+      app_role: ["client", "professional", "admin"],
+      billing_period: ["monthly", "quarterly"],
+      moderation_status: ["pending", "approved", "rejected"],
+      profile_status: [
+        "draft",
+        "pending_review",
+        "approved",
+        "rejected",
+        "paused",
+      ],
+      referral_conversion_status: ["pending", "approved", "paid", "rejected"],
+      subscription_status: [
+        "pending",
+        "active",
+        "past_due",
+        "canceled",
+        "expired",
+      ],
     },
   },
 } as const

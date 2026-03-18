@@ -98,7 +98,7 @@ const App = () => (
             {/* Escort Dashboard */}
             <Route
               element={
-                <ProtectedRoute allowedRoles={["escort"]}>
+                <ProtectedRoute allowedRoles={["professional"]}>
                   <DashboardLayout role="escort" />
                 </ProtectedRoute>
               }

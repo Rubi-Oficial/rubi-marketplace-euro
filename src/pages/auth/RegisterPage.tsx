@@ -11,7 +11,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState<"client" | "escort">("client");
+  const [role, setRole] = useState<"client" | "professional">("client");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -111,9 +111,9 @@ export default function RegisterPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setRole("escort")}
+                  onClick={() => setRole("professional")}
                   className={`rounded-md border px-4 py-3 text-sm transition-all ${
-                    role === "escort"
+                    role === "professional"
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border text-muted-foreground hover:border-primary/40"
                   }`}
