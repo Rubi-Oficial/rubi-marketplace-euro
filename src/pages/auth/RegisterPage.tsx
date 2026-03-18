@@ -17,7 +17,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const referralCode = searchParams.get("ref");
+  const referralCode = searchParams.get("ref") || getStoredReferralCode();
   const presetRole = searchParams.get("role");
   const { user, userRole, loading: authLoading } = useAuth();
 
