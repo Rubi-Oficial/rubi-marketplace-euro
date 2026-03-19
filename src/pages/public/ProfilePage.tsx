@@ -92,7 +92,7 @@ export default function ProfilePage() {
   // SEO meta
   useEffect(() => {
     if (profile) {
-      document.title = `${profile.display_name} — ${profile.city || "Brasil"} | Acompanhante`;
+      document.title = `${profile.display_name} — ${profile.city || "Europe"} | AURA`;
       const desc = document.querySelector('meta[name="description"]');
       const text = `${profile.display_name}, ${profile.category || "acompanhante"} em ${profile.city || "Brasil"}. ${profile.bio?.slice(0, 120) || ""}`;
       if (desc) desc.setAttribute("content", text);
