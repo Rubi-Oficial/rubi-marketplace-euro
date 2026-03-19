@@ -66,6 +66,11 @@ export default {
           light: "hsl(35 60% 70%)",
           dark: "hsl(25 70% 45%)",
         },
+        ruby: {
+          DEFAULT: "hsl(350 65% 52%)",
+          light: "hsl(350 60% 65%)",
+          dark: "hsl(340 70% 40%)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

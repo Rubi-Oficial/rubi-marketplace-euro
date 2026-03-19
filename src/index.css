@@ -9,51 +9,53 @@
     --font-display: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
 
-    /* AURA Dark Premium Palette */
-    --background: 240 20% 7%;
+    /* Rubi Girls — Dark Premium Palette */
+    --background: 240 20% 6%;
     --foreground: 240 10% 95%;
 
-    --card: 240 15% 11%;
+    --card: 240 15% 10%;
     --card-foreground: 240 10% 95%;
 
-    --popover: 240 15% 11%;
+    --popover: 240 15% 10%;
     --popover-foreground: 240 10% 95%;
 
-    /* Gold Bronze Accent */
-    --primary: 35 60% 55%;
-    --primary-foreground: 240 20% 7%;
+    /* Ruby Red Accent */
+    --primary: 350 65% 52%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 12% 16%;
+    --secondary: 240 12% 15%;
     --secondary-foreground: 240 10% 85%;
 
-    --muted: 240 10% 14%;
-    --muted-foreground: 240 8% 55%;
+    --muted: 240 10% 13%;
+    --muted-foreground: 240 8% 52%;
 
-    --accent: 240 12% 18%;
+    --accent: 240 12% 16%;
     --accent-foreground: 240 10% 90%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 10% 18%;
-    --input: 240 10% 18%;
-    --ring: 35 60% 55%;
+    --border: 240 10% 16%;
+    --input: 240 10% 16%;
+    --ring: 350 65% 52%;
 
     --radius: 0.5rem;
 
     /* Custom tokens */
-    --surface-glow: 35 60% 55%;
+    --gold: 35 60% 55%;
+    --surface-glow: 350 65% 52%;
+    --ruby-gradient: linear-gradient(135deg, hsl(350 65% 52%), hsl(340 70% 40%));
     --gold-gradient: linear-gradient(135deg, hsl(35 60% 55%), hsl(25 70% 45%));
-    --surface-gradient: linear-gradient(180deg, hsl(240 15% 13%), hsl(240 20% 7%));
+    --surface-gradient: linear-gradient(180deg, hsl(240 15% 11%), hsl(240 20% 6%));
 
-    --sidebar-background: 240 18% 9%;
+    --sidebar-background: 240 18% 8%;
     --sidebar-foreground: 240 10% 85%;
-    --sidebar-primary: 35 60% 55%;
-    --sidebar-primary-foreground: 240 20% 7%;
+    --sidebar-primary: 350 65% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 12% 14%;
     --sidebar-accent-foreground: 240 10% 90%;
-    --sidebar-border: 240 10% 16%;
-    --sidebar-ring: 35 60% 55%;
+    --sidebar-border: 240 10% 14%;
+    --sidebar-ring: 350 65% 52%;
   }
 }
 
@@ -92,11 +94,17 @@
   .gold-gradient {
     background: var(--gold-gradient);
   }
+  .ruby-gradient {
+    background: var(--ruby-gradient);
+  }
   .surface-gradient {
     background: var(--surface-gradient);
   }
   .glass {
     @apply bg-card/60 backdrop-blur-md border border-border/50;
+  }
+  .glow-ruby {
+    box-shadow: 0 0 20px hsl(350 65% 52% / 0.15), inset 0 1px 0 hsl(350 65% 52% / 0.1);
   }
   .glow-gold {
     box-shadow: 0 0 20px hsl(35 60% 55% / 0.15), inset 0 1px 0 hsl(35 60% 55% / 0.1);

@@ -47,39 +47,25 @@ export default function SearchPage() {
     setSearchParams(params);
   };
 
-  const clearFilters = () => {
-    setSearchParams({});
-  };
-
+  const clearFilters = () => setSearchParams({});
   const hasFilters = !!searchQuery || !!cityFilter || !!categoryFilter || !!serviceFilter;
 
   useEffect(() => {
-    const parts = ["Explore Professionals"];
+    const parts = ["Explore"];
     if (cityFilter) parts.push(`in ${cityFilter}`);
-    if (categoryFilter) parts.push(`— ${categoryFilter}`);
-    document.title = `${parts.join(" ")} | AURA`;
-    return () => { document.title = "AURA"; };
+    document.title = `${parts.join(" ")} | Rubi Girls`;
+    return () => { document.title = "Rubi Girls"; };
   }, [cityFilter, categoryFilter]);
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="font-display text-xl font-bold text-foreground sm:text-2xl">
-          Explore
-        </h1>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          {loading ? "Loading..." : `${profiles.length} profile(s) found`}
-        </p>
-      </div>
-
-      {/* Search + Filter bar */}
+      {/* Search bar */}
       <div className="flex gap-2 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search by name, city..."
-            className="pl-10 h-10 bg-card border-border/60"
+            className="pl-10 h-10 bg-card border-border/50"
             value={searchQuery}
             onChange={(e) => updateParam("q", e.target.value)}
           />
@@ -88,14 +74,14 @@ export default function SearchPage() {
           variant="outline"
           size="icon"
           onClick={() => setShowFilters(!showFilters)}
-          className={`h-10 w-10 shrink-0 ${showFilters ? "border-primary/50 text-primary" : "border-border/60"}`}
+          className={`h-10 w-10 shrink-0 ${showFilters ? "border-primary/50 text-primary" : "border-border/50"}`}
         >
           <SlidersHorizontal className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Inline filter chips */}
-      <div className="flex flex-wrap gap-1.5 mb-6">
+      <div className="flex flex-wrap gap-1.5 mb-5">
         {cities.slice(0, 6).map((c) => (
           <button
             key={c}
@@ -129,9 +115,9 @@ export default function SearchPage() {
         )}
       </div>
 
-      {/* Expanded filters panel */}
+      {/* Expanded filters */}
       {showFilters && (
-        <div className="mb-6 rounded-xl border border-border/40 bg-card/50 p-5 space-y-5">
+        <div className="mb-5 rounded-xl border border-border/30 bg-card/50 p-5 space-y-4">
           {cities.length > 0 && (
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">City</p>
@@ -141,9 +127,7 @@ export default function SearchPage() {
                     key={c}
                     onClick={() => updateParam("city", cityFilter === c ? "" : c)}
                     className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                      cityFilter === c
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:text-foreground"
+                      cityFilter === c ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {c}
@@ -161,9 +145,7 @@ export default function SearchPage() {
                     key={c}
                     onClick={() => updateParam("category", categoryFilter === c ? "" : c)}
                     className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                      categoryFilter === c
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:text-foreground"
+                      categoryFilter === c ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {c}
@@ -181,9 +163,7 @@ export default function SearchPage() {
                     key={s.slug}
                     onClick={() => updateParam("service", serviceFilter === s.slug ? "" : s.slug)}
                     className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                      serviceFilter === s.slug
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:text-foreground"
+                      serviceFilter === s.slug ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {s.name}
@@ -195,6 +175,11 @@ export default function SearchPage() {
         </div>
       )}
 
+      {/* Count */}
+      <p className="mb-4 text-xs text-muted-foreground">
+        {loading ? "Loading..." : `${profiles.length} profile(s)`}
+      </p>
+
       {/* Results */}
       {loading ? (
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -203,11 +188,9 @@ export default function SearchPage() {
           ))}
         </div>
       ) : profiles.length === 0 ? (
-        <div className="rounded-xl border border-border/40 bg-card/50 p-16 text-center">
+        <div className="rounded-xl border border-border/30 bg-card/50 p-16 text-center">
           <p className="text-muted-foreground">
-            {hasFilters
-              ? "No profiles match your filters."
-              : "No profiles available at the moment."}
+            {hasFilters ? "No profiles match your filters." : "No profiles available at the moment."}
           </p>
           {hasFilters && (
             <Button variant="ghost" size="sm" className="mt-4" onClick={clearFilters}>

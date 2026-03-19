@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Shield, Star, Users, ArrowRight, Search, MapPin, ChevronRight } from "lucide-react";
+import { Search, ArrowRight } from "lucide-react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,11 +15,19 @@ export default function LandingPage() {
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
   const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [searchValue, setSearchValue] = useState("");
+  const [activeCity, setActiveCity] = useState("");
+  const [activeService, setActiveService] = useState("");
 
   useEffect(() => {
-    fetchEligibleProfiles().then((data) => setProfiles(data.slice(0, 12)));
     fetchServices().then(setServices);
   }, []);
+
+  useEffect(() => {
+    fetchEligibleProfiles({
+      city_slug: activeCity || undefined,
+      service_slug: activeService || undefined,
+    }).then((data) => setProfiles(data.slice(0, 20)));
+  }, [activeCity, activeService]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,177 +40,127 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Compact hero with search */}
-      <section className="relative pb-6 pt-8 sm:pt-12 sm:pb-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(35_60%_55%_/_0.06)_0%,_transparent_50%)]" />
+      {/* Compact hero */}
+      <section className="relative pt-6 pb-4 sm:pt-8 sm:pb-6">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(350_65%_52%_/_0.06)_0%,_transparent_50%)]" />
         <div className="relative container mx-auto px-4 text-center animate-fade-in">
-          <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl md:text-5xl leading-[1.1]">
-            Discover <span className="text-primary">top professionals</span>
+          <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
+            <span className="text-primary">Rubi</span> Girls
           </h1>
-          <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground sm:text-base">
-            Verified profiles across Europe. Browse, connect, book.
+          <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted-foreground">
+            Premium European catalogue. Browse, connect, book.
           </p>
 
-          {/* Search bar */}
-          <form onSubmit={handleSearch} className="mx-auto mt-6 flex max-w-lg gap-2">
+          {/* Search */}
+          <form onSubmit={handleSearch} className="mx-auto mt-5 flex max-w-lg gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search by name, city..."
-                className="pl-10 h-11 bg-card border-border/60"
+                className="pl-10 h-10 bg-card border-border/50"
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
               />
             </div>
-            <Button type="submit" variant="premium" className="h-11 px-6">
+            <Button type="submit" variant="premium" className="h-10 px-5">
               Search
             </Button>
           </form>
+        </div>
+      </section>
 
-          {/* Quick filters: cities + services */}
-          <div className="mx-auto mt-4 flex max-w-2xl flex-wrap items-center justify-center gap-2">
-            {CITIES.slice(0, 5).map((city) => (
-              <Link
+      {/* Filters */}
+      <section className="border-b border-border/20 pb-4">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {/* City filters */}
+            {CITIES.map((city) => (
+              <button
                 key={city.slug}
-                to={`/cidade/${city.slug}`}
-                className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-card/50 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
+                onClick={() => setActiveCity(activeCity === city.slug ? "" : city.slug)}
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                  activeCity === city.slug
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                }`}
               >
-                <MapPin className="h-3 w-3 text-primary/60" />
                 {city.name}
-              </Link>
+              </button>
             ))}
-            {services.slice(0, 3).map((svc) => (
-              <Link
+            <span className="mx-1 h-4 w-px bg-border/30" />
+            {/* Service filters */}
+            {services.map((svc) => (
+              <button
                 key={svc.slug}
-                to={`/buscar?service=${svc.slug}`}
-                className="inline-flex items-center rounded-full border border-border/50 bg-card/50 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
+                onClick={() => setActiveService(activeService === svc.slug ? "" : svc.slug)}
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                  activeService === svc.slug
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                }`}
               >
                 {svc.name}
-              </Link>
+              </button>
             ))}
+            {(activeCity || activeService) && (
+              <button
+                onClick={() => { setActiveCity(""); setActiveService(""); }}
+                className="text-xs text-primary hover:underline ml-1"
+              >
+                Clear
+              </button>
+            )}
             <Link
               to="/buscar"
-              className="inline-flex items-center gap-0.5 text-xs text-primary hover:underline"
+              className="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              View all <ChevronRight className="h-3 w-3" />
+              Advanced search →
             </Link>
           </div>
         </div>
       </section>
 
       {/* Profiles grid */}
-      {profiles.length > 0 && (
-        <section className="pb-16">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-lg font-semibold text-foreground sm:text-xl">
-                Featured Profiles
-              </h2>
-              <Link
-                to="/buscar"
-                className="flex items-center gap-1 text-xs text-primary hover:underline"
-              >
-                View all <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-
+      <section className="py-6">
+        <div className="container mx-auto px-4">
+          {profiles.length > 0 ? (
             <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {profiles.map((p) => (
                 <ProfileCard key={p.id} profile={p} />
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="py-20 text-center text-muted-foreground text-sm">
+              No profiles available at the moment.
+            </div>
+          )}
 
-      {/* Browse by city */}
-      <section className="border-t border-border/30 py-14">
-        <div className="container mx-auto px-4">
-          <h2 className="font-display text-lg font-semibold text-foreground sm:text-xl mb-6">
-            Browse by City
+          {profiles.length > 0 && (
+            <div className="mt-8 text-center">
+              <Button variant="outline" asChild>
+                <Link to="/buscar">
+                  View all profiles <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Minimal CTA */}
+      <section className="border-t border-border/20 py-10">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            Ready to grow your business?
           </h2>
-          <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-            {CITIES.map((city) => (
-              <Link
-                key={city.slug}
-                to={`/cidade/${city.slug}`}
-                className="group flex items-center gap-3 rounded-lg border border-border/40 bg-card/50 p-3.5 transition-all hover:border-primary/30 hover:bg-card"
-              >
-                <MapPin className="h-4 w-4 text-primary/60 shrink-0 group-hover:text-primary transition-colors" />
-                <span className="text-sm font-medium text-foreground truncate">{city.name}</span>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 ml-auto shrink-0 group-hover:text-muted-foreground transition-colors" />
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Browse by service */}
-      {services.length > 0 && (
-        <section className="border-t border-border/30 py-14">
-          <div className="container mx-auto px-4">
-            <h2 className="font-display text-lg font-semibold text-foreground sm:text-xl mb-6">
-              Browse by Service
-            </h2>
-            <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-              {services.map((svc) => (
-                <Link
-                  key={svc.slug}
-                  to={`/buscar?service=${svc.slug}`}
-                  className="group flex items-center justify-between rounded-lg border border-border/40 bg-card/50 p-3.5 transition-all hover:border-primary/30 hover:bg-card"
-                >
-                  <span className="text-sm font-medium text-foreground">{svc.name}</span>
-                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Features */}
-      <section className="border-t border-border/30 py-14">
-        <div className="container mx-auto px-4">
-          <div className="grid gap-6 sm:grid-cols-3">
-            {[
-              { icon: <Shield className="h-5 w-5" />, title: "Verified Profiles", desc: "Human-moderated. No fakes." },
-              { icon: <Star className="h-5 w-5" />, title: "Premium Visibility", desc: "SEO-optimised with priority placement." },
-              { icon: <Users className="h-5 w-5" />, title: "Affiliate Programme", desc: "Earn 15% on referrals." },
-            ].map((f) => (
-              <div key={f.title} className="flex items-start gap-3 p-3">
-                <div className="shrink-0 rounded-md bg-primary/10 p-2 text-primary">{f.icon}</div>
-                <div>
-                  <h3 className="font-display text-sm font-semibold text-foreground">{f.title}</h3>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{f.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="border-t border-border/30 py-14">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-xl text-center">
-            <h2 className="font-display text-xl font-bold text-foreground sm:text-2xl">
-              Ready to grow your business?
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Create your verified profile in minutes. Plans from €49/month.
-            </p>
-            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button variant="premium" size="lg" asChild>
-                <Link to="/cadastro?role=professional">
-                  Create Your Profile
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/planos">View Plans</Link>
-              </Button>
-            </div>
-          </div>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Create your verified profile in minutes.
+          </p>
+          <Button variant="premium" className="mt-5" asChild>
+            <Link to="/cadastro?role=professional">
+              Create Your Profile <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </section>
     </div>
