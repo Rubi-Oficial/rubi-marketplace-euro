@@ -92,7 +92,7 @@ export default function ProfilePage() {
   // SEO meta
   useEffect(() => {
     if (profile) {
-      document.title = `${profile.display_name} — ${profile.city || "Brasil"} | Acompanhante`;
+      document.title = `${profile.display_name} — ${profile.city || "Europe"} | AURA`;
       const desc = document.querySelector('meta[name="description"]');
       const text = `${profile.display_name}, ${profile.category || "acompanhante"} em ${profile.city || "Brasil"}. ${profile.bio?.slice(0, 120) || ""}`;
       if (desc) desc.setAttribute("content", text);
@@ -185,7 +185,7 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2 text-foreground">
               <DollarSign className="h-4 w-4 text-primary" />
               <span className="font-display text-lg font-semibold">
-                A partir de R$ {Number(profile.pricing_from).toLocaleString("pt-BR")}
+                From €{Number(profile.pricing_from).toLocaleString("de-DE")}
               </span>
             </div>
           )}
@@ -231,7 +231,7 @@ export default function ProfilePage() {
           "@context": "https://schema.org",
           "@type": "Person",
           name: profile.display_name,
-          address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "BR" } : undefined,
+          address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "PT" } : undefined,
           image: images[0]?.url,
         }),
       }} />
