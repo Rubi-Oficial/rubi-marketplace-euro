@@ -2,6 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
+import { moderationStatusColor, getStatusLabel } from "@/lib/statusColors";
 
 export default function EscortMetrics() {
   const { user } = useAuth();
