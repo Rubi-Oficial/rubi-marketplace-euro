@@ -6,6 +6,7 @@ import { LogOut, LayoutDashboard, Search, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { CITIES } from "@/components/onboarding/types";
 import { fetchServices } from "@/components/public/ProfileCard";
+import { supabase } from "@/lib/supabase";
 
 export default function Navbar() {
   const { user, userRole, signOut } = useAuth();
@@ -19,9 +20,48 @@ export default function Navbar() {
   const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [activeCity, setActiveCity] = useState("");
   const [activeService, setActiveService] = useState("");
+  const [cityCounts, setCityCounts] = useState<Record<string, number>>({});
+  const [serviceCounts, setServiceCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    if (isHome) fetchServices().then(setServices);
+    if (!isHome) return;
+    fetchServices().then(setServices);
+
+    // Fetch city counts from eligible profiles
+    supabase
+      .from("eligible_profiles")
+      .select("city_slug")
+      .then(({ data }) => {
+        if (!data) return;
+        const counts: Record<string, number> = {};
+        data.forEach((p: any) => {
+          if (p.city_slug) counts[p.city_slug] = (counts[p.city_slug] || 0) + 1;
+        });
+        setCityCounts(counts);
+      });
+
+    // Fetch service counts (only for eligible profiles)
+    supabase
+      .from("profile_services")
+      .select("service_id, profile_id")
+      .then(async ({ data: psData }) => {
+        if (!psData || psData.length === 0) return;
+        const { data: eligible } = await supabase.from("eligible_profiles").select("id");
+        if (!eligible) return;
+        const eligibleIds = new Set(eligible.map((e: any) => e.id));
+        const { data: svcs } = await supabase.from("services").select("id, slug").eq("is_active", true);
+        if (!svcs) return;
+        const idToSlug: Record<string, string> = {};
+        svcs.forEach((s: any) => { idToSlug[s.id] = s.slug; });
+        const counts: Record<string, number> = {};
+        psData.forEach((ps: any) => {
+          if (eligibleIds.has(ps.profile_id) && idToSlug[ps.service_id]) {
+            const slug = idToSlug[ps.service_id];
+            counts[slug] = (counts[slug] || 0) + 1;
+          }
+        });
+        setServiceCounts(counts);
+      });
   }, [isHome]);
 
   // Expose filter state to LandingPage via custom event
