@@ -208,12 +208,50 @@ export type Database = {
           },
         ]
       }
+      profile_services: {
+        Row: {
+          profile_id: string
+          service_id: string
+        }
+        Insert: {
+          profile_id: string
+          service_id: string
+        }
+        Update: {
+          profile_id?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_services_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "eligible_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_services_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           age: number | null
           bio: string | null
           category: string | null
           city: string | null
+          city_slug: string | null
           country: string | null
           created_at: string
           display_name: string | null
@@ -234,6 +272,7 @@ export type Database = {
           bio?: string | null
           category?: string | null
           city?: string | null
+          city_slug?: string | null
           country?: string | null
           created_at?: string
           display_name?: string | null
@@ -254,6 +293,7 @@ export type Database = {
           bio?: string | null
           category?: string | null
           city?: string | null
+          city_slug?: string | null
           country?: string | null
           created_at?: string
           display_name?: string | null
@@ -390,6 +430,30 @@ export type Database = {
           },
         ]
       }
+      services: {
+        Row: {
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string
@@ -505,6 +569,7 @@ export type Database = {
           bio: string | null
           category: string | null
           city: string | null
+          city_slug: string | null
           country: string | null
           created_at: string | null
           display_name: string | null
@@ -524,6 +589,7 @@ export type Database = {
           bio?: string | null
           category?: string | null
           city?: string | null
+          city_slug?: string | null
           country?: string | null
           created_at?: string | null
           display_name?: string | null
@@ -543,6 +609,7 @@ export type Database = {
           bio?: string | null
           category?: string | null
           city?: string | null
+          city_slug?: string | null
           country?: string | null
           created_at?: string | null
           display_name?: string | null
