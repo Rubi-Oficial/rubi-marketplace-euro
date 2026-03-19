@@ -32,7 +32,7 @@ export default function AdminPlans() {
   const [activeSubs, setActiveSubs] = useState(0);
   const [editPlan, setEditPlan] = useState<Plan | null>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({ name: "", price: "", billing_period: "monthly", features: "" });
+  const [form, setForm] = useState({ name: "", price: "", billing_period: "monthly" as "monthly" | "quarterly", features: "" });
   const [saving, setSaving] = useState(false);
 
   const fetchPlans = async () => {
