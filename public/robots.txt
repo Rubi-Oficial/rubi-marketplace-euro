@@ -1,14 +1,26 @@
+User-agent: *
+Allow: /
+Allow: /buscar
+Allow: /perfil/
+Allow: /cidade/
+Allow: /categoria/
+Allow: /planos
+Allow: /sobre
+Allow: /blog
+Allow: /termos
+Allow: /privacidade
+Allow: /cookies
+
+Disallow: /admin
+Disallow: /app
+Disallow: /cliente
+Disallow: /login
+Disallow: /cadastro
+
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
 Allow: /
 
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: *
-Allow: /
+Sitemap: https://rubi-marketplace-euro.lovable.app/sitemap.xml
