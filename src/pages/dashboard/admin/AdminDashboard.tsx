@@ -26,7 +26,7 @@ interface AdminStats {
   recentActions: { id: string; action_type: string; created_at: string; admin_name: string }[];
 }
 
-const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -34,78 +34,38 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const load = async () => {
-      const [
-        usersRes,
-        activeProfilesRes,
-        pendingProfilesRes,
-        activeSubsRes,
-        problemSubsRes,
-        pendingCommRes,
-        allSubsRes,
-        leadsRes,
-        clientsRes,
-        actionsRes,
-      ] = await Promise.all([
-        supabase.from("users").select("id", { count: "exact", head: true }),
-        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("status", "approved"),
-        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
-        supabase.from("subscriptions").select("id", { count: "exact", head: true }).eq("status", "active"),
-        supabase.from("subscriptions").select("id", { count: "exact", head: true }).in("status", ["past_due", "expired"]),
-        supabase.from("referral_conversions").select("commission_amount").eq("status", "pending"),
-        supabase.from("subscriptions").select("plans(price)").eq("status", "active"),
-        supabase.from("leads").select("id", { count: "exact", head: true }),
-        supabase.from("users").select("id", { count: "exact", head: true }).eq("role", "client"),
-        supabase.from("admin_actions").select("id, action_type, created_at, users!admin_actions_admin_user_id_fkey(full_name)")
-          .order("created_at", { ascending: false }).limit(10),
+      // Single RPC replaces 10+ parallel queries + N+1 affiliate loop
+      const [rpcRes, actionsRes] = await Promise.all([
+        supabase.rpc("get_admin_dashboard_stats" as any),
+        supabase
+          .from("admin_actions")
+          .select("id, action_type, created_at, users!admin_actions_admin_user_id_fkey(full_name)")
+          .order("created_at", { ascending: false })
+          .limit(10),
       ]);
 
-      // GMV from active subscriptions
-      const gmv = (allSubsRes.data || []).reduce((s, sub: any) => s + Number(sub.plans?.price || 0), 0);
-
-      // Pending commissions total
-      const pendingComm = (pendingCommRes.data || []).reduce((s, c: any) => s + Number(c.commission_amount), 0);
-
-      // Supply/demand ratio
-      const supply = activeProfilesRes.count ?? 0;
-      const demand = clientsRes.count ?? 0;
+      const d = (rpcRes.data as any) || {};
+      const supply = d.active_profiles ?? 0;
+      const demand = d.total_clients ?? 0;
       const ratio = demand > 0 ? (supply / demand).toFixed(2) : "—";
 
-      // Top affiliates - fetch users with referral codes, then get their stats
-      const { data: affiliateUsers } = await supabase.from("users")
-        .select("id, full_name, referral_code")
-        .not("referral_code", "is", null).limit(50);
-
-      const topAffiliates: AdminStats["topAffiliates"] = [];
-      if (affiliateUsers) {
-        for (const u of affiliateUsers) {
-          const [clicksRes, convRes] = await Promise.all([
-            supabase.from("referral_clicks").select("id", { count: "exact", head: true }).eq("referrer_user_id", u.id),
-            supabase.from("referral_conversions").select("commission_amount, status").eq("referrer_user_id", u.id),
-          ]);
-          const conversions = convRes.data || [];
-          const totalComm = conversions.reduce((s, c) => s + Number(c.commission_amount), 0);
-          topAffiliates.push({
-            name: u.full_name || "—",
-            code: u.referral_code || "",
-            clicks: clicksRes.count ?? 0,
-            conversions: conversions.length,
-            commission: totalComm,
-          });
-        }
-        topAffiliates.sort((a, b) => b.commission - a.commission);
-      }
-
       setStats({
-        totalUsers: usersRes.count ?? 0,
+        totalUsers: d.total_users ?? 0,
         activeProfiles: supply,
-        pendingProfiles: pendingProfilesRes.count ?? 0,
-        activeSubs: activeSubsRes.count ?? 0,
-        problemSubs: problemSubsRes.count ?? 0,
-        pendingCommissions: pendingComm,
-        gmv,
-        totalLeads: leadsRes.count ?? 0,
+        pendingProfiles: d.pending_profiles ?? 0,
+        activeSubs: d.active_subs ?? 0,
+        problemSubs: d.problem_subs ?? 0,
+        pendingCommissions: Number(d.pending_commissions ?? 0),
+        gmv: Number(d.gmv ?? 0),
+        totalLeads: d.total_leads ?? 0,
         supplyDemandRatio: ratio,
-        topAffiliates: topAffiliates.slice(0, 5),
+        topAffiliates: (d.top_affiliates || []).map((a: any) => ({
+          name: a.name || "—",
+          code: a.code || "",
+          clicks: a.clicks ?? 0,
+          conversions: a.conversions ?? 0,
+          commission: Number(a.commission ?? 0),
+        })),
         recentActions: (actionsRes.data || []).map((a: any) => ({
           id: a.id,
           action_type: a.action_type,
@@ -168,7 +128,7 @@ export default function AdminDashboard() {
           <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Top Afiliados</h2>
           {stats.topAffiliates.length === 0 ? (
             <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
-              Nenhum afiliado registrado.
+              Nenhum afiliado com atividade registrada.
             </div>
           ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
