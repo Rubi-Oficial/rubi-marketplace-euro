@@ -12,21 +12,21 @@ export default function StepDescription({ form, update }: Props) {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="bio">Sobre você</Label>
+        <Label htmlFor="bio">About you</Label>
         <Textarea
           id="bio"
           value={form.bio}
           onChange={(e) => update("bio", e.target.value)}
-          placeholder="Descreva-se em poucas palavras..."
+          placeholder="Describe yourself in a few words..."
           rows={5}
           maxLength={1000}
         />
         <p className="text-xs text-muted-foreground">
-          {form.bio.length}/1000 caracteres
+          {form.bio.length}/1000 characters
         </p>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="pricing_from">Valor a partir de (€)</Label>
+        <Label htmlFor="pricing_from">Starting price (€)</Label>
         <Input
           id="pricing_from"
           type="number"
@@ -42,7 +42,7 @@ export default function StepDescription({ form, update }: Props) {
           id="whatsapp"
           value={form.whatsapp}
           onChange={(e) => update("whatsapp", e.target.value)}
-          placeholder="+55 11 99999-9999"
+          placeholder="+31 6 12345678"
         />
       </div>
       <div className="space-y-2">
@@ -51,7 +51,7 @@ export default function StepDescription({ form, update }: Props) {
           id="telegram"
           value={form.telegram}
           onChange={(e) => update("telegram", e.target.value)}
-          placeholder="@seuuser"
+          placeholder="@youruser"
         />
       </div>
     </div>

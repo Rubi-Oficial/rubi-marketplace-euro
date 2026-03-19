@@ -5,23 +5,20 @@ import { Shield, Star, Users, ArrowRight, Search, MapPin, ChevronRight } from "l
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchEligibleProfiles, fetchFilterOptions, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
+import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
+import { CITIES } from "@/components/onboarding/types";
 
 export default function LandingPage() {
   useReferralCapture();
   const navigate = useNavigate();
 
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
-  const [cities, setCities] = useState<string[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
     fetchEligibleProfiles().then((data) => setProfiles(data.slice(0, 12)));
-    fetchFilterOptions().then(({ cities, categories }) => {
-      setCities(cities.slice(0, 8));
-      setCategories(categories.slice(0, 8));
-    });
+    fetchServices().then(setServices);
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -62,25 +59,25 @@ export default function LandingPage() {
             </Button>
           </form>
 
-          {/* Quick filters */}
+          {/* Quick filters: cities + services */}
           <div className="mx-auto mt-4 flex max-w-2xl flex-wrap items-center justify-center gap-2">
-            {cities.slice(0, 4).map((city) => (
+            {CITIES.slice(0, 5).map((city) => (
               <Link
-                key={city}
-                to={`/cidade/${city.toLowerCase().replace(/\s+/g, "-")}`}
+                key={city.slug}
+                to={`/cidade/${city.slug}`}
                 className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-card/50 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
               >
                 <MapPin className="h-3 w-3 text-primary/60" />
-                {city}
+                {city.name}
               </Link>
             ))}
-            {categories.slice(0, 3).map((cat) => (
+            {services.slice(0, 3).map((svc) => (
               <Link
-                key={cat}
-                to={`/categoria/${cat.toLowerCase().replace(/\s+/g, "-")}`}
+                key={svc.slug}
+                to={`/buscar?service=${svc.slug}`}
                 className="inline-flex items-center rounded-full border border-border/50 bg-card/50 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
               >
-                {cat}
+                {svc.name}
               </Link>
             ))}
             <Link
@@ -119,44 +116,42 @@ export default function LandingPage() {
       )}
 
       {/* Browse by city */}
-      {cities.length > 0 && (
-        <section className="border-t border-border/30 py-14">
-          <div className="container mx-auto px-4">
-            <h2 className="font-display text-lg font-semibold text-foreground sm:text-xl mb-6">
-              Browse by City
-            </h2>
-            <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-              {cities.map((city) => (
-                <Link
-                  key={city}
-                  to={`/cidade/${city.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="group flex items-center gap-3 rounded-lg border border-border/40 bg-card/50 p-3.5 transition-all hover:border-primary/30 hover:bg-card"
-                >
-                  <MapPin className="h-4 w-4 text-primary/60 shrink-0 group-hover:text-primary transition-colors" />
-                  <span className="text-sm font-medium text-foreground truncate">{city}</span>
-                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 ml-auto shrink-0 group-hover:text-muted-foreground transition-colors" />
-                </Link>
-              ))}
-            </div>
+      <section className="border-t border-border/30 py-14">
+        <div className="container mx-auto px-4">
+          <h2 className="font-display text-lg font-semibold text-foreground sm:text-xl mb-6">
+            Browse by City
+          </h2>
+          <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+            {CITIES.map((city) => (
+              <Link
+                key={city.slug}
+                to={`/cidade/${city.slug}`}
+                className="group flex items-center gap-3 rounded-lg border border-border/40 bg-card/50 p-3.5 transition-all hover:border-primary/30 hover:bg-card"
+              >
+                <MapPin className="h-4 w-4 text-primary/60 shrink-0 group-hover:text-primary transition-colors" />
+                <span className="text-sm font-medium text-foreground truncate">{city.name}</span>
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 ml-auto shrink-0 group-hover:text-muted-foreground transition-colors" />
+              </Link>
+            ))}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* Browse by category */}
-      {categories.length > 0 && (
+      {/* Browse by service */}
+      {services.length > 0 && (
         <section className="border-t border-border/30 py-14">
           <div className="container mx-auto px-4">
             <h2 className="font-display text-lg font-semibold text-foreground sm:text-xl mb-6">
-              Browse by Category
+              Browse by Service
             </h2>
             <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-              {categories.map((cat) => (
+              {services.map((svc) => (
                 <Link
-                  key={cat}
-                  to={`/categoria/${cat.toLowerCase().replace(/\s+/g, "-")}`}
+                  key={svc.slug}
+                  to={`/buscar?service=${svc.slug}`}
                   className="group flex items-center justify-between rounded-lg border border-border/40 bg-card/50 p-3.5 transition-all hover:border-primary/30 hover:bg-card"
                 >
-                  <span className="text-sm font-medium text-foreground">{cat}</span>
+                  <span className="text-sm font-medium text-foreground">{svc.name}</span>
                   <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
                 </Link>
               ))}
@@ -165,7 +160,7 @@ export default function LandingPage() {
         </section>
       )}
 
-      {/* Features - compact */}
+      {/* Features */}
       <section className="border-t border-border/30 py-14">
         <div className="container mx-auto px-4">
           <div className="grid gap-6 sm:grid-cols-3">

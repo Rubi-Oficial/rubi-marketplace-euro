@@ -1,15 +1,13 @@
 import { Link } from "react-router-dom";
 import { MapPin, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import type { Tables } from "@/integrations/supabase/types";
-
-type EligibleProfileRow = Tables<"eligible_profiles">;
 
 export interface EligibleProfile {
   id: string;
   display_name: string;
   age: number | null;
   city: string | null;
+  city_slug: string | null;
   category: string | null;
   slug: string | null;
   pricing_from: number | null;
@@ -19,20 +17,24 @@ export interface EligibleProfile {
 
 /**
  * Fetch profiles using the centralized eligible_profiles view.
- * Optionally filter by city, category, or search term.
+ * Supports filtering by city_slug, category, service slug, or search term.
  */
 export async function fetchEligibleProfiles(filters?: {
   city?: string;
+  city_slug?: string;
   category?: string;
   search?: string;
+  service_slug?: string;
 }): Promise<EligibleProfile[]> {
   let query = supabase
     .from("eligible_profiles")
-    .select("id, display_name, age, city, category, slug, pricing_from, is_featured")
+    .select("id, display_name, age, city, city_slug, category, slug, pricing_from, is_featured")
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
 
-  if (filters?.city) {
+  if (filters?.city_slug) {
+    query = query.eq("city_slug", filters.city_slug);
+  } else if (filters?.city) {
     query = query.ilike("city", filters.city);
   }
   if (filters?.category) {
@@ -47,16 +49,40 @@ export async function fetchEligibleProfiles(filters?: {
   const { data: profiles } = await query.limit(50);
   if (!profiles || profiles.length === 0) return [];
 
-  const profileIds = profiles.map((p) => p.id).filter(Boolean) as string[];
+  let filteredProfileIds = profiles.map((p: any) => p.id).filter(Boolean) as string[];
+
+  // Filter by service if needed
+  if (filters?.service_slug && filteredProfileIds.length > 0) {
+    const { data: svcData } = await supabase
+      .from("services")
+      .select("id")
+      .eq("slug", filters.service_slug)
+      .single();
+
+    if (svcData) {
+      const { data: psData } = await supabase
+        .from("profile_services")
+        .select("profile_id")
+        .eq("service_id", svcData.id)
+        .in("profile_id", filteredProfileIds);
+
+      const matchedIds = new Set((psData || []).map((r: any) => r.profile_id));
+      filteredProfileIds = filteredProfileIds.filter((id) => matchedIds.has(id));
+    } else {
+      return [];
+    }
+  }
+
+  // Fetch thumbnails
   const { data: images } = await supabase
     .from("profile_images")
     .select("profile_id, storage_path")
-    .in("profile_id", profileIds)
+    .in("profile_id", filteredProfileIds)
     .eq("moderation_status", "approved")
     .order("sort_order", { ascending: true });
 
   const thumbMap: Record<string, string> = {};
-  (images || []).forEach((img) => {
+  (images || []).forEach((img: any) => {
     if (!thumbMap[img.profile_id]) {
       thumbMap[img.profile_id] = supabase.storage
         .from("profile-images")
@@ -64,17 +90,23 @@ export async function fetchEligibleProfiles(filters?: {
     }
   });
 
-  return profiles.map((p) => ({
-    id: p.id!,
-    display_name: p.display_name ?? "",
-    age: p.age ?? null,
-    city: p.city ?? null,
-    category: p.category ?? null,
-    slug: p.slug ?? null,
-    pricing_from: p.pricing_from ?? null,
-    is_featured: p.is_featured ?? false,
-    thumb_url: thumbMap[p.id!] || null,
-  }));
+  const profileMap = new Map(profiles.map((p: any) => [p.id, p]));
+
+  return filteredProfileIds.map((id) => {
+    const p = profileMap.get(id)!;
+    return {
+      id: p.id!,
+      display_name: p.display_name ?? "",
+      age: p.age ?? null,
+      city: p.city ?? null,
+      city_slug: p.city_slug ?? null,
+      category: p.category ?? null,
+      slug: p.slug ?? null,
+      pricing_from: p.pricing_from ?? null,
+      is_featured: p.is_featured ?? false,
+      thumb_url: thumbMap[p.id!] || null,
+    };
+  });
 }
 
 /**
@@ -83,13 +115,25 @@ export async function fetchEligibleProfiles(filters?: {
 export async function fetchFilterOptions() {
   const { data: profiles } = await supabase
     .from("eligible_profiles")
-    .select("city, category");
+    .select("city, city_slug, category");
 
-  const rows = profiles ?? [];
+  const rows = (profiles ?? []) as any[];
   const cities = [...new Set(rows.map((p) => p.city).filter(Boolean))] as string[];
   const categories = [...new Set(rows.map((p) => p.category).filter(Boolean))] as string[];
 
   return { cities: cities.sort(), categories: categories.sort() };
+}
+
+/**
+ * Fetch services from DB for public filter usage.
+ */
+export async function fetchServices() {
+  const { data } = await supabase
+    .from("services")
+    .select("id, name, slug")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+  return (data || []) as { id: string; name: string; slug: string }[];
 }
 
 export function ProfileCard({ profile }: { profile: EligibleProfile }) {
@@ -98,7 +142,6 @@ export function ProfileCard({ profile }: { profile: EligibleProfile }) {
       to={`/perfil/${profile.slug}`}
       className="group relative block overflow-hidden rounded-xl bg-card transition-all duration-300 hover:ring-1 hover:ring-primary/30"
     >
-      {/* Image */}
       <div className="relative aspect-[3/4] overflow-hidden bg-muted">
         {profile.thumb_url ? (
           <img
@@ -113,10 +156,8 @@ export function ProfileCard({ profile }: { profile: EligibleProfile }) {
           </div>
         )}
 
-        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-90" />
 
-        {/* Featured badge */}
         {profile.is_featured && (
           <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full gold-gradient px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-lg">
             <Sparkles className="h-3 w-3" />
@@ -124,14 +165,12 @@ export function ProfileCard({ profile }: { profile: EligibleProfile }) {
           </div>
         )}
 
-        {/* Price badge */}
         {profile.pricing_from && (
           <div className="absolute top-3 right-3 rounded-full bg-background/70 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-primary">
             €{Number(profile.pricing_from).toLocaleString("de-DE")}
           </div>
         )}
 
-        {/* Bottom info overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <h3 className="font-display text-base font-semibold text-foreground truncate leading-tight">
             {profile.display_name}

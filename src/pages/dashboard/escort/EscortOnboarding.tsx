@@ -12,10 +12,10 @@ import StepReview from "@/components/onboarding/StepReview";
 import { type ProfileDraft, INITIAL_DRAFT } from "@/components/onboarding/types";
 
 const STEPS: StepConfig[] = [
-  { label: "Informações básicas" },
-  { label: "Dados complementares" },
-  { label: "Descrição" },
-  { label: "Revisão" },
+  { label: "Basic Info" },
+  { label: "Details & Services" },
+  { label: "Description" },
+  { label: "Review" },
 ];
 
 export default function EscortOnboarding() {
@@ -25,8 +25,8 @@ export default function EscortOnboarding() {
   const [saving, setSaving] = useState(false);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [form, setForm] = useState<ProfileDraft>(INITIAL_DRAFT);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
 
-  // Load existing draft
   useEffect(() => {
     if (!user) return;
     supabase
@@ -34,21 +34,28 @@ export default function EscortOnboarding() {
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle()
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (data) {
           setProfileId(data.id);
           setForm({
             display_name: data.display_name || "",
             age: data.age?.toString() || "",
             city: data.city || "",
-            country: data.country || "Brasil",
+            city_slug: (data as any).city_slug || "",
+            country: data.country || "",
             category: data.category || "",
             bio: data.bio || "",
-            languages: data.languages?.join(", ") || "Português",
+            languages: data.languages?.join(", ") || "English",
             pricing_from: data.pricing_from?.toString() || "",
             whatsapp: data.whatsapp || "",
             telegram: data.telegram || "",
           });
+          // Load existing services
+          const { data: ps } = await supabase
+            .from("profile_services")
+            .select("service_id")
+            .eq("profile_id", data.id);
+          if (ps) setSelectedServices(ps.map((r: any) => r.service_id));
         }
       });
   }, [user]);
@@ -72,6 +79,7 @@ export default function EscortOnboarding() {
       display_name: form.display_name.trim(),
       age: form.age ? parseInt(form.age) : null,
       city: form.city || null,
+      city_slug: form.city_slug || null,
       country: form.country || null,
       category: form.category || null,
       bio: form.bio.trim() || null,
@@ -92,11 +100,12 @@ export default function EscortOnboarding() {
     const payload = buildPayload();
 
     let error;
-    if (profileId) {
+    let currentProfileId = profileId;
+    if (currentProfileId) {
       ({ error } = await supabase
         .from("profiles")
         .update(payload)
-        .eq("id", profileId));
+        .eq("id", currentProfileId));
     } else {
       const res = await supabase
         .from("profiles")
@@ -104,12 +113,25 @@ export default function EscortOnboarding() {
         .select("id")
         .single();
       error = res.error;
-      if (res.data) setProfileId(res.data.id);
+      if (res.data) {
+        currentProfileId = res.data.id;
+        setProfileId(res.data.id);
+      }
+    }
+
+    // Save services
+    if (!error && currentProfileId) {
+      await supabase.from("profile_services").delete().eq("profile_id", currentProfileId);
+      if (selectedServices.length > 0) {
+        await supabase.from("profile_services").insert(
+          selectedServices.map((sid) => ({ profile_id: currentProfileId!, service_id: sid }))
+        );
+      }
     }
 
     setSaving(false);
     if (error) {
-      toast.error("Erro ao salvar: " + error.message);
+      toast.error("Error saving: " + error.message);
       return false;
     }
     return true;
@@ -138,7 +160,7 @@ export default function EscortOnboarding() {
   const handleFinish = async () => {
     const saved = await saveProgress();
     if (saved) {
-      toast.success("Perfil salvo como rascunho!");
+      toast.success("Changes saved!");
       navigate("/app");
     }
   };
@@ -148,10 +170,10 @@ export default function EscortOnboarding() {
       <div className="w-full max-w-lg animate-fade-in">
         <div className="mb-8 text-center">
           <h1 className="font-display text-2xl font-bold text-foreground">
-            Configure seu perfil
+            Set up your profile
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Preencha as informações para criar seu cadastro
+            Fill in your details to create your listing
           </p>
         </div>
 
@@ -165,7 +187,14 @@ export default function EscortOnboarding() {
           </h2>
 
           {step === 0 && <StepBasicInfo form={form} update={update} />}
-          {step === 1 && <StepDetails form={form} update={update} />}
+          {step === 1 && (
+            <StepDetails
+              form={form}
+              update={update}
+              selectedServices={selectedServices}
+              onServicesChange={setSelectedServices}
+            />
+          )}
           {step === 2 && <StepDescription form={form} update={update} />}
           {step === 3 && <StepReview form={form} />}
 
@@ -175,23 +204,23 @@ export default function EscortOnboarding() {
               onClick={() => setStep((s) => s - 1)}
               disabled={step === 0}
             >
-              Voltar
+              Back
             </Button>
 
             {step < STEPS.length - 1 ? (
               <Button onClick={handleNext} disabled={!canAdvance() || saving}>
-                {saving ? "Salvando..." : "Próximo"}
+                {saving ? "Saving..." : "Next"}
               </Button>
             ) : (
               <Button onClick={handleFinish} disabled={saving}>
-                {saving ? "Salvando..." : "Salvar rascunho"}
+                {saving ? "Saving..." : "Save draft"}
               </Button>
             )}
           </div>
         </div>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Seu progresso é salvo a cada etapa. Você pode sair e voltar depois.
+          Your progress is saved at each step. You can leave and come back later.
         </p>
       </div>
     </div>
