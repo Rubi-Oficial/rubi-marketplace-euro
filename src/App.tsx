@@ -51,6 +51,7 @@ import AdminPayments from "@/pages/dashboard/admin/AdminPayments";
 import AdminAffiliates from "@/pages/dashboard/admin/AdminAffiliates";
 import AdminReports from "@/pages/dashboard/admin/AdminReports";
 import AdminSettings from "@/pages/dashboard/admin/AdminSettings";
+import AdminContactMessages from "@/pages/dashboard/admin/AdminContactMessages";
 
 import NotFound from "@/pages/NotFound";
 
@@ -126,6 +127,7 @@ const App = () => (
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/perfis" element={<AdminUsers />} />
               <Route path="/admin/perfis/pendentes" element={<AdminPendingProfiles />} />
+              <Route path="/admin/mensagens" element={<AdminContactMessages />} />
               <Route path="/admin/planos" element={<AdminPlans />} />
               <Route path="/admin/pagamentos" element={<AdminPayments />} />
               <Route path="/admin/afiliados" element={<AdminAffiliates />} />

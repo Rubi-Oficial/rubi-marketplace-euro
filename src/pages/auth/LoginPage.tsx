@@ -22,7 +22,7 @@ export default function LoginPage() {
 
   // Already logged in → redirect to dashboard
   if (!authLoading && user && userRole) {
-    const target = redirectTo || getRoleDashboard(userRole as any);
+    const target = redirectTo || getRoleDashboard(userRole);
     return <Navigate to={target} replace />;
   }
 
@@ -48,7 +48,7 @@ export default function LoginPage() {
         .single();
 
       const role = userData?.role ?? "client";
-      const target = redirectTo || getRoleDashboard(role as any);
+      const target = redirectTo || getRoleDashboard(role);
       navigate(target, { replace: true });
     }
   };

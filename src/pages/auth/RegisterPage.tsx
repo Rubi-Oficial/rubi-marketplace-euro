@@ -29,7 +29,7 @@ export default function RegisterPage() {
 
   // Already logged in → redirect
   if (!authLoading && user && userRole) {
-    return <Navigate to={getRoleDashboard(userRole as any)} replace />;
+    return <Navigate to={getRoleDashboard(userRole)} replace />;
   }
 
   const handleRegister = async (e: React.FormEvent) => {

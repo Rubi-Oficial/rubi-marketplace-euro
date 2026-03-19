@@ -46,13 +46,11 @@ export default function ProfilePage() {
 
     const load = async () => {
       // Fetch from centralized eligible view (approved + active subscription)
-      const { data: rawEligible } = await supabase
-        .from("eligible_profiles" as any)
+      const { data: eligible } = await supabase
+        .from("eligible_profiles")
         .select("*")
         .eq("slug", slug)
         .maybeSingle();
-
-      const eligible = rawEligible as any;
 
       if (!eligible) {
         setLoading(false);
