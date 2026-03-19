@@ -10,73 +10,75 @@ export default function Navbar() {
   const dashboardPath = getRoleDashboard(userRole as any);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-6">
-          <Link to="/" className="font-display text-2xl font-bold tracking-tight text-primary">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/40">
+      <div className="container mx-auto flex h-14 items-center justify-between px-4">
+        <div className="flex items-center gap-8">
+          <Link to="/" className="font-display text-xl font-bold tracking-[0.15em] text-primary">
             AURA
           </Link>
-          <div className="hidden items-center gap-4 md:flex">
-            <Link to="/buscar" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <div className="hidden items-center gap-6 md:flex">
+            <Link to="/buscar" className="flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors">
               <Search className="h-3.5 w-3.5" />
-              Buscar
+              Explore
             </Link>
-            <Link to="/planos" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Planos
+            <Link to="/planos" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
+              Plans
             </Link>
-            <Link to="/sobre" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Sobre
+            <Link to="/sobre" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
+              About
             </Link>
           </div>
         </div>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2">
           {user ? (
             <>
-              <Button variant="ghost" size="sm" asChild>
+              <Button variant="ghost" size="sm" asChild className="text-[13px]">
                 <Link to={dashboardPath}>
-                  <LayoutDashboard className="mr-1.5 h-4 w-4" />
+                  <LayoutDashboard className="mr-1.5 h-3.5 w-3.5" />
                   Dashboard
                 </Link>
               </Button>
-              <Button variant="ghost" size="icon" onClick={signOut}>
-                <LogOut className="h-4 w-4" />
+              <Button variant="ghost" size="icon" onClick={signOut} className="h-8 w-8">
+                <LogOut className="h-3.5 w-3.5" />
               </Button>
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/login">Entrar</Link>
+              <Button variant="ghost" size="sm" asChild className="text-[13px]">
+                <Link to="/login">Sign In</Link>
               </Button>
-              <Button variant="premium" size="sm" asChild>
-                <Link to="/cadastro">Cadastrar</Link>
+              <Button variant="premium" size="sm" asChild className="text-[13px] h-8 px-4">
+                <Link to="/cadastro">Get Started</Link>
               </Button>
             </>
           )}
         </div>
 
         {/* Mobile menu button */}
-        <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="md:hidden text-foreground p-1" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-card/95 backdrop-blur-md px-4 py-4 space-y-3 animate-fade-in">
-          <Link to="/buscar" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2">Buscar</Link>
-          <Link to="/planos" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2">Planos</Link>
-          <Link to="/sobre" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2">Sobre</Link>
-          <div className="border-t border-border pt-3">
+        <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl px-4 py-4 space-y-1 animate-fade-in">
+          <Link to="/buscar" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">
+            <Search className="h-4 w-4 text-muted-foreground" /> Explore
+          </Link>
+          <Link to="/planos" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">Plans</Link>
+          <Link to="/sobre" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">About</Link>
+          <div className="border-t border-border/40 pt-3 mt-2">
             {user ? (
               <>
-                <Link to={dashboardPath} onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2">Dashboard</Link>
-                <button onClick={() => { signOut(); setMobileOpen(false); }} className="block text-sm text-muted-foreground py-2">Sair</button>
+                <Link to={dashboardPath} onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">Dashboard</Link>
+                <button onClick={() => { signOut(); setMobileOpen(false); }} className="block w-full text-left text-sm text-muted-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">Sign Out</button>
               </>
             ) : (
               <>
-                <Link to="/login" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2">Entrar</Link>
-                <Link to="/cadastro" onClick={() => setMobileOpen(false)} className="block text-sm text-primary font-medium py-2">Cadastrar</Link>
+                <Link to="/login" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">Sign In</Link>
+                <Link to="/cadastro" onClick={() => setMobileOpen(false)} className="block text-sm text-primary font-medium py-2.5 px-2 rounded-md hover:bg-accent transition-colors">Get Started</Link>
               </>
             )}
           </div>

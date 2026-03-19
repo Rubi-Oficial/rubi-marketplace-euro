@@ -1,99 +1,118 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Shield, Star, Users, Zap, ArrowRight, Search, MapPin, CheckCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Shield, Star, Users, ArrowRight, Search, MapPin, ChevronRight } from "lucide-react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { fetchEligibleProfiles, fetchFilterOptions, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
 
 export default function LandingPage() {
   useReferralCapture();
+  const navigate = useNavigate();
 
-  const [featured, setFeatured] = useState<EligibleProfile[]>([]);
+  const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
   const [cities, setCities] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
-    fetchEligibleProfiles().then((profiles) => setFeatured(profiles.slice(0, 8)));
+    fetchEligibleProfiles().then((data) => setProfiles(data.slice(0, 12)));
     fetchFilterOptions().then(({ cities, categories }) => {
-      setCities(cities.slice(0, 6));
-      setCategories(categories.slice(0, 6));
+      setCities(cities.slice(0, 8));
+      setCategories(categories.slice(0, 8));
     });
   }, []);
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchValue.trim()) {
+      navigate(`/buscar?q=${encodeURIComponent(searchValue.trim())}`);
+    } else {
+      navigate("/buscar");
+    }
+  };
+
   return (
     <div className="min-h-screen">
-      {/* Hero */}
-      <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 surface-gradient" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(35_60%_55%_/_0.08)_0%,_transparent_60%)]" />
-
-        <div className="relative z-10 mx-auto max-w-3xl px-4 text-center animate-fade-in">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-medium text-primary">
-            <Zap className="h-3 w-3" />
-            The Leading Platform for Independent Professionals in Europe
-          </div>
-
-          <h1 className="font-display text-4xl font-bold leading-tight text-foreground sm:text-5xl md:text-7xl">
-            Where clients find{" "}
-            <span className="text-primary">top professionals</span>
+      {/* Compact hero with search */}
+      <section className="relative pb-6 pt-8 sm:pt-12 sm:pb-10">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(35_60%_55%_/_0.06)_0%,_transparent_50%)]" />
+        <div className="relative container mx-auto px-4 text-center animate-fade-in">
+          <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl md:text-5xl leading-[1.1]">
+            Discover <span className="text-primary">top professionals</span>
           </h1>
-
-          <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground text-pretty">
-            Verified profiles, premium visibility and dedicated support.
-            Join thousands of professionals already growing with AURA.
+          <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground sm:text-base">
+            Verified profiles across Europe. Browse, connect, book.
           </p>
 
-          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Button variant="premium" size="lg" asChild>
-              <Link to="/cadastro?role=professional">
-                Create Your Profile — It's Free
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+          {/* Search bar */}
+          <form onSubmit={handleSearch} className="mx-auto mt-6 flex max-w-lg gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, city..."
+                className="pl-10 h-11 bg-card border-border/60"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+              />
+            </div>
+            <Button type="submit" variant="premium" className="h-11 px-6">
+              Search
             </Button>
-            <Button variant="outline-gold" size="lg" asChild>
-              <Link to="/buscar">
-                <Search className="mr-2 h-4 w-4" />
-                Explore Profiles
-              </Link>
-            </Button>
-          </div>
+          </form>
 
-          <div className="mt-6 flex items-center justify-center gap-6 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-primary" /> Verified profiles</span>
-            <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-primary" /> Cancel anytime</span>
-            <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-primary" /> GDPR compliant</span>
+          {/* Quick filters */}
+          <div className="mx-auto mt-4 flex max-w-2xl flex-wrap items-center justify-center gap-2">
+            {cities.slice(0, 4).map((city) => (
+              <Link
+                key={city}
+                to={`/cidade/${city.toLowerCase().replace(/\s+/g, "-")}`}
+                className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-card/50 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
+              >
+                <MapPin className="h-3 w-3 text-primary/60" />
+                {city}
+              </Link>
+            ))}
+            {categories.slice(0, 3).map((cat) => (
+              <Link
+                key={cat}
+                to={`/categoria/${cat.toLowerCase().replace(/\s+/g, "-")}`}
+                className="inline-flex items-center rounded-full border border-border/50 bg-card/50 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
+              >
+                {cat}
+              </Link>
+            ))}
+            <Link
+              to="/buscar"
+              className="inline-flex items-center gap-0.5 text-xs text-primary hover:underline"
+            >
+              View all <ChevronRight className="h-3 w-3" />
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Featured profiles */}
-      {featured.length > 0 && (
-        <section className="border-t border-border py-20">
+      {/* Profiles grid */}
+      {profiles.length > 0 && (
+        <section className="pb-16">
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-10">
-              <div>
-                <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
-                  Featured Profiles
-                </h2>
-                <p className="mt-1 text-muted-foreground">Verified and active professionals.</p>
-              </div>
-              <Button variant="ghost" asChild className="hidden sm:flex">
-                <Link to="/buscar">
-                  View all <ArrowRight className="ml-1.5 h-4 w-4" />
-                </Link>
-              </Button>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-display text-lg font-semibold text-foreground sm:text-xl">
+                Featured Profiles
+              </h2>
+              <Link
+                to="/buscar"
+                className="flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                View all <ArrowRight className="h-3 w-3" />
+              </Link>
             </div>
 
-            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-              {featured.map((p) => (
+            <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {profiles.map((p) => (
                 <ProfileCard key={p.id} profile={p} />
               ))}
-            </div>
-
-            <div className="mt-8 text-center sm:hidden">
-              <Button variant="outline" asChild>
-                <Link to="/buscar">View all profiles</Link>
-              </Button>
             </div>
           </div>
         </section>
@@ -101,22 +120,21 @@ export default function LandingPage() {
 
       {/* Browse by city */}
       {cities.length > 0 && (
-        <section className="border-t border-border py-20">
+        <section className="border-t border-border/30 py-14">
           <div className="container mx-auto px-4">
-            <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
+            <h2 className="font-display text-lg font-semibold text-foreground sm:text-xl mb-6">
               Browse by City
             </h2>
-            <p className="mt-1 mb-8 text-muted-foreground">Find professionals near you.</p>
-
-            <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
               {cities.map((city) => (
                 <Link
                   key={city}
                   to={`/cidade/${city.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="flex items-center gap-2 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/30 hover:bg-primary/5"
+                  className="group flex items-center gap-3 rounded-lg border border-border/40 bg-card/50 p-3.5 transition-all hover:border-primary/30 hover:bg-card"
                 >
-                  <MapPin className="h-4 w-4 text-primary shrink-0" />
+                  <MapPin className="h-4 w-4 text-primary/60 shrink-0 group-hover:text-primary transition-colors" />
                   <span className="text-sm font-medium text-foreground truncate">{city}</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 ml-auto shrink-0 group-hover:text-muted-foreground transition-colors" />
                 </Link>
               ))}
             </div>
@@ -126,21 +144,20 @@ export default function LandingPage() {
 
       {/* Browse by category */}
       {categories.length > 0 && (
-        <section className="border-t border-border py-20">
+        <section className="border-t border-border/30 py-14">
           <div className="container mx-auto px-4">
-            <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
+            <h2 className="font-display text-lg font-semibold text-foreground sm:text-xl mb-6">
               Browse by Category
             </h2>
-            <p className="mt-1 mb-8 text-muted-foreground">Find the perfect profile.</p>
-
-            <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
               {categories.map((cat) => (
                 <Link
                   key={cat}
                   to={`/categoria/${cat.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="rounded-lg border border-border bg-card p-4 text-center transition-colors hover:border-primary/30 hover:bg-primary/5"
+                  className="group flex items-center justify-between rounded-lg border border-border/40 bg-card/50 p-3.5 transition-all hover:border-primary/30 hover:bg-card"
                 >
                   <span className="text-sm font-medium text-foreground">{cat}</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
                 </Link>
               ))}
             </div>
@@ -148,74 +165,46 @@ export default function LandingPage() {
         </section>
       )}
 
-      {/* Features */}
-      <section className="border-t border-border py-20">
+      {/* Features - compact */}
+      <section className="border-t border-border/30 py-14">
         <div className="container mx-auto px-4">
-          <h2 className="text-center font-display text-2xl font-bold text-foreground sm:text-3xl">
-            Why Choose AURA?
-          </h2>
-          <p className="mx-auto mt-3 max-w-lg text-center text-muted-foreground">
-            Built for professionals who demand the best.
-          </p>
-
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-3">
             {[
-              {
-                icon: <Shield className="h-6 w-6" />,
-                title: "Real Verification",
-                desc: "Every profile goes through human moderation. No fake profiles, no surprises.",
-              },
-              {
-                icon: <Star className="h-6 w-6" />,
-                title: "Premium Visibility",
-                desc: "Optimised listings with high-quality photos, SEO-friendly pages and priority placement.",
-              },
-              {
-                icon: <Users className="h-6 w-6" />,
-                title: "Affiliate Programme",
-                desc: "Refer professionals and earn 15% recurring commission on their first subscription payment.",
-              },
+              { icon: <Shield className="h-5 w-5" />, title: "Verified Profiles", desc: "Human-moderated. No fakes." },
+              { icon: <Star className="h-5 w-5" />, title: "Premium Visibility", desc: "SEO-optimised with priority placement." },
+              { icon: <Users className="h-5 w-5" />, title: "Affiliate Programme", desc: "Earn 15% on referrals." },
             ].map((f) => (
-              <div
-                key={f.title}
-                className="group rounded-lg border border-border bg-card p-6 transition-all hover:border-primary/30 hover:glow-gold"
-              >
-                <div className="mb-4 inline-flex rounded-md bg-primary/10 p-2.5 text-primary">
-                  {f.icon}
+              <div key={f.title} className="flex items-start gap-3 p-3">
+                <div className="shrink-0 rounded-md bg-primary/10 p-2 text-primary">{f.icon}</div>
+                <div>
+                  <h3 className="font-display text-sm font-semibold text-foreground">{f.title}</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{f.desc}</p>
                 </div>
-                <h3 className="font-display text-lg font-semibold text-foreground">{f.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground text-pretty">{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA for professionals */}
-      <section className="border-t border-border py-20">
+      {/* CTA */}
+      <section className="border-t border-border/30 py-14">
         <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-2xl text-center rounded-lg border border-primary/20 bg-primary/5 p-10">
-            <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
-              Ready to Grow Your Business?
+          <div className="mx-auto max-w-xl text-center">
+            <h2 className="font-display text-xl font-bold text-foreground sm:text-2xl">
+              Ready to grow your business?
             </h2>
-            <p className="mt-3 text-muted-foreground">
-              Create your verified profile in minutes and reach thousands of clients across Europe.
-              Plans from €49/month — cancel anytime.
+            <p className="mt-2 text-sm text-muted-foreground">
+              Create your verified profile in minutes. Plans from €49/month.
             </p>
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-primary" /> No setup fee</span>
-              <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-primary" /> Live in 24h after verification</span>
-              <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-primary" /> Dedicated support</span>
-            </div>
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button variant="premium" size="lg" asChild>
                 <Link to="/cadastro?role=professional">
-                  Create Your Profile Now
+                  Create Your Profile
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button variant="ghost" size="lg" asChild>
-                <Link to="/planos">View Plans & Pricing</Link>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/planos">View Plans</Link>
               </Button>
             </div>
           </div>

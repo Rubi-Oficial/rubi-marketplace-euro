@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MapPin } from "lucide-react";
+import { MapPin, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -96,45 +96,56 @@ export function ProfileCard({ profile }: { profile: EligibleProfile }) {
   return (
     <Link
       to={`/perfil/${profile.slug}`}
-      className="group block overflow-hidden rounded-lg border border-border bg-card transition-all hover:border-primary/30 hover:glow-gold"
+      className="group relative block overflow-hidden rounded-xl bg-card transition-all duration-300 hover:ring-1 hover:ring-primary/30"
     >
+      {/* Image */}
       <div className="relative aspect-[3/4] overflow-hidden bg-muted">
         {profile.thumb_url ? (
           <img
             src={profile.thumb_url}
-            alt={`Foto de ${profile.display_name}`}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            alt={`${profile.display_name}`}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
-            Sem foto
+          <div className="flex h-full items-center justify-center text-muted-foreground/40">
+            <div className="h-12 w-12 rounded-full bg-muted-foreground/10" />
           </div>
         )}
+
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-90" />
+
+        {/* Featured badge */}
         {profile.is_featured && (
-          <div className="absolute top-2 left-2 rounded-full gold-gradient px-2.5 py-0.5 text-xs font-semibold text-primary-foreground">
-            Destaque
+          <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full gold-gradient px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-lg">
+            <Sparkles className="h-3 w-3" />
+            Featured
           </div>
         )}
-      </div>
-      <div className="p-4">
-        <h3 className="font-display text-base font-semibold text-foreground truncate">
-          {profile.display_name}
-        </h3>
-        <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-          {profile.city && (
-            <>
-              <MapPin className="h-3 w-3" />
-              <span>{profile.city}</span>
-            </>
-          )}
-          {profile.age && <span className="ml-auto">{profile.age} anos</span>}
-        </div>
+
+        {/* Price badge */}
         {profile.pricing_from && (
-          <p className="mt-2 text-sm font-semibold text-primary">
-            From €{Number(profile.pricing_from).toLocaleString("de-DE")}
-          </p>
+          <div className="absolute top-3 right-3 rounded-full bg-background/70 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-primary">
+            €{Number(profile.pricing_from).toLocaleString("de-DE")}
+          </div>
         )}
+
+        {/* Bottom info overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <h3 className="font-display text-base font-semibold text-foreground truncate leading-tight">
+            {profile.display_name}
+            {profile.age && (
+              <span className="ml-1.5 text-sm font-normal text-muted-foreground">{profile.age}</span>
+            )}
+          </h3>
+          {profile.city && (
+            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3 text-primary/70" />
+              <span>{profile.city}</span>
+            </div>
+          )}
+        </div>
       </div>
     </Link>
   );
