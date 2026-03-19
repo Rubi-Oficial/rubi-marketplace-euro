@@ -16,6 +16,7 @@ import {
   XCircle,
   Banknote,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface AdminStats {
   totalUsers: number;
@@ -131,8 +132,21 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="animate-fade-in space-y-8">
+        <div>
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="mt-2 h-4 w-40" />
+        </div>
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-lg" />
+          ))}
+        </div>
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -149,91 +163,101 @@ export default function AdminDashboard() {
     <div className="animate-fade-in space-y-8">
       <div>
         <h1 className="font-display text-2xl font-bold text-foreground">Painel Administrativo</h1>
-        <p className="mt-1 text-muted-foreground">Visão geral da plataforma.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Visão geral da plataforma.</p>
       </div>
 
       {/* Sanity warnings */}
       {sanity && sanityIssues > 0 && (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="h-4 w-4 text-destructive" />
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 sm:p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
             <p className="text-sm font-semibold text-destructive">
               {sanityIssues} inconsistência(s) detectada(s)
             </p>
           </div>
-          <ul className="space-y-1 text-xs text-muted-foreground">
-            {sanity.usersWithoutRole > 0 && <li>• {sanity.usersWithoutRole} utilizador(es) sem role definido</li>}
-            {sanity.orphanProfiles > 0 && <li>• {sanity.orphanProfiles} perfil(is) órfão(s) sem utilizador</li>}
-            {sanity.activeSubsNoStripe > 0 && <li>• {sanity.activeSubsNoStripe} assinatura(s) ativa(s) sem vínculo Stripe</li>}
-            {sanity.conversionsZeroCommission > 0 && <li>• {sanity.conversionsZeroCommission} conversão(ões) com comissão zero</li>}
-            {sanity.selfReferrals > 0 && <li>• {sanity.selfReferrals} auto-indicação(ões) detectada(s)</li>}
-            {sanity.pendingSubsOld > 0 && <li>• {sanity.pendingSubsOld} assinatura(s) pendente(s) há mais de 7 dias</li>}
-            {sanity.professionalsWithoutProfile > 0 && <li>• {sanity.professionalsWithoutProfile} profissional(is) sem perfil criado</li>}
-          </ul>
+          <div className="grid gap-1.5 sm:grid-cols-2">
+            {sanity.usersWithoutRole > 0 && (
+              <SanityItem count={sanity.usersWithoutRole} label="utilizador(es) sem role definido" />
+            )}
+            {sanity.orphanProfiles > 0 && (
+              <SanityItem count={sanity.orphanProfiles} label="perfil(is) órfão(s) sem utilizador" />
+            )}
+            {sanity.activeSubsNoStripe > 0 && (
+              <SanityItem count={sanity.activeSubsNoStripe} label="assinatura(s) ativa(s) sem vínculo Stripe" />
+            )}
+            {sanity.conversionsZeroCommission > 0 && (
+              <SanityItem count={sanity.conversionsZeroCommission} label="conversão(ões) com comissão zero" />
+            )}
+            {sanity.selfReferrals > 0 && (
+              <SanityItem count={sanity.selfReferrals} label="auto-indicação(ões) detectada(s)" />
+            )}
+            {sanity.pendingSubsOld > 0 && (
+              <SanityItem count={sanity.pendingSubsOld} label="assinatura(s) pendente(s) há mais de 7 dias" />
+            )}
+            {sanity.professionalsWithoutProfile > 0 && (
+              <SanityItem count={sanity.professionalsWithoutProfile} label="profissional(is) sem perfil criado" />
+            )}
+          </div>
         </div>
       )}
 
       {/* Revenue & subscriptions */}
-      <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Receita & Assinaturas</h2>
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <Section title="Receita & Assinaturas">
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
           <MetricCard icon={<DollarSign className="h-4 w-4" />} label="GMV (Ativas)" value={fmt(stats.gmv)} />
           <MetricCard icon={<CreditCard className="h-4 w-4" />} label="Assinaturas Ativas" value={stats.activeSubs.toString()} />
-          <MetricCard icon={<AlertTriangle className="h-4 w-4" />} label="Pagamentos com Problema" value={stats.problemSubs.toString()} highlight={stats.problemSubs > 0} />
+          <MetricCard icon={<AlertTriangle className="h-4 w-4" />} label="Pagam. com Problema" value={stats.problemSubs.toString()} highlight={stats.problemSubs > 0} />
           <MetricCard icon={<XCircle className="h-4 w-4" />} label="Canceladas / Pendentes" value={`${stats.canceledSubs} / ${stats.pendingSubs}`} />
         </div>
-      </div>
+      </Section>
 
       {/* Growth & funnel */}
-      <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Crescimento & Funil</h2>
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <Section title="Crescimento & Funil">
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
           <MetricCard icon={<UserPlus className="h-4 w-4" />} label="Cadastros (7d / 30d)" value={`${stats.signups7d} / ${stats.signups30d}`} />
           <MetricCard icon={<CreditCard className="h-4 w-4" />} label="Pagamentos (7d / 30d)" value={`${stats.payments7d} / ${stats.payments30d}`} />
           <MetricCard icon={<TrendingUp className="h-4 w-4" />} label="Conversão 30d" value={`${funnelRate}%`} />
           <MetricCard icon={<BarChart3 className="h-4 w-4" />} label="Leads Totais" value={stats.totalLeads.toString()} />
         </div>
-      </div>
+      </Section>
 
       {/* Profiles & operations */}
-      <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Perfis & Operação</h2>
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <Section title="Perfis & Operação">
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
           <MetricCard icon={<Users className="h-4 w-4" />} label="Perfis Ativos" value={stats.activeProfiles.toString()} />
           <MetricCard icon={<Shield className="h-4 w-4" />} label="Perfis Pendentes" value={stats.pendingProfiles.toString()} highlight={stats.pendingProfiles > 0} />
-          <MetricCard icon={<Mail className="h-4 w-4" />} label="Mensagens Não Lidas" value={stats.unreadMessages.toString()} highlight={stats.unreadMessages > 0} />
+          <MetricCard icon={<Mail className="h-4 w-4" />} label="Msg. Não Lidas" value={stats.unreadMessages.toString()} highlight={stats.unreadMessages > 0} />
           <MetricCard icon={<Users className="h-4 w-4" />} label="Utilizadores Totais" value={stats.totalUsers.toString()} />
         </div>
-      </div>
+      </Section>
 
       {/* Commissions */}
-      <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comissões de Afiliados</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
+      <Section title="Comissões de Afiliados">
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
           <CommissionCard icon={<Clock className="h-4 w-4" />} label="Pendentes" value={fmt(stats.pendingCommissions)} variant="pending" />
           <CommissionCard icon={<CheckCircle2 className="h-4 w-4" />} label="Aprovadas" value={fmt(stats.approvedCommissions)} variant="approved" />
           <CommissionCard icon={<Banknote className="h-4 w-4" />} label="Pagas" value={fmt(stats.paidCommissions)} variant="paid" />
         </div>
-      </div>
+      </Section>
 
       {/* Quick access */}
       <div className="flex flex-col gap-3">
         {stats.pendingProfiles > 0 && (
-          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex items-center justify-between">
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <p className="text-sm text-foreground font-medium">
               {stats.pendingProfiles} perfil(is) aguardando moderação
             </p>
-            <Link to="/admin/perfis/pendentes" className="text-sm font-medium text-primary hover:underline">
+            <Link to="/admin/perfis/pendentes" className="text-sm font-medium text-primary hover:underline whitespace-nowrap">
               Moderar agora →
             </Link>
           </div>
         )}
         {stats.unreadMessages > 0 && (
-          <div className="rounded-lg border border-border bg-card p-4 flex items-center justify-between">
+          <div className="rounded-lg border border-border bg-card p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <p className="text-sm text-foreground font-medium">
               {stats.unreadMessages} mensagem(ns) de contacto não lida(s)
             </p>
-            <Link to="/admin/mensagens" className="text-sm font-medium text-primary hover:underline">
+            <Link to="/admin/mensagens" className="text-sm font-medium text-primary hover:underline whitespace-nowrap">
               Ver mensagens →
             </Link>
           </div>
@@ -245,27 +269,25 @@ export default function AdminDashboard() {
         <div>
           <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Top Afiliados</h2>
           {stats.topAffiliates.length === 0 ? (
-            <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
-              Nenhum afiliado com atividade registrada.
-            </div>
+            <EmptyState message="Nenhum afiliado com atividade registrada." />
           ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nome</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Cliques</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Conv.</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Comissão</th>
+                    <th className="px-3 py-3 text-left font-medium text-muted-foreground sm:px-4">Nome</th>
+                    <th className="px-3 py-3 text-right font-medium text-muted-foreground sm:px-4">Cliques</th>
+                    <th className="px-3 py-3 text-right font-medium text-muted-foreground sm:px-4">Conv.</th>
+                    <th className="px-3 py-3 text-right font-medium text-muted-foreground sm:px-4">Comissão</th>
                   </tr>
                 </thead>
                 <tbody>
                   {stats.topAffiliates.map((a, i) => (
                     <tr key={i} className="border-b border-border last:border-0">
-                      <td className="px-4 py-3 text-foreground">{a.name}</td>
-                      <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">{a.clicks}</td>
-                      <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">{a.conversions}</td>
-                      <td className="px-4 py-3 text-right tabular-nums text-foreground">{fmt(a.commission)}</td>
+                      <td className="px-3 py-3 text-foreground sm:px-4">{a.name}</td>
+                      <td className="px-3 py-3 text-right tabular-nums text-muted-foreground sm:px-4">{a.clicks}</td>
+                      <td className="px-3 py-3 text-right tabular-nums text-muted-foreground sm:px-4">{a.conversions}</td>
+                      <td className="px-3 py-3 text-right tabular-nums text-foreground sm:px-4">{fmt(a.commission)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -278,25 +300,23 @@ export default function AdminDashboard() {
         <div>
           <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Ações Recentes</h2>
           {stats.recentActions.length === 0 ? (
-            <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
-              Nenhuma ação registrada.
-            </div>
+            <EmptyState message="Nenhuma ação registrada." />
           ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Ação</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Admin</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Data</th>
+                    <th className="px-3 py-3 text-left font-medium text-muted-foreground sm:px-4">Ação</th>
+                    <th className="px-3 py-3 text-left font-medium text-muted-foreground sm:px-4">Admin</th>
+                    <th className="px-3 py-3 text-left font-medium text-muted-foreground sm:px-4">Data</th>
                   </tr>
                 </thead>
                 <tbody>
                   {stats.recentActions.map((a) => (
                     <tr key={a.id} className="border-b border-border last:border-0">
-                      <td className="px-4 py-3 text-foreground">{formatAction(a.action_type)}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{a.admin_name}</td>
-                      <td className="px-4 py-3 tabular-nums text-muted-foreground">
+                      <td className="px-3 py-3 text-foreground sm:px-4">{formatAction(a.action_type)}</td>
+                      <td className="px-3 py-3 text-muted-foreground sm:px-4">{a.admin_name}</td>
+                      <td className="px-3 py-3 tabular-nums text-muted-foreground sm:px-4">
                         {fmtDate(a.created_at)}
                       </td>
                     </tr>
@@ -311,14 +331,25 @@ export default function AdminDashboard() {
   );
 }
 
+/* ── Sub-components ── */
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h2>
+      {children}
+    </div>
+  );
+}
+
 function MetricCard({ icon, label, value, highlight }: { icon: React.ReactNode; label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-lg border bg-card p-5 ${highlight ? "border-primary/40" : "border-border"}`}>
+    <div className={`rounded-lg border bg-card p-4 sm:p-5 ${highlight ? "border-primary/40" : "border-border"}`}>
       <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
-        <p className="text-sm">{label}</p>
+        <p className="text-xs sm:text-sm leading-tight">{label}</p>
       </div>
-      <p className={`mt-1 font-display text-2xl font-bold tabular-nums ${highlight ? "text-primary" : "text-foreground"}`}>
+      <p className={`mt-1 font-display text-xl sm:text-2xl font-bold tabular-nums ${highlight ? "text-primary" : "text-foreground"}`}>
         {value}
       </p>
     </div>
@@ -337,14 +368,33 @@ function CommissionCard({ icon, label, value, variant }: { icon: React.ReactNode
     paid: "text-green-500",
   };
   return (
-    <div className={`rounded-lg border bg-card p-5 ${borderStyles[variant]}`}>
+    <div className={`rounded-lg border bg-card p-4 sm:p-5 ${borderStyles[variant]}`}>
       <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
         <p className="text-xs font-medium uppercase tracking-wider">{label}</p>
       </div>
-      <p className={`mt-1 font-display text-2xl font-bold tabular-nums ${valueStyles[variant]}`}>
+      <p className={`mt-1 font-display text-xl sm:text-2xl font-bold tabular-nums ${valueStyles[variant]}`}>
         {value}
       </p>
+    </div>
+  );
+}
+
+function SanityItem({ count, label }: { count: number; label: string }) {
+  return (
+    <div className="flex items-start gap-2 rounded-md bg-destructive/5 px-3 py-1.5">
+      <span className="mt-px inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive/15 text-xs font-bold text-destructive tabular-nums">
+        {count}
+      </span>
+      <span className="text-xs text-muted-foreground leading-5">{label}</span>
+    </div>
+  );
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="rounded-lg border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+      {message}
     </div>
   );
 }

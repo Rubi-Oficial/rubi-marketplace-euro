@@ -17,10 +17,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Mail, MailOpen } from "lucide-react";
+import { Mail, MailOpen, Inbox } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ContactMessage {
   id: string;
@@ -38,6 +39,7 @@ export default function AdminContactMessages() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterTab>("all");
   const [selected, setSelected] = useState<ContactMessage | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const fetchMessages = async () => {
     setLoading(true);
@@ -65,10 +67,14 @@ export default function AdminContactMessages() {
 
   const toggleRead = async (msg: ContactMessage) => {
     const newVal = !msg.is_read;
+    setTogglingId(msg.id);
+
     const { error } = await supabase
       .from("contact_messages")
       .update({ is_read: newVal } as any)
       .eq("id", msg.id);
+
+    setTogglingId(null);
 
     if (error) {
       toast.error("Erro ao atualizar status");
@@ -84,11 +90,20 @@ export default function AdminContactMessages() {
     toast.success(newVal ? "Marcada como lida" : "Marcada como não lida");
   };
 
+  const unreadCount = messages.filter((m) => !m.is_read).length;
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="font-display text-2xl font-bold text-foreground">Mensagens de Contacto</h1>
-        <p className="text-sm text-muted-foreground">Mensagens recebidas pelo formulário de contacto</p>
+        <p className="text-sm text-muted-foreground">
+          Mensagens recebidas pelo formulário de contacto
+          {!loading && unreadCount > 0 && (
+            <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+              {unreadCount} não lida{unreadCount > 1 ? "s" : ""}
+            </span>
+          )}
+        </p>
       </div>
 
       <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterTab)}>
@@ -100,31 +115,42 @@ export default function AdminContactMessages() {
       </Tabs>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full rounded-lg" />
+          ))}
         </div>
       ) : messages.length === 0 ? (
-        <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
-          Nenhuma mensagem encontrada.
+        <div className="rounded-lg border border-border bg-card p-12 text-center">
+          <Inbox className="mx-auto h-10 w-10 text-muted-foreground/40" />
+          <p className="mt-3 text-sm text-muted-foreground">
+            {filter === "unread"
+              ? "Não há mensagens não lidas."
+              : filter === "read"
+              ? "Não há mensagens lidas."
+              : "Nenhuma mensagem recebida ainda."}
+          </p>
         </div>
       ) : (
         <div className="rounded-lg border border-border bg-card overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Status</TableHead>
+                <TableHead className="w-20">Status</TableHead>
                 <TableHead>Nome</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead className="hidden md:table-cell">Mensagem</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead className="text-right">Ação</TableHead>
+                <TableHead className="hidden sm:table-cell">Email</TableHead>
+                <TableHead className="hidden lg:table-cell">Mensagem</TableHead>
+                <TableHead className="hidden sm:table-cell">Data</TableHead>
+                <TableHead className="w-16 text-right">Ação</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {messages.map((msg) => (
                 <TableRow
                   key={msg.id}
-                  className="cursor-pointer"
+                  className={`cursor-pointer transition-colors ${
+                    !msg.is_read ? "bg-primary/[0.02]" : ""
+                  }`}
                   onClick={() => setSelected(msg)}
                 >
                   <TableCell>
@@ -134,18 +160,23 @@ export default function AdminContactMessages() {
                       <Badge variant="default">Nova</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="font-medium">{msg.name}</TableCell>
-                  <TableCell className="text-muted-foreground">{msg.email}</TableCell>
-                  <TableCell className="hidden max-w-[200px] truncate md:table-cell text-muted-foreground">
+                  <TableCell className={`font-medium ${!msg.is_read ? "text-foreground" : "text-muted-foreground"}`}>
+                    {msg.name}
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">
+                    {msg.email}
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell max-w-[200px] truncate text-muted-foreground text-sm">
                     {msg.message}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                  <TableCell className="hidden sm:table-cell text-sm text-muted-foreground whitespace-nowrap">
                     {format(new Date(msg.created_at), "dd/MM/yy HH:mm", { locale: pt })}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button
                       variant="ghost"
                       size="sm"
+                      disabled={togglingId === msg.id}
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleRead(msg);
@@ -170,10 +201,15 @@ export default function AdminContactMessages() {
           </DialogHeader>
           {selected && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                 <span>{selected.email}</span>
                 <span>·</span>
                 <span>{format(new Date(selected.created_at), "dd/MM/yyyy HH:mm", { locale: pt })}</span>
+                {selected.is_read ? (
+                  <Badge variant="secondary" className="ml-auto">Lida</Badge>
+                ) : (
+                  <Badge variant="default" className="ml-auto">Nova</Badge>
+                )}
               </div>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                 {selected.message}
@@ -182,6 +218,7 @@ export default function AdminContactMessages() {
                 <Button
                   variant="outline"
                   size="sm"
+                  disabled={togglingId === selected.id}
                   onClick={() => toggleRead(selected)}
                 >
                   {selected.is_read ? (
