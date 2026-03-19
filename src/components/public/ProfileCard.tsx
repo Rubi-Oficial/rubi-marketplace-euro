@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { MapPin } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import type { Tables } from "@/integrations/supabase/types";
+
+type EligibleProfileRow = Tables<"eligible_profiles">;
 
 export interface EligibleProfile {
   id: string;
@@ -24,7 +27,7 @@ export async function fetchEligibleProfiles(filters?: {
   search?: string;
 }): Promise<EligibleProfile[]> {
   let query = supabase
-    .from("eligible_profiles" as any)
+    .from("eligible_profiles")
     .select("id, display_name, age, city, category, slug, pricing_from, is_featured")
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
@@ -44,8 +47,7 @@ export async function fetchEligibleProfiles(filters?: {
   const { data: profiles } = await query.limit(50);
   if (!profiles || profiles.length === 0) return [];
 
-  // Get first approved image for each profile
-  const profileIds = (profiles as any[]).map((p) => p.id);
+  const profileIds = profiles.map((p) => p.id).filter(Boolean) as string[];
   const { data: images } = await supabase
     .from("profile_images")
     .select("profile_id, storage_path")
@@ -62,9 +64,16 @@ export async function fetchEligibleProfiles(filters?: {
     }
   });
 
-  return (profiles as any[]).map((p) => ({
-    ...p,
-    thumb_url: thumbMap[p.id] || null,
+  return profiles.map((p) => ({
+    id: p.id!,
+    display_name: p.display_name ?? "",
+    age: p.age ?? null,
+    city: p.city ?? null,
+    category: p.category ?? null,
+    slug: p.slug ?? null,
+    pricing_from: p.pricing_from ?? null,
+    is_featured: p.is_featured ?? false,
+    thumb_url: thumbMap[p.id!] || null,
   }));
 }
 
@@ -73,11 +82,12 @@ export async function fetchEligibleProfiles(filters?: {
  */
 export async function fetchFilterOptions() {
   const { data: profiles } = await supabase
-    .from("eligible_profiles" as any)
+    .from("eligible_profiles")
     .select("city, category");
 
-  const cities = [...new Set((profiles as any[] || []).map((p: any) => p.city).filter(Boolean))] as string[];
-  const categories = [...new Set((profiles as any[] || []).map((p: any) => p.category).filter(Boolean))] as string[];
+  const rows = profiles ?? [];
+  const cities = [...new Set(rows.map((p) => p.city).filter(Boolean))] as string[];
+  const categories = [...new Set(rows.map((p) => p.category).filter(Boolean))] as string[];
 
   return { cities: cities.sort(), categories: categories.sort() };
 }

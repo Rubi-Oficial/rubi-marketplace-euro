@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -58,36 +58,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<AppRole | null>(null);
+  const roleFetchedForUser = useRef<string | null>(null);
 
   useEffect(() => {
-    // 1. Set up listener FIRST (per Supabase best practices)
+    let initialSessionHandled = false;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
 
         if (newSession?.user) {
-          // Use setTimeout to avoid Supabase deadlock on initial load
+          // Skip if role already fetched for this user (avoids duplicate on mount)
+          if (roleFetchedForUser.current === newSession.user.id) {
+            setLoading(false);
+            return;
+          }
+          roleFetchedForUser.current = newSession.user.id;
           setTimeout(async () => {
             const role = await fetchUserRole(newSession.user.id);
             setUserRole(role);
             setLoading(false);
           }, 0);
         } else {
+          roleFetchedForUser.current = null;
           setUserRole(null);
           setLoading(false);
         }
       }
     );
 
-    // 2. Then check existing session
     supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
+      if (initialSessionHandled) return;
+      initialSessionHandled = true;
+
       setSession(existingSession);
       setUser(existingSession?.user ?? null);
 
       if (existingSession?.user) {
-        const role = await fetchUserRole(existingSession.user.id);
-        setUserRole(role);
+        if (roleFetchedForUser.current !== existingSession.user.id) {
+          roleFetchedForUser.current = existingSession.user.id;
+          const role = await fetchUserRole(existingSession.user.id);
+          setUserRole(role);
+        }
       }
       setLoading(false);
     });
@@ -100,6 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setSession(null);
     setUserRole(null);
+    roleFetchedForUser.current = null;
   }, []);
 
   const getDashboardPath = useCallback(() => {
