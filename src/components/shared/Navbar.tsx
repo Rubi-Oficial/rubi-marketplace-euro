@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, Search } from "lucide-react";
+import { LogOut, LayoutDashboard, Search, Menu, X } from "lucide-react";
+import { useState } from "react";
 
 export default function Navbar() {
   const { user, userRole, signOut } = useAuth();
-
+  const [mobileOpen, setMobileOpen] = useState(false);
   const dashboardPath = getRoleDashboard(userRole as any);
 
   return (
@@ -29,7 +30,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3">
           {user ? (
             <>
               <Button variant="ghost" size="sm" asChild>
@@ -53,7 +54,34 @@ export default function Navbar() {
             </>
           )}
         </div>
+
+        {/* Mobile menu button */}
+        <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-border bg-card/95 backdrop-blur-md px-4 py-4 space-y-3 animate-fade-in">
+          <Link to="/buscar" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2">Buscar</Link>
+          <Link to="/planos" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2">Planos</Link>
+          <Link to="/sobre" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2">Sobre</Link>
+          <div className="border-t border-border pt-3">
+            {user ? (
+              <>
+                <Link to={dashboardPath} onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2">Dashboard</Link>
+                <button onClick={() => { signOut(); setMobileOpen(false); }} className="block text-sm text-muted-foreground py-2">Sair</button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2">Entrar</Link>
+                <Link to="/cadastro" onClick={() => setMobileOpen(false)} className="block text-sm text-primary font-medium py-2">Cadastrar</Link>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
