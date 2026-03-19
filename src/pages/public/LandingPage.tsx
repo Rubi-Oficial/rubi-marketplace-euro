@@ -1,127 +1,38 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
-import { CITIES } from "@/components/onboarding/types";
+import { useEffect, useState, useCallback } from "react";
+import { fetchEligibleProfiles, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
 
 export default function LandingPage() {
   useReferralCapture();
-  const navigate = useNavigate();
 
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
-  const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
-  const [searchValue, setSearchValue] = useState("");
-  const [activeCity, setActiveCity] = useState("");
-  const [activeService, setActiveService] = useState("");
+  const [filters, setFilters] = useState({ activeCity: "", activeService: "" });
 
-  useEffect(() => {
-    fetchServices().then(setServices);
+  // Listen to filter changes from Navbar
+  const handleFilters = useCallback((e: Event) => {
+    const detail = (e as CustomEvent).detail;
+    setFilters({ activeCity: detail.activeCity, activeService: detail.activeService });
   }, []);
 
   useEffect(() => {
-    fetchEligibleProfiles({
-      city_slug: activeCity || undefined,
-      service_slug: activeService || undefined,
-    }).then((data) => setProfiles(data.slice(0, 20)));
-  }, [activeCity, activeService]);
+    window.addEventListener("rubi-filters", handleFilters);
+    return () => window.removeEventListener("rubi-filters", handleFilters);
+  }, [handleFilters]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchValue.trim()) {
-      navigate(`/buscar?q=${encodeURIComponent(searchValue.trim())}`);
-    } else {
-      navigate("/buscar");
-    }
-  };
+  useEffect(() => {
+    fetchEligibleProfiles({
+      city_slug: filters.activeCity || undefined,
+      service_slug: filters.activeService || undefined,
+    }).then((data) => setProfiles(data.slice(0, 20)));
+  }, [filters.activeCity, filters.activeService]);
 
   return (
     <div className="min-h-screen">
-      {/* Compact hero */}
-      <section className="relative pt-6 pb-4 sm:pt-8 sm:pb-6">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(350_65%_52%_/_0.06)_0%,_transparent_50%)]" />
-        <div className="relative container mx-auto px-4 text-center animate-fade-in">
-          <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
-            <span className="text-primary">Rubi</span> Girls
-          </h1>
-          <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted-foreground">
-            Premium European catalogue. Browse, connect, book.
-          </p>
-
-          {/* Search */}
-          <form onSubmit={handleSearch} className="mx-auto mt-5 flex max-w-lg gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search by name, city..."
-                className="pl-10 h-10 bg-card border-border/50"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-              />
-            </div>
-            <Button type="submit" variant="premium" className="h-10 px-5">
-              Search
-            </Button>
-          </form>
-        </div>
-      </section>
-
-      {/* Filters */}
-      <section className="border-b border-border/20 pb-4">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {/* City filters */}
-            {CITIES.map((city) => (
-              <button
-                key={city.slug}
-                onClick={() => setActiveCity(activeCity === city.slug ? "" : city.slug)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                  activeCity === city.slug
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                }`}
-              >
-                {city.name}
-              </button>
-            ))}
-            <span className="mx-1 h-4 w-px bg-border/30" />
-            {/* Service filters */}
-            {services.map((svc) => (
-              <button
-                key={svc.slug}
-                onClick={() => setActiveService(activeService === svc.slug ? "" : svc.slug)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                  activeService === svc.slug
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                }`}
-              >
-                {svc.name}
-              </button>
-            ))}
-            {(activeCity || activeService) && (
-              <button
-                onClick={() => { setActiveCity(""); setActiveService(""); }}
-                className="text-xs text-primary hover:underline ml-1"
-              >
-                Clear
-              </button>
-            )}
-            <Link
-              to="/buscar"
-              className="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Advanced search →
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Profiles grid */}
-      <section className="py-6">
+      {/* Extra top padding to account for navbar + filter row */}
+      <section className="pt-4 pb-6">
         <div className="container mx-auto px-4">
           {profiles.length > 0 ? (
             <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
