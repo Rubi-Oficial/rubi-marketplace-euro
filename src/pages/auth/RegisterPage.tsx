@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { lovable } from "@/integrations/lovable";
 import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { getStoredReferralCode } from "@/hooks/useReferralCapture";
+import { saveOAuthPreState } from "@/lib/oauthState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
