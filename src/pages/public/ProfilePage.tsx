@@ -1,9 +1,9 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Send, MapPin, Globe, DollarSign, Calendar } from "lucide-react";
+import { MessageCircle, Send, MapPin, Globe, ArrowLeft, Sparkles } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -17,6 +17,7 @@ interface PublicProfile {
   display_name: string;
   age: number | null;
   city: string | null;
+  city_slug: string | null;
   country: string | null;
   category: string | null;
   bio: string | null;
@@ -25,6 +26,7 @@ interface PublicProfile {
   whatsapp: string | null;
   telegram: string | null;
   slug: string | null;
+  is_featured: boolean;
 }
 
 interface ProfileImage {
@@ -38,6 +40,7 @@ export default function ProfilePage() {
   const { slug } = useParams();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [images, setImages] = useState<ProfileImage[]>([]);
+  const [services, setServices] = useState<{ name: string; slug: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasActiveSub, setHasActiveSub] = useState(false);
 
@@ -45,7 +48,6 @@ export default function ProfilePage() {
     if (!slug) return;
 
     const load = async () => {
-      // Fetch from centralized eligible view (approved + active subscription)
       const { data: eligible } = await supabase
         .from("eligible_profiles")
         .select("*")
@@ -75,6 +77,23 @@ export default function ProfilePage() {
         })));
       }
 
+      // Fetch services for this profile
+      const { data: psData } = await supabase
+        .from("profile_services")
+        .select("service_id")
+        .eq("profile_id", eligible.id);
+
+      if (psData && psData.length > 0) {
+        const serviceIds = psData.map((r: any) => r.service_id);
+        const { data: svcData } = await supabase
+          .from("services")
+          .select("name, slug")
+          .in("id", serviceIds)
+          .eq("is_active", true)
+          .order("sort_order");
+        if (svcData) setServices(svcData);
+      }
+
       // Record lead
       await supabase.from("leads").insert({
         profile_id: eligible.id,
@@ -87,15 +106,14 @@ export default function ProfilePage() {
     load();
   }, [slug]);
 
-  // SEO meta
   useEffect(() => {
     if (profile) {
-      document.title = `${profile.display_name} — ${profile.city || "Europe"} | AURA`;
+      document.title = `${profile.display_name} — ${profile.city || "Europe"} | Rubi Girls`;
       const desc = document.querySelector('meta[name="description"]');
-      const text = `${profile.display_name}, ${profile.category || "acompanhante"} em ${profile.city || "Brasil"}. ${profile.bio?.slice(0, 120) || ""}`;
+      const text = `${profile.display_name}${profile.category ? `, ${profile.category}` : ""} in ${profile.city || "Europe"}. ${profile.bio?.slice(0, 120) || ""}`;
       if (desc) desc.setAttribute("content", text);
     }
-    return () => { document.title = "AURA"; };
+    return () => { document.title = "Rubi Girls"; };
   }, [profile]);
 
   if (loading) {
@@ -109,16 +127,26 @@ export default function ProfilePage() {
   if (!profile || !hasActiveSub) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
-        <h1 className="font-display text-2xl font-bold text-foreground">Perfil indisponível</h1>
+        <h1 className="font-display text-2xl font-bold text-foreground">Profile unavailable</h1>
         <p className="mt-2 text-muted-foreground">
-          Este perfil não está disponível no momento.
+          This profile is not available at the moment.
         </p>
+        <Button variant="ghost" className="mt-6" asChild>
+          <Link to="/buscar">
+            <ArrowLeft className="mr-1.5 h-4 w-4" /> Browse profiles
+          </Link>
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 animate-fade-in">
+    <div className="container mx-auto px-4 py-6 animate-fade-in">
+      {/* Back link */}
+      <Link to="/buscar" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-5 transition-colors">
+        <ArrowLeft className="h-3 w-3" /> Back to explore
+      </Link>
+
       <div className="grid gap-8 lg:grid-cols-5">
         {/* Photos */}
         <div className="lg:col-span-3">
@@ -127,8 +155,8 @@ export default function ProfilePage() {
               <CarouselContent>
                 {images.map((img) => (
                   <CarouselItem key={img.id}>
-                    <div className="aspect-[3/4] overflow-hidden rounded-lg">
-                      <img src={img.url} alt={`Foto de ${profile.display_name}`}
+                    <div className="aspect-[3/4] overflow-hidden rounded-xl bg-muted">
+                      <img src={img.url} alt={profile.display_name}
                         className="h-full w-full object-cover" loading="lazy" />
                     </div>
                   </CarouselItem>
@@ -136,22 +164,22 @@ export default function ProfilePage() {
               </CarouselContent>
               {images.length > 1 && (
                 <>
-                  <CarouselPrevious className="left-2" />
-                  <CarouselNext className="right-2" />
+                  <CarouselPrevious className="left-3" />
+                  <CarouselNext className="right-3" />
                 </>
               )}
             </Carousel>
           ) : (
-            <div className="flex aspect-[3/4] items-center justify-center rounded-lg border border-border bg-card">
-              <p className="text-muted-foreground">Sem fotos</p>
+            <div className="flex aspect-[3/4] items-center justify-center rounded-xl border border-border/30 bg-card">
+              <p className="text-sm text-muted-foreground">No photos</p>
             </div>
           )}
 
           {/* Thumbnails */}
           {images.length > 1 && (
-            <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
               {images.map((img) => (
-                <div key={img.id} className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-border">
+                <div key={img.id} className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg border border-border/30">
                   <img src={img.url} alt="" className="h-full w-full object-cover" loading="lazy" />
                 </div>
               ))}
@@ -160,31 +188,55 @@ export default function ProfilePage() {
         </div>
 
         {/* Info */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-5">
           <div>
-            <h1 className="font-display text-3xl font-bold text-foreground">
-              {profile.display_name}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="font-display text-2xl font-bold text-foreground">
+                {profile.display_name}
+              </h1>
+              {profile.is_featured && (
+                <span className="inline-flex items-center gap-1 rounded-full gold-gradient px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
+                  <Sparkles className="h-2.5 w-2.5" /> Featured
+                </span>
+              )}
+            </div>
             {profile.age && (
-              <p className="mt-1 text-lg text-muted-foreground">{profile.age} anos</p>
+              <p className="mt-0.5 text-muted-foreground">{profile.age} years</p>
             )}
           </div>
 
           <div className="flex flex-wrap gap-2">
             {profile.category && <Badge variant="secondary">{profile.category}</Badge>}
             {profile.city && (
-              <Badge variant="outline">
-                <MapPin className="mr-1 h-3 w-3" /> {profile.city}
+              <Badge variant="outline" className="border-border/40">
+                <MapPin className="mr-1 h-3 w-3 text-primary/70" /> {profile.city}
               </Badge>
             )}
           </div>
 
           {profile.pricing_from && (
             <div className="flex items-center gap-2 text-foreground">
-              <DollarSign className="h-4 w-4 text-primary" />
-              <span className="font-display text-lg font-semibold">
+              <span className="font-display text-lg font-semibold text-primary">
                 From €{Number(profile.pricing_from).toLocaleString("de-DE")}
               </span>
+            </div>
+          )}
+
+          {/* Services */}
+          {services.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Services</p>
+              <div className="flex flex-wrap gap-1.5">
+                {services.map((s) => (
+                  <Link
+                    key={s.slug}
+                    to={`/buscar?service=${s.slug}`}
+                    className="rounded-full bg-card border border-border/40 px-2.5 py-1 text-xs text-muted-foreground hover:border-primary/30 hover:text-foreground transition-colors"
+                  >
+                    {s.name}
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
 
@@ -196,7 +248,7 @@ export default function ProfilePage() {
           )}
 
           {profile.bio && (
-            <div className="rounded-lg border border-border bg-card p-4">
+            <div className="rounded-xl border border-border/30 bg-card/50 p-4">
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                 {profile.bio}
               </p>
@@ -204,7 +256,7 @@ export default function ProfilePage() {
           )}
 
           {/* Contact */}
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {profile.whatsapp && (
               <Button className="w-full" asChild>
                 <a href={`https://wa.me/${profile.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
@@ -229,7 +281,7 @@ export default function ProfilePage() {
           "@context": "https://schema.org",
           "@type": "Person",
           name: profile.display_name,
-          address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "PT" } : undefined,
+          address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "NL" } : undefined,
           image: images[0]?.url,
         }),
       }} />
