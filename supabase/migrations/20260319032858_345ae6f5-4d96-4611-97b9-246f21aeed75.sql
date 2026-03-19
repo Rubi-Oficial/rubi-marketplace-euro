@@ -1,0 +1,1 @@
+UPDATE public.users SET role = 'admin' WHERE id = '6e062a86-6683-444c-94e3-804a16b240c4';
