@@ -5,7 +5,10 @@ const COMMISSION_RATE = 0.15;
 
 Deno.serve(async (req) => {
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-  if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
+  if (!stripeKey) {
+    console.error("[stripe-webhook] STRIPE_SECRET_KEY not configured");
+    throw new Error("STRIPE_SECRET_KEY not configured");
+  }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -24,9 +27,11 @@ Deno.serve(async (req) => {
       event = JSON.parse(body) as Stripe.Event;
     }
   } catch (err) {
-    console.error("Webhook signature verification failed:", err);
+    console.error("[stripe-webhook] Signature verification failed:", err);
     return new Response("Webhook Error", { status: 400 });
   }
+
+  console.log(`[stripe-webhook] Processing event: ${event.type} (${event.id})`);
 
   try {
     switch (event.type) {
@@ -35,10 +40,15 @@ Deno.serve(async (req) => {
         const userId = session.metadata?.user_id;
         const planId = session.metadata?.plan_id;
 
-        if (!userId || !planId) break;
+        console.log(`[stripe-webhook] checkout.session.completed — user=${userId}, plan=${planId}, session=${session.id}`);
+
+        if (!userId || !planId) {
+          console.warn("[stripe-webhook] Missing user_id or plan_id in session metadata, skipping");
+          break;
+        }
 
         // Update subscription record
-        const { data: sub } = await supabase
+        const { data: sub, error: subError } = await supabase
           .from("subscriptions")
           .update({
             status: "active",
@@ -49,6 +59,13 @@ Deno.serve(async (req) => {
           .eq("stripe_checkout_session_id", session.id)
           .select("id, plan_id")
           .single();
+
+        if (subError) {
+          console.error(`[stripe-webhook] Failed to update subscription for session ${session.id}:`, subError.message);
+          break;
+        }
+
+        console.log(`[stripe-webhook] Subscription ${sub.id} activated for user ${userId}`);
 
         // Affiliate commission logic
         if (sub) {
@@ -65,14 +82,13 @@ Deno.serve(async (req) => {
             .single();
 
           if (userData?.referred_by_user_id && plan) {
-            // PHASE 3: Block self-referral
+            // Block self-referral
             if (userData.referred_by_user_id === userId) {
-              console.warn(`Self-referral blocked for user ${userId}`);
+              console.warn(`[stripe-webhook] Self-referral blocked for user ${userId}`);
               break;
             }
 
             // Check no existing conversion for this user (first payment only)
-            // DB constraint unique_first_conversion_per_user also enforces this
             const { count } = await supabase
               .from("referral_conversions")
               .select("id", { count: "exact", head: true })
@@ -86,6 +102,10 @@ Deno.serve(async (req) => {
                 .eq("id", userData.referred_by_user_id)
                 .single();
 
+              const commissionAmount = Math.round(plan.price * COMMISSION_RATE * 100) / 100;
+
+              console.log(`[stripe-webhook] Creating commission: referrer=${userData.referred_by_user_id}, amount=${commissionAmount}`);
+
               const { error: insertErr } = await supabase
                 .from("referral_conversions")
                 .insert({
@@ -95,15 +115,17 @@ Deno.serve(async (req) => {
                   conversion_type: "subscription",
                   subscription_id: sub.id,
                   commission_rate: COMMISSION_RATE,
-                  commission_amount:
-                    Math.round(plan.price * COMMISSION_RATE * 100) / 100,
+                  commission_amount: commissionAmount,
                   status: "pending",
                 });
 
               if (insertErr) {
-                // Unique constraint violation = duplicate, safe to ignore
-                console.warn("Commission insert skipped:", insertErr.message);
+                console.warn(`[stripe-webhook] Commission insert skipped (likely duplicate): ${insertErr.message}`);
+              } else {
+                console.log(`[stripe-webhook] Commission created successfully`);
               }
+            } else {
+              console.log(`[stripe-webhook] Commission already exists for referred user ${userId}, skipping`);
             }
           }
         }
@@ -132,28 +154,41 @@ Deno.serve(async (req) => {
             status = subscription.status;
         }
 
-        await supabase
+        console.log(`[stripe-webhook] subscription.updated — stripe_sub=${stripeSubId}, new_status=${status}`);
+
+        const { error: updateErr } = await supabase
           .from("subscriptions")
           .update({
             status,
             expires_at: subscription.current_period_end
-              ? new Date(
-                  subscription.current_period_end * 1000
-                ).toISOString()
+              ? new Date(subscription.current_period_end * 1000).toISOString()
               : null,
           })
           .eq("stripe_subscription_id", stripeSubId);
+
+        if (updateErr) {
+          console.error(`[stripe-webhook] Failed to update subscription ${stripeSubId}:`, updateErr.message);
+        }
         break;
       }
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
-        await supabase
+        console.log(`[stripe-webhook] subscription.deleted — stripe_sub=${subscription.id}`);
+
+        const { error: delErr } = await supabase
           .from("subscriptions")
           .update({ status: "canceled" })
           .eq("stripe_subscription_id", subscription.id);
+
+        if (delErr) {
+          console.error(`[stripe-webhook] Failed to cancel subscription ${subscription.id}:`, delErr.message);
+        }
         break;
       }
+
+      default:
+        console.log(`[stripe-webhook] Unhandled event type: ${event.type}`);
     }
 
     return new Response(JSON.stringify({ received: true }), {
@@ -161,7 +196,7 @@ Deno.serve(async (req) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("Webhook processing error:", err);
+    console.error(`[stripe-webhook] Processing error for event ${event.id}:`, err);
     return new Response("Internal error", { status: 500 });
   }
 });
