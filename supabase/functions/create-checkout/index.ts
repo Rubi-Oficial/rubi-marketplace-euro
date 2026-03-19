@@ -15,7 +15,10 @@ Deno.serve(async (req) => {
 
   try {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
+    if (!stripeKey) {
+      console.error("[create-checkout] STRIPE_SECRET_KEY not configured");
+      throw new Error("STRIPE_SECRET_KEY not configured");
+    }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -24,6 +27,7 @@ Deno.serve(async (req) => {
     // Authenticate user
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
+      console.warn("[create-checkout] Missing Authorization header");
       return new Response(JSON.stringify({ error: "Not authenticated" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -33,6 +37,7 @@ Deno.serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user) {
+      console.warn(`[create-checkout] Auth failed: ${authError?.message || "no user"}`);
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -47,7 +52,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check for existing active or pending subscription to prevent duplicates
+    console.log(`[create-checkout] user=${user.id}, plan=${plan_id}`);
+
+    // Check for existing active or pending subscription
     const { data: existingSub } = await supabase
       .from("subscriptions")
       .select("id, status")
@@ -57,6 +64,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (existingSub?.status === "active") {
+      console.log(`[create-checkout] User ${user.id} already has active subscription, blocking`);
       return new Response(
         JSON.stringify({ error: "Você já possui uma assinatura ativa." }),
         { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -72,6 +80,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (planError || !plan) {
+      console.warn(`[create-checkout] Plan not found: ${plan_id}`);
       return new Response(JSON.stringify({ error: "Plan not found" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -82,16 +91,20 @@ Deno.serve(async (req) => {
 
     // Reuse existing Stripe customer if available
     let customerId: string | undefined;
-    const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
+    try {
+      const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+      }
+    } catch (stripeErr) {
+      console.warn(`[create-checkout] Stripe customer lookup failed:`, stripeErr);
     }
 
     // Determine Stripe interval
     const interval = "month";
     const intervalCount = plan.billing_period === "quarterly" ? 3 : 1;
 
-    // Create Stripe Checkout Session with inline price
+    // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
@@ -119,22 +132,32 @@ Deno.serve(async (req) => {
       cancel_url: `${req.headers.get("origin")}/app/plano?status=canceled`,
     });
 
-    // If there's an existing pending sub, update it instead of creating a new one
+    console.log(`[create-checkout] Session created: ${session.id}`);
+
+    // Upsert subscription record
     if (existingSub?.status === "pending") {
-      await supabase
+      const { error: upErr } = await supabase
         .from("subscriptions")
         .update({
           plan_id: plan.id,
           stripe_checkout_session_id: session.id,
         })
         .eq("id", existingSub.id);
+
+      if (upErr) {
+        console.error(`[create-checkout] Failed to update pending sub ${existingSub.id}:`, upErr.message);
+      }
     } else {
-      await supabase.from("subscriptions").insert({
+      const { error: insErr } = await supabase.from("subscriptions").insert({
         user_id: user.id,
         plan_id: plan.id,
         stripe_checkout_session_id: session.id,
         status: "pending",
       });
+
+      if (insErr) {
+        console.error(`[create-checkout] Failed to insert subscription:`, insErr.message);
+      }
     }
 
     return new Response(JSON.stringify({ url: session.url }), {
@@ -142,7 +165,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("Checkout error:", err);
+    console.error("[create-checkout] Unhandled error:", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

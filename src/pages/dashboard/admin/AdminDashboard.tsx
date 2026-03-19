@@ -41,16 +41,31 @@ interface AdminStats {
   recentActions: { id: string; action_type: string; created_at: string; admin_name: string }[];
 }
 
-const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
+interface SanityChecks {
+  usersWithoutRole: number;
+  orphanProfiles: number;
+  activeSubsNoStripe: number;
+  conversionsZeroCommission: number;
+  selfReferrals: number;
+  pendingSubsOld: number;
+  professionalsWithoutProfile: number;
+}
+
+const fmt = (v: number) => v.toLocaleString("pt-PT", { style: "currency", currency: "EUR" });
+
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("pt-PT", { timeZone: "Europe/Lisbon" });
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [sanity, setSanity] = useState<SanityChecks | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const [rpcRes, actionsRes] = await Promise.all([
+      const [rpcRes, sanityRes, actionsRes] = await Promise.all([
         supabase.rpc("get_admin_dashboard_stats" as any),
+        supabase.rpc("get_admin_sanity_checks" as any),
         supabase
           .from("admin_actions")
           .select("id, action_type, created_at, users!admin_actions_admin_user_id_fkey(full_name)")
@@ -97,6 +112,18 @@ export default function AdminDashboard() {
           admin_name: a.users?.full_name || "Admin",
         })),
       });
+
+      const s = (sanityRes.data as any) || {};
+      setSanity({
+        usersWithoutRole: s.users_without_role ?? 0,
+        orphanProfiles: s.orphan_profiles ?? 0,
+        activeSubsNoStripe: s.active_subs_no_stripe ?? 0,
+        conversionsZeroCommission: s.conversions_zero_commission ?? 0,
+        selfReferrals: s.self_referrals ?? 0,
+        pendingSubsOld: s.pending_subs_old ?? 0,
+        professionalsWithoutProfile: s.professionals_without_profile ?? 0,
+      });
+
       setLoading(false);
     };
     load();
@@ -116,12 +143,35 @@ export default function AdminDashboard() {
     ? ((stats.payments30d / stats.signups30d) * 100).toFixed(1)
     : "0";
 
+  const sanityIssues = sanity ? Object.values(sanity).reduce((a, b) => a + b, 0) : 0;
+
   return (
     <div className="animate-fade-in space-y-8">
       <div>
         <h1 className="font-display text-2xl font-bold text-foreground">Painel Administrativo</h1>
         <p className="mt-1 text-muted-foreground">Visão geral da plataforma.</p>
       </div>
+
+      {/* Sanity warnings */}
+      {sanity && sanityIssues > 0 && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+            <p className="text-sm font-semibold text-destructive">
+              {sanityIssues} inconsistência(s) detectada(s)
+            </p>
+          </div>
+          <ul className="space-y-1 text-xs text-muted-foreground">
+            {sanity.usersWithoutRole > 0 && <li>• {sanity.usersWithoutRole} utilizador(es) sem role definido</li>}
+            {sanity.orphanProfiles > 0 && <li>• {sanity.orphanProfiles} perfil(is) órfão(s) sem utilizador</li>}
+            {sanity.activeSubsNoStripe > 0 && <li>• {sanity.activeSubsNoStripe} assinatura(s) ativa(s) sem vínculo Stripe</li>}
+            {sanity.conversionsZeroCommission > 0 && <li>• {sanity.conversionsZeroCommission} conversão(ões) com comissão zero</li>}
+            {sanity.selfReferrals > 0 && <li>• {sanity.selfReferrals} auto-indicação(ões) detectada(s)</li>}
+            {sanity.pendingSubsOld > 0 && <li>• {sanity.pendingSubsOld} assinatura(s) pendente(s) há mais de 7 dias</li>}
+            {sanity.professionalsWithoutProfile > 0 && <li>• {sanity.professionalsWithoutProfile} profissional(is) sem perfil criado</li>}
+          </ul>
+        </div>
+      )}
 
       {/* Revenue & subscriptions */}
       <div>
@@ -247,7 +297,7 @@ export default function AdminDashboard() {
                       <td className="px-4 py-3 text-foreground">{formatAction(a.action_type)}</td>
                       <td className="px-4 py-3 text-muted-foreground">{a.admin_name}</td>
                       <td className="px-4 py-3 tabular-nums text-muted-foreground">
-                        {new Date(a.created_at).toLocaleDateString("pt-BR")}
+                        {fmtDate(a.created_at)}
                       </td>
                     </tr>
                   ))}
