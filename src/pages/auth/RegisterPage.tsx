@@ -21,15 +21,15 @@ export default function RegisterPage() {
   const presetRole = searchParams.get("role");
   const { user, userRole, loading: authLoading } = useAuth();
 
+  // Pre-select role from URL
+  useEffect(() => {
+    if (presetRole === "professional") setRole("professional");
+  }, [presetRole]);
+
   // Already logged in → redirect
   if (!authLoading && user && userRole) {
     return <Navigate to={getRoleDashboard(userRole as any)} replace />;
   }
-
-  // Pre-select role from URL (only on first render via initializer)
-  useEffect(() => {
-    if (presetRole === "professional") setRole("professional");
-  }, []);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +57,6 @@ export default function RegisterPage() {
 
     if (data.user) {
       toast.success("Conta criada com sucesso!");
-      // Redirect based on chosen role
       if (role === "professional") {
         navigate("/app/onboarding", { replace: true });
       } else {
