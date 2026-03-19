@@ -231,7 +231,7 @@ export default function ProfilePage() {
           "@context": "https://schema.org",
           "@type": "Person",
           name: profile.display_name,
-          address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "BR" } : undefined,
+          address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "PT" } : undefined,
           image: images[0]?.url,
         }),
       }} />
