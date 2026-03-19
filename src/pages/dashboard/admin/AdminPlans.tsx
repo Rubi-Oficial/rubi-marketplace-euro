@@ -164,7 +164,7 @@ export default function AdminPlans() {
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={form.billing_period}
-                onChange={(e) => setForm({ ...form, billing_period: e.target.value })}
+                onChange={(e) => setForm({ ...form, billing_period: e.target.value as "monthly" | "quarterly" })}
               >
                 <option value="monthly">Mensal</option>
                 <option value="quarterly">Trimestral</option>

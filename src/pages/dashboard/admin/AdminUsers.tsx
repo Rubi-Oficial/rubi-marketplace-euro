@@ -43,7 +43,7 @@ export default function AdminUsers() {
   const fetchProfiles = async () => {
     setLoading(true);
     let query = supabase.from("profiles").select("*").order("created_at", { ascending: false });
-    if (filter !== "all") query = query.eq("status", filter);
+    if (filter !== "all") query = query.eq("status", filter as any);
     const { data } = await query;
     setProfiles((data as ProfileRow[]) ?? []);
     setLoading(false);
