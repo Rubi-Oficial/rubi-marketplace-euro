@@ -24,7 +24,7 @@ interface PublicProfile {
   is_featured: boolean;
 }
 
-interface ProfileImage {
+interface MediaItem {
   id: string;
   storage_path: string;
   sort_order: number;
@@ -34,7 +34,8 @@ interface ProfileImage {
 export default function ProfilePage() {
   const { slug } = useParams();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
-  const [images, setImages] = useState<ProfileImage[]>([]);
+  const [images, setImages] = useState<MediaItem[]>([]);
+  const [videos, setVideos] = useState<MediaItem[]>([]);
   const [services, setServices] = useState<{ name: string; slug: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,13 +49,10 @@ export default function ProfilePage() {
         .eq("slug", slug)
         .maybeSingle();
 
-      if (!eligible) {
-        setLoading(false);
-        return;
-      }
-
+      if (!eligible) { setLoading(false); return; }
       setProfile(eligible as PublicProfile);
 
+      // Fetch images
       const { data: imgData } = await supabase
         .from("profile_images")
         .select("id, storage_path, sort_order")
@@ -63,16 +61,28 @@ export default function ProfilePage() {
         .order("sort_order");
 
       if (imgData) {
-        setImages(
-          imgData.map((img) => ({
-            ...img,
-            url: supabase.storage
-              .from("profile-images")
-              .getPublicUrl(img.storage_path).data.publicUrl,
-          }))
-        );
+        setImages(imgData.map((img) => ({
+          ...img,
+          url: supabase.storage.from("profile-images").getPublicUrl(img.storage_path).data.publicUrl,
+        })));
       }
 
+      // Fetch videos
+      const { data: vidData } = await supabase
+        .from("profile_videos")
+        .select("id, storage_path, sort_order")
+        .eq("profile_id", eligible.id)
+        .eq("moderation_status", "approved")
+        .order("sort_order");
+
+      if (vidData) {
+        setVideos(vidData.map((v) => ({
+          ...v,
+          url: supabase.storage.from("profile-images").getPublicUrl(v.storage_path).data.publicUrl,
+        })));
+      }
+
+      // Fetch services
       const { data: psData } = await supabase
         .from("profile_services")
         .select("service_id")
@@ -89,11 +99,7 @@ export default function ProfilePage() {
         if (svcData) setServices(svcData);
       }
 
-      await supabase.from("leads").insert({
-        profile_id: eligible.id,
-        source: "profile_view",
-      });
-
+      await supabase.from("leads").insert({ profile_id: eligible.id, source: "profile_view" });
       setLoading(false);
     };
 
@@ -107,9 +113,7 @@ export default function ProfilePage() {
       const text = `${profile.display_name}${profile.category ? `, ${profile.category}` : ""} in ${profile.city || "Europe"}. ${profile.bio?.slice(0, 120) || ""}`;
       if (desc) desc.setAttribute("content", text);
     }
-    return () => {
-      document.title = "Rubi Girls";
-    };
+    return () => { document.title = "Rubi Girls"; };
   }, [profile]);
 
   if (loading) return <ProfileSkeleton />;
@@ -117,16 +121,10 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="container mx-auto px-4 py-20 text-center animate-fade-in">
-        <h1 className="font-display text-2xl font-bold text-foreground">
-          Profile unavailable
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          This profile is not available at the moment.
-        </p>
+        <h1 className="font-display text-2xl font-bold text-foreground">Profile unavailable</h1>
+        <p className="mt-2 text-muted-foreground">This profile is not available at the moment.</p>
         <Button variant="ghost" className="mt-6" asChild>
-          <Link to="/buscar">
-            <ArrowLeft className="mr-1.5 h-4 w-4" /> Browse profiles
-          </Link>
+          <Link to="/buscar"><ArrowLeft className="mr-1.5 h-4 w-4" /> Browse profiles</Link>
         </Button>
       </div>
     );
@@ -138,21 +136,18 @@ export default function ProfilePage() {
         to="/buscar"
         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-5 transition-colors group"
       >
-        <ArrowLeft className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" />{" "}
-        Back to explore
+        <ArrowLeft className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" /> Back to explore
       </Link>
 
       <div className="grid gap-8 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <ProfileGallery images={images} name={profile.display_name} />
+          <ProfileGallery images={images} videos={videos} name={profile.display_name} />
         </div>
-
         <div className="lg:col-span-2">
           <ProfileInfo profile={profile} services={services} />
         </div>
       </div>
 
-      {/* JSON-LD */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -160,13 +155,7 @@ export default function ProfilePage() {
             "@context": "https://schema.org",
             "@type": "Person",
             name: profile.display_name,
-            address: profile.city
-              ? {
-                  "@type": "PostalAddress",
-                  addressLocality: profile.city,
-                  addressCountry: profile.country || "NL",
-                }
-              : undefined,
+            address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "NL" } : undefined,
             image: images[0]?.url,
           }),
         }}
