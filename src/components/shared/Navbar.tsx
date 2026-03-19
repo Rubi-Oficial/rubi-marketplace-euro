@@ -149,6 +149,15 @@ export default function Navbar() {
                 }`}
               >
                 {city.name}
+                {cityCounts[city.slug] ? (
+                  <span className={`ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold ${
+                    activeCity === city.slug
+                      ? "bg-primary-foreground/20 text-primary-foreground"
+                      : "bg-primary/10 text-primary"
+                  }`}>
+                    {cityCounts[city.slug]}
+                  </span>
+                ) : null}
               </button>
             ))}
             <span className="mx-1 h-4 w-px bg-border/30 shrink-0" />
@@ -156,13 +165,22 @@ export default function Navbar() {
               <button
                 key={svc.slug}
                 onClick={() => setActiveService(activeService === svc.slug ? "" : svc.slug)}
-                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-all shrink-0 ${
+                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-all shrink-0 inline-flex items-center ${
                   activeService === svc.slug
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 }`}
               >
                 {svc.name}
+                {serviceCounts[svc.slug] ? (
+                  <span className={`ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold ${
+                    activeService === svc.slug
+                      ? "bg-primary-foreground/20 text-primary-foreground"
+                      : "bg-primary/10 text-primary"
+                  }`}>
+                    {serviceCounts[svc.slug]}
+                  </span>
+                ) : null}
               </button>
             ))}
             {(activeCity || activeService) && (
