@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -49,33 +49,33 @@ export default function SearchPage() {
 
   const hasFilters = !!searchQuery || !!cityFilter || !!categoryFilter;
 
-  // SEO
   useEffect(() => {
-    const parts = ["Buscar Profissionais"];
-    if (cityFilter) parts.push(`em ${cityFilter}`);
-    if (categoryFilter) parts.push(`- ${categoryFilter}`);
+    const parts = ["Explore Professionals"];
+    if (cityFilter) parts.push(`in ${cityFilter}`);
+    if (categoryFilter) parts.push(`— ${categoryFilter}`);
     document.title = `${parts.join(" ")} | AURA`;
     return () => { document.title = "AURA"; };
   }, [cityFilter, categoryFilter]);
 
   return (
-    <div className="container mx-auto px-4 py-8 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
-          Buscar Profissionais
+    <div className="container mx-auto px-4 py-6 animate-fade-in">
+      {/* Header + Search */}
+      <div className="mb-6">
+        <h1 className="font-display text-xl font-bold text-foreground sm:text-2xl">
+          Explore
         </h1>
-        <p className="mt-1 text-muted-foreground">
-          {loading ? "Carregando..." : `${profiles.length} perfil(is) encontrado(s)`}
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          {loading ? "Loading..." : `${profiles.length} profile(s) found`}
         </p>
       </div>
 
-      {/* Search bar */}
-      <div className="flex gap-2 mb-6">
+      {/* Search + Filter bar */}
+      <div className="flex gap-2 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar por nome, cidade..."
-            className="pl-10"
+            placeholder="Search by name, city..."
+            className="pl-10 h-10 bg-card border-border/60"
             value={searchQuery}
             onChange={(e) => updateParam("q", e.target.value)}
           />
@@ -84,33 +84,59 @@ export default function SearchPage() {
           variant="outline"
           size="icon"
           onClick={() => setShowFilters(!showFilters)}
-          className={showFilters ? "border-primary text-primary" : ""}
+          className={`h-10 w-10 shrink-0 ${showFilters ? "border-primary/50 text-primary" : "border-border/60"}`}
         >
           <SlidersHorizontal className="h-4 w-4" />
         </Button>
       </div>
 
-      {/* Filters */}
-      {showFilters && (
-        <div className="mb-6 rounded-lg border border-border bg-card p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-foreground">Filtros</p>
-            {hasFilters && (
-              <button onClick={clearFilters} className="text-xs text-primary hover:underline flex items-center gap-1">
-                <X className="h-3 w-3" /> Limpar
-              </button>
-            )}
-          </div>
+      {/* Inline filter chips (always visible) */}
+      <div className="flex flex-wrap gap-1.5 mb-6">
+        {cities.slice(0, 6).map((c) => (
+          <button
+            key={c}
+            onClick={() => updateParam("cidade", cityFilter === c ? "" : c)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+              cityFilter === c
+                ? "bg-primary text-primary-foreground"
+                : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+            }`}
+          >
+            {c}
+          </button>
+        ))}
+        {categories.slice(0, 4).map((c) => (
+          <button
+            key={c}
+            onClick={() => updateParam("categoria", categoryFilter === c ? "" : c)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+              categoryFilter === c
+                ? "bg-primary text-primary-foreground"
+                : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+            }`}
+          >
+            {c}
+          </button>
+        ))}
+        {hasFilters && (
+          <button onClick={clearFilters} className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs text-primary hover:underline">
+            <X className="h-3 w-3" /> Clear
+          </button>
+        )}
+      </div>
 
+      {/* Expanded filters panel */}
+      {showFilters && (
+        <div className="mb-6 rounded-xl border border-border/40 bg-card/50 p-5 space-y-5">
           {cities.length > 0 && (
             <div>
-              <p className="text-xs text-muted-foreground mb-2">Cidade</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">City</p>
               <div className="flex flex-wrap gap-2">
                 {cities.map((c) => (
                   <button
                     key={c}
                     onClick={() => updateParam("cidade", cityFilter === c ? "" : c)}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                       cityFilter === c
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground hover:text-foreground"
@@ -122,16 +148,15 @@ export default function SearchPage() {
               </div>
             </div>
           )}
-
           {categories.length > 0 && (
             <div>
-              <p className="text-xs text-muted-foreground mb-2">Categoria</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Category</p>
               <div className="flex flex-wrap gap-2">
                 {categories.map((c) => (
                   <button
                     key={c}
                     onClick={() => updateParam("categoria", categoryFilter === c ? "" : c)}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                       categoryFilter === c
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground hover:text-foreground"
@@ -148,26 +173,26 @@ export default function SearchPage() {
 
       {/* Results */}
       {loading ? (
-        <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="aspect-[3/4] animate-pulse rounded-lg bg-muted" />
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
       ) : profiles.length === 0 ? (
-        <div className="rounded-lg border border-border bg-card p-12 text-center">
+        <div className="rounded-xl border border-border/40 bg-card/50 p-16 text-center">
           <p className="text-muted-foreground">
             {hasFilters
-              ? "Nenhum perfil encontrado com os filtros selecionados."
-              : "Nenhum perfil disponível no momento."}
+              ? "No profiles match your filters."
+              : "No profiles available at the moment."}
           </p>
           {hasFilters && (
             <Button variant="ghost" size="sm" className="mt-4" onClick={clearFilters}>
-              Limpar filtros
+              Clear filters
             </Button>
           )}
         </div>
       ) : (
-        <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {profiles.map((p) => (
             <ProfileCard key={p.id} profile={p} />
           ))}
