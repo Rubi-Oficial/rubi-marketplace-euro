@@ -245,6 +245,54 @@ export type Database = {
           },
         ]
       }
+      profile_videos: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          moderation_status: Database["public"]["Enums"]["moderation_status"]
+          profile_id: string
+          sort_order: number
+          storage_path: string
+          thumbnail_path: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          profile_id: string
+          sort_order?: number
+          storage_path: string
+          thumbnail_path?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          profile_id?: string
+          sort_order?: number
+          storage_path?: string
+          thumbnail_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_videos_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "eligible_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_videos_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           age: number | null

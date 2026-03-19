@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { useEffect, useState, useCallback } from "react";
 import { fetchEligibleProfiles, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
+import { VideoSection } from "@/components/public/VideoSection";
 
 export default function LandingPage() {
   useReferralCapture();
@@ -31,7 +32,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Extra top padding to account for navbar + filter row */}
+      {/* Profiles grid */}
       <section className="pt-4 pb-6">
         <div className="container mx-auto px-4">
           {profiles.length > 0 ? (
@@ -57,6 +58,9 @@ export default function LandingPage() {
           )}
         </div>
       </section>
+
+      {/* Videos section — filters applied */}
+      <VideoSection filters={filters} />
 
       {/* Minimal CTA */}
       <section className="border-t border-border/20 py-10">
