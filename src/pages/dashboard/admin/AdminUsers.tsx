@@ -63,7 +63,7 @@ export default function AdminUsers() {
     }
   };
 
-  const updateStatus = async (profile: ProfileRow, status: string) => {
+  const updateStatus = async (profile: ProfileRow, status: "approved" | "rejected" | "paused" | "draft" | "pending_review") => {
     const { error } = await supabase.from("profiles").update({ status }).eq("id", profile.id);
     if (error) { toast.error(error.message); return; }
     await logAction(`profile_${status}`, profile.id, profile.user_id);

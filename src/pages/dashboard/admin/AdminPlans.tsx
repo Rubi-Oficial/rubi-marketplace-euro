@@ -109,7 +109,7 @@ export default function AdminPlans() {
           <h1 className="font-display text-2xl font-bold text-foreground">Planos</h1>
           <p className="mt-1 text-muted-foreground">{activeSubs} assinatura(s) ativa(s).</p>
         </div>
-        <Button size="sm" onClick={() => { setShowCreate(true); setForm({ name: "", price: "", billing_period: "monthly", features: "" }); }}>
+        <Button size="sm" onClick={() => { setShowCreate(true); setForm({ name: "", price: "", billing_period: "monthly" as "monthly" | "quarterly", features: "" }); }}>
           <Plus className="mr-1.5 h-4 w-4" /> Novo plano
         </Button>
       </div>

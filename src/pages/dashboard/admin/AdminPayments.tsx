@@ -38,7 +38,7 @@ export default function AdminPayments() {
         .from("subscriptions")
         .select("*, users!subscriptions_user_id_fkey(full_name, email), plans!subscriptions_plan_id_fkey(name, price)")
         .order("created_at", { ascending: false });
-      if (filter !== "all") query = query.eq("status", filter);
+      if (filter !== "all") query = query.eq("status", filter as any);
 
       const { data } = await query;
       setSubs(
