@@ -26,7 +26,7 @@ export default function StepDescription({ form, update }: Props) {
         </p>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="pricing_from">Valor a partir de (R$)</Label>
+        <Label htmlFor="pricing_from">Valor a partir de (€)</Label>
         <Input
           id="pricing_from"
           type="number"
