@@ -15,10 +15,8 @@ Deno.serve(async (req) => {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
 
-  // In production you'd verify with webhook secret; for now we parse directly
   let event: Stripe.Event;
   try {
-    // If STRIPE_WEBHOOK_SECRET is set, verify signature
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
     if (webhookSecret && sig) {
       event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
@@ -52,7 +50,7 @@ Deno.serve(async (req) => {
           .select("id, plan_id")
           .single();
 
-        // Get plan price for affiliate commission
+        // Affiliate commission logic
         if (sub) {
           const { data: plan } = await supabase
             .from("plans")
@@ -60,38 +58,52 @@ Deno.serve(async (req) => {
             .eq("id", sub.plan_id)
             .single();
 
-          // Check if user was referred — create commission
           const { data: userData } = await supabase
             .from("users")
-            .select("referred_by_user_id, referral_code")
+            .select("referred_by_user_id")
             .eq("id", userId)
             .single();
 
           if (userData?.referred_by_user_id && plan) {
+            // PHASE 3: Block self-referral
+            if (userData.referred_by_user_id === userId) {
+              console.warn(`Self-referral blocked for user ${userId}`);
+              break;
+            }
+
             // Check no existing conversion for this user (first payment only)
+            // DB constraint unique_first_conversion_per_user also enforces this
             const { count } = await supabase
               .from("referral_conversions")
               .select("id", { count: "exact", head: true })
-              .eq("referred_user_id", userId);
+              .eq("referred_user_id", userId)
+              .eq("conversion_type", "subscription");
 
             if ((count ?? 0) === 0) {
-              // Get referrer's referral code
               const { data: referrer } = await supabase
                 .from("users")
                 .select("referral_code")
                 .eq("id", userData.referred_by_user_id)
                 .single();
 
-              await supabase.from("referral_conversions").insert({
-                referrer_user_id: userData.referred_by_user_id,
-                referred_user_id: userId,
-                referral_code: referrer?.referral_code ?? "",
-                conversion_type: "subscription",
-                subscription_id: sub.id,
-                commission_rate: COMMISSION_RATE,
-                commission_amount: Math.round(plan.price * COMMISSION_RATE * 100) / 100,
-                status: "pending",
-              });
+              const { error: insertErr } = await supabase
+                .from("referral_conversions")
+                .insert({
+                  referrer_user_id: userData.referred_by_user_id,
+                  referred_user_id: userId,
+                  referral_code: referrer?.referral_code ?? "",
+                  conversion_type: "subscription",
+                  subscription_id: sub.id,
+                  commission_rate: COMMISSION_RATE,
+                  commission_amount:
+                    Math.round(plan.price * COMMISSION_RATE * 100) / 100,
+                  status: "pending",
+                });
+
+              if (insertErr) {
+                // Unique constraint violation = duplicate, safe to ignore
+                console.warn("Commission insert skipped:", insertErr.message);
+              }
             }
           }
         }
@@ -104,11 +116,20 @@ Deno.serve(async (req) => {
 
         let status: string;
         switch (subscription.status) {
-          case "active": status = "active"; break;
-          case "past_due": status = "past_due"; break;
-          case "canceled": status = "canceled"; break;
-          case "unpaid": status = "expired"; break;
-          default: status = subscription.status;
+          case "active":
+            status = "active";
+            break;
+          case "past_due":
+            status = "past_due";
+            break;
+          case "canceled":
+            status = "canceled";
+            break;
+          case "unpaid":
+            status = "expired";
+            break;
+          default:
+            status = subscription.status;
         }
 
         await supabase
@@ -116,7 +137,9 @@ Deno.serve(async (req) => {
           .update({
             status,
             expires_at: subscription.current_period_end
-              ? new Date(subscription.current_period_end * 1000).toISOString()
+              ? new Date(
+                  subscription.current_period_end * 1000
+                ).toISOString()
               : null,
           })
           .eq("stripe_subscription_id", stripeSubId);

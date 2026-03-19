@@ -45,42 +45,28 @@ export default function ProfilePage() {
     if (!slug) return;
 
     const load = async () => {
-      // Fetch approved profile
-      const { data: profileData } = await supabase
-        .from("profiles")
+      // Fetch from centralized eligible view (approved + active subscription)
+      const { data: rawEligible } = await supabase
+        .from("eligible_profiles" as any)
         .select("*")
         .eq("slug", slug)
-        .eq("status", "approved")
         .maybeSingle();
 
-      if (!profileData) {
+      const eligible = rawEligible as any;
+
+      if (!eligible) {
         setLoading(false);
         return;
       }
 
-      // Check active subscription
-      const { data: subData } = await supabase
-        .from("subscriptions")
-        .select("id")
-        .eq("user_id", profileData.user_id)
-        .eq("status", "active")
-        .limit(1);
-
-      const active = (subData && subData.length > 0) || false;
-      setHasActiveSub(active);
-
-      if (!active) {
-        setLoading(false);
-        return;
-      }
-
-      setProfile(profileData);
+      setHasActiveSub(true);
+      setProfile(eligible as PublicProfile);
 
       // Fetch approved images
       const { data: imgData } = await supabase
         .from("profile_images")
         .select("id, storage_path, sort_order")
-        .eq("profile_id", profileData.id)
+        .eq("profile_id", eligible.id)
         .eq("moderation_status", "approved")
         .order("sort_order");
 
@@ -93,7 +79,7 @@ export default function ProfilePage() {
 
       // Record lead
       await supabase.from("leads").insert({
-        profile_id: profileData.id,
+        profile_id: eligible.id,
         source: "profile_view",
       });
 

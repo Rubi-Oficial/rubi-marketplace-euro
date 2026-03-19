@@ -15,29 +15,17 @@ export interface EligibleProfile {
 }
 
 /**
- * Fetch profiles that are approved AND have an active subscription.
- * Optionally filter by city or category.
+ * Fetch profiles using the centralized eligible_profiles view.
+ * Optionally filter by city, category, or search term.
  */
 export async function fetchEligibleProfiles(filters?: {
   city?: string;
   category?: string;
   search?: string;
 }): Promise<EligibleProfile[]> {
-  // 1. Get active subscription user_ids
-  const { data: activeSubs } = await supabase
-    .from("subscriptions")
-    .select("user_id")
-    .eq("status", "active");
-
-  const activeUserIds = (activeSubs || []).map((s) => s.user_id);
-  if (activeUserIds.length === 0) return [];
-
-  // 2. Query approved profiles within those user_ids
   let query = supabase
-    .from("profiles")
+    .from("eligible_profiles" as any)
     .select("id, display_name, age, city, category, slug, pricing_from, is_featured")
-    .eq("status", "approved")
-    .in("user_id", activeUserIds)
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -48,14 +36,16 @@ export async function fetchEligibleProfiles(filters?: {
     query = query.ilike("category", filters.category);
   }
   if (filters?.search) {
-    query = query.or(`display_name.ilike.%${filters.search}%,city.ilike.%${filters.search}%,category.ilike.%${filters.search}%`);
+    query = query.or(
+      `display_name.ilike.%${filters.search}%,city.ilike.%${filters.search}%,category.ilike.%${filters.search}%`
+    );
   }
 
   const { data: profiles } = await query.limit(50);
   if (!profiles || profiles.length === 0) return [];
 
-  // 3. Get first approved image for each profile
-  const profileIds = profiles.map((p) => p.id);
+  // Get first approved image for each profile
+  const profileIds = (profiles as any[]).map((p) => p.id);
   const { data: images } = await supabase
     .from("profile_images")
     .select("profile_id, storage_path")
@@ -63,7 +53,6 @@ export async function fetchEligibleProfiles(filters?: {
     .eq("moderation_status", "approved")
     .order("sort_order", { ascending: true });
 
-  // Map first image per profile
   const thumbMap: Record<string, string> = {};
   (images || []).forEach((img) => {
     if (!thumbMap[img.profile_id]) {
@@ -73,7 +62,7 @@ export async function fetchEligibleProfiles(filters?: {
     }
   });
 
-  return profiles.map((p) => ({
+  return (profiles as any[]).map((p) => ({
     ...p,
     thumb_url: thumbMap[p.id] || null,
   }));
@@ -83,22 +72,12 @@ export async function fetchEligibleProfiles(filters?: {
  * Fetch distinct cities and categories from eligible profiles.
  */
 export async function fetchFilterOptions() {
-  const { data: activeSubs } = await supabase
-    .from("subscriptions")
-    .select("user_id")
-    .eq("status", "active");
-
-  const activeUserIds = (activeSubs || []).map((s) => s.user_id);
-  if (activeUserIds.length === 0) return { cities: [], categories: [] };
-
   const { data: profiles } = await supabase
-    .from("profiles")
-    .select("city, category")
-    .eq("status", "approved")
-    .in("user_id", activeUserIds);
+    .from("eligible_profiles" as any)
+    .select("city, category");
 
-  const cities = [...new Set((profiles || []).map((p) => p.city).filter(Boolean))] as string[];
-  const categories = [...new Set((profiles || []).map((p) => p.category).filter(Boolean))] as string[];
+  const cities = [...new Set((profiles as any[] || []).map((p: any) => p.city).filter(Boolean))] as string[];
+  const categories = [...new Set((profiles as any[] || []).map((p: any) => p.category).filter(Boolean))] as string[];
 
   return { cities: cities.sort(), categories: categories.sort() };
 }

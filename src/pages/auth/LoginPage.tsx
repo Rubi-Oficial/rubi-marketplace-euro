@@ -3,6 +3,8 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { lovable } from "@/integrations/lovable";
 import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
+import { getStoredReferralCode } from "@/hooks/useReferralCapture";
+import { saveOAuthPreState } from "@/lib/oauthState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,6 +54,11 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
+    // Preserve any referral code through OAuth
+    const ref = getStoredReferralCode();
+    if (ref) {
+      saveOAuthPreState({ role: "client", referral_code: ref });
+    }
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });

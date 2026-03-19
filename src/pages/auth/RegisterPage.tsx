@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { lovable } from "@/integrations/lovable";
 import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { getStoredReferralCode } from "@/hooks/useReferralCapture";
+import { saveOAuthPreState } from "@/lib/oauthState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,6 +67,8 @@ export default function RegisterPage() {
   };
 
   const handleGoogleRegister = async () => {
+    // Persist role + referral before OAuth redirect
+    saveOAuthPreState({ role, referral_code: referralCode || null });
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });

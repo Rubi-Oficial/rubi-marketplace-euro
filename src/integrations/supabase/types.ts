@@ -54,6 +54,13 @@ export type Database = {
             foreignKeyName: "admin_actions_target_profile_id_fkey"
             columns: ["target_profile_id"]
             isOneToOne: false
+            referencedRelation: "eligible_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_actions_target_profile_id_fkey"
+            columns: ["target_profile_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -86,6 +93,13 @@ export type Database = {
           source?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "leads_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "eligible_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "leads_profile_id_fkey"
             columns: ["profile_id"]
@@ -151,6 +165,13 @@ export type Database = {
           storage_path?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profile_images_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "eligible_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profile_images_profile_id_fkey"
             columns: ["profile_id"]
@@ -451,7 +472,74 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      eligible_profiles: {
+        Row: {
+          age: number | null
+          bio: string | null
+          category: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          display_name: string | null
+          featured_until: string | null
+          id: string | null
+          is_featured: boolean | null
+          languages: string[] | null
+          pricing_from: number | null
+          slug: string | null
+          telegram: string | null
+          updated_at: string | null
+          user_id: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          age?: number | null
+          bio?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          featured_until?: string | null
+          id?: string | null
+          is_featured?: boolean | null
+          languages?: string[] | null
+          pricing_from?: number | null
+          slug?: string | null
+          telegram?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          age?: number | null
+          bio?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          featured_until?: string | null
+          id?: string | null
+          is_featured?: boolean | null
+          languages?: string[] | null
+          pricing_from?: number | null
+          slug?: string | null
+          telegram?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       get_referrer_id_by_code: { Args: { _code: string }; Returns: string }
