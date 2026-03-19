@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { fetchEligibleProfiles, fetchFilterOptions, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
+import { fetchEligibleProfiles, fetchFilterOptions, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -11,17 +11,20 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(true);
   const [cities, setCities] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
   const searchQuery = searchParams.get("q") || "";
-  const cityFilter = searchParams.get("cidade") || "";
-  const categoryFilter = searchParams.get("categoria") || "";
+  const cityFilter = searchParams.get("city") || "";
+  const categoryFilter = searchParams.get("category") || "";
+  const serviceFilter = searchParams.get("service") || "";
 
   useEffect(() => {
     fetchFilterOptions().then(({ cities, categories }) => {
       setCities(cities);
       setCategories(categories);
     });
+    fetchServices().then(setServices);
   }, []);
 
   useEffect(() => {
@@ -30,11 +33,12 @@ export default function SearchPage() {
       search: searchQuery || undefined,
       city: cityFilter || undefined,
       category: categoryFilter || undefined,
+      service_slug: serviceFilter || undefined,
     }).then((data) => {
       setProfiles(data);
       setLoading(false);
     });
-  }, [searchQuery, cityFilter, categoryFilter]);
+  }, [searchQuery, cityFilter, categoryFilter, serviceFilter]);
 
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -47,7 +51,7 @@ export default function SearchPage() {
     setSearchParams({});
   };
 
-  const hasFilters = !!searchQuery || !!cityFilter || !!categoryFilter;
+  const hasFilters = !!searchQuery || !!cityFilter || !!categoryFilter || !!serviceFilter;
 
   useEffect(() => {
     const parts = ["Explore Professionals"];
@@ -59,7 +63,7 @@ export default function SearchPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">
-      {/* Header + Search */}
+      {/* Header */}
       <div className="mb-6">
         <h1 className="font-display text-xl font-bold text-foreground sm:text-2xl">
           Explore
@@ -90,12 +94,12 @@ export default function SearchPage() {
         </Button>
       </div>
 
-      {/* Inline filter chips (always visible) */}
+      {/* Inline filter chips */}
       <div className="flex flex-wrap gap-1.5 mb-6">
         {cities.slice(0, 6).map((c) => (
           <button
             key={c}
-            onClick={() => updateParam("cidade", cityFilter === c ? "" : c)}
+            onClick={() => updateParam("city", cityFilter === c ? "" : c)}
             className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
               cityFilter === c
                 ? "bg-primary text-primary-foreground"
@@ -105,17 +109,17 @@ export default function SearchPage() {
             {c}
           </button>
         ))}
-        {categories.slice(0, 4).map((c) => (
+        {services.slice(0, 4).map((s) => (
           <button
-            key={c}
-            onClick={() => updateParam("categoria", categoryFilter === c ? "" : c)}
+            key={s.slug}
+            onClick={() => updateParam("service", serviceFilter === s.slug ? "" : s.slug)}
             className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-              categoryFilter === c
+              serviceFilter === s.slug
                 ? "bg-primary text-primary-foreground"
                 : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
             }`}
           >
-            {c}
+            {s.name}
           </button>
         ))}
         {hasFilters && (
@@ -135,7 +139,7 @@ export default function SearchPage() {
                 {cities.map((c) => (
                   <button
                     key={c}
-                    onClick={() => updateParam("cidade", cityFilter === c ? "" : c)}
+                    onClick={() => updateParam("city", cityFilter === c ? "" : c)}
                     className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                       cityFilter === c
                         ? "bg-primary text-primary-foreground"
@@ -155,7 +159,7 @@ export default function SearchPage() {
                 {categories.map((c) => (
                   <button
                     key={c}
-                    onClick={() => updateParam("categoria", categoryFilter === c ? "" : c)}
+                    onClick={() => updateParam("category", categoryFilter === c ? "" : c)}
                     className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                       categoryFilter === c
                         ? "bg-primary text-primary-foreground"
@@ -163,6 +167,26 @@ export default function SearchPage() {
                     }`}
                   >
                     {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {services.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Services</p>
+              <div className="flex flex-wrap gap-2">
+                {services.map((s) => (
+                  <button
+                    key={s.slug}
+                    onClick={() => updateParam("service", serviceFilter === s.slug ? "" : s.slug)}
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                      serviceFilter === s.slug
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {s.name}
                   </button>
                 ))}
               </div>

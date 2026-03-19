@@ -2,6 +2,7 @@ export interface ProfileDraft {
   display_name: string;
   age: string;
   city: string;
+  city_slug: string;
   country: string;
   category: string;
   bio: string;
@@ -15,32 +16,39 @@ export const INITIAL_DRAFT: ProfileDraft = {
   display_name: "",
   age: "",
   city: "",
-  country: "Brasil",
+  city_slug: "",
+  country: "",
   category: "",
   bio: "",
-  languages: "Português",
+  languages: "English",
   pricing_from: "",
   whatsapp: "",
   telegram: "",
 };
 
-export const CATEGORIES = [
-  "Acompanhante",
-  "Massagista",
-  "Dominatrix",
-  "Trans",
-  "Dupla",
+export interface CityOption {
+  name: string;
+  slug: string;
+}
+
+export const CITIES: CityOption[] = [
+  { name: "Amsterdam", slug: "amsterdam" },
+  { name: "Eindhoven", slug: "eindhoven" },
+  { name: "Den Haag", slug: "den-haag" },
+  { name: "Barcelona", slug: "barcelona" },
+  { name: "Madrid", slug: "madrid" },
 ];
 
-export const CITIES = [
-  "São Paulo",
-  "Rio de Janeiro",
-  "Belo Horizonte",
-  "Curitiba",
-  "Brasília",
-  "Salvador",
-  "Fortaleza",
-  "Porto Alegre",
-  "Recife",
-  "Goiânia",
+export const CATEGORIES = [
+  "Companion",
+  "Massage",
+  "Events",
+  "Travel",
+  "Premium",
 ];
+
+export interface ServiceOption {
+  id: string;
+  name: string;
+  slug: string;
+}

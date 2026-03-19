@@ -11,17 +11,17 @@ export default function StepBasicInfo({ form, update }: Props) {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="display_name">Nome de exibição *</Label>
+        <Label htmlFor="display_name">Display name *</Label>
         <Input
           id="display_name"
           value={form.display_name}
           onChange={(e) => update("display_name", e.target.value)}
-          placeholder="Como quer ser chamado(a)"
+          placeholder="How would you like to be called"
           maxLength={60}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="age">Idade</Label>
+        <Label htmlFor="age">Age</Label>
         <Input
           id="age"
           type="number"
