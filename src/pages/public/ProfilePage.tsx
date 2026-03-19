@@ -64,7 +64,7 @@ export default function ProfilePage() {
       const { data: imgData } = await supabase
         .from("profile_images")
         .select("id, storage_path, sort_order")
-        .eq("profile_id", profileData.id)
+        .eq("profile_id", eligibleData.id)
         .eq("moderation_status", "approved")
         .order("sort_order");
 
