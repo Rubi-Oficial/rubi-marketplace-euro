@@ -128,6 +128,7 @@ const App = () => (
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/perfis" element={<AdminUsers />} />
               <Route path="/admin/perfis/pendentes" element={<AdminPendingProfiles />} />
+              <Route path="/admin/perfis/:id" element={<AdminProfileDetail />} />
               <Route path="/admin/mensagens" element={<AdminContactMessages />} />
               <Route path="/admin/planos" element={<AdminPlans />} />
               <Route path="/admin/pagamentos" element={<AdminPayments />} />

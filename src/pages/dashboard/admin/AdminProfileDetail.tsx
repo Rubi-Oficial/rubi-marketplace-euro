@@ -88,7 +88,7 @@ export default function AdminProfileDetail() {
     if (!profile) return;
     setActing(true);
 
-    const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("id", profile.id);
+    const { error } = await supabase.from("profiles").update({ status: newStatus as any }).eq("id", profile.id);
     if (error) {
       toast.error(error.message);
       setActing(false);
