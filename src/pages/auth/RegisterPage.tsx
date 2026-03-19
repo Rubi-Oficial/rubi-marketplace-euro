@@ -26,10 +26,10 @@ export default function RegisterPage() {
     return <Navigate to={getRoleDashboard(userRole as any)} replace />;
   }
 
-  // Pre-select role from URL
-  if (presetRole === "professional" && role !== "professional") {
-    setRole("professional");
-  }
+  // Pre-select role from URL (only on first render via initializer)
+  useEffect(() => {
+    if (presetRole === "professional") setRole("professional");
+  }, []);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
