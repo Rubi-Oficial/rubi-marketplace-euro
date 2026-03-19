@@ -46,25 +46,27 @@ export default function ProfilePage() {
 
     const load = async () => {
       // Fetch from centralized eligible view (approved + active subscription)
-      const { data: eligibleData } = await supabase
+      const { data: rawEligible } = await supabase
         .from("eligible_profiles" as any)
         .select("*")
         .eq("slug", slug)
         .maybeSingle();
 
-      if (!eligibleData) {
+      const eligible = rawEligible as any;
+
+      if (!eligible) {
         setLoading(false);
         return;
       }
 
       setHasActiveSub(true);
-      setProfile(eligibleData as any);
+      setProfile(eligible as PublicProfile);
 
       // Fetch approved images
       const { data: imgData } = await supabase
         .from("profile_images")
         .select("id, storage_path, sort_order")
-        .eq("profile_id", eligibleData.id)
+        .eq("profile_id", eligible.id)
         .eq("moderation_status", "approved")
         .order("sort_order");
 
@@ -77,7 +79,7 @@ export default function ProfilePage() {
 
       // Record lead
       await supabase.from("leads").insert({
-        profile_id: eligibleData.id,
+        profile_id: eligible.id,
         source: "profile_view",
       });
 
