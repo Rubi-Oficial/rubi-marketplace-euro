@@ -24,7 +24,7 @@ const STATUS_STYLES: Record<string, { label: string; variant: "default" | "secon
   expired: { label: "Expirada", variant: "secondary" },
 };
 
-const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
 
 export default function AdminPayments() {
   const [subs, setSubs] = useState<SubRow[]>([]);

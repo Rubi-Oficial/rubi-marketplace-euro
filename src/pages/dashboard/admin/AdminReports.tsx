@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
 
-const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
 
 interface ReportStats {
   totalUsers: number;

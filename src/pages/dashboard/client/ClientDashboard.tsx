@@ -82,7 +82,7 @@ function useClientData() {
 }
 
 const fmt = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
 
 export default function ClientDashboard() {
   const data = useClientData();

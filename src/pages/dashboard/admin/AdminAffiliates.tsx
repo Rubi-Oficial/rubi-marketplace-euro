@@ -26,7 +26,7 @@ interface ConversionRow {
   created_at: string;
 }
 
-const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
 
 export default function AdminAffiliates() {
   const [affiliates, setAffiliates] = useState<AffiliateRow[]>([]);
