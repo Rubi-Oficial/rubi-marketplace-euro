@@ -185,7 +185,7 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2 text-foreground">
               <DollarSign className="h-4 w-4 text-primary" />
               <span className="font-display text-lg font-semibold">
-                A partir de R$ {Number(profile.pricing_from).toLocaleString("pt-BR")}
+                From €{Number(profile.pricing_from).toLocaleString("de-DE")}
               </span>
             </div>
           )}
