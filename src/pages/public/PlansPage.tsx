@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { Check, ArrowRight, Shield, Zap, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -31,7 +31,7 @@ export default function PlansPage() {
           Plans & Pricing
         </h1>
         <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
-          Choose the right plan and start receiving clients today. All plans include a verified profile and dedicated support.
+          Choose the right plan and start receiving clients today. All plans include a verified profile, dedicated support and full GDPR compliance.
         </p>
       </div>
 
@@ -49,7 +49,7 @@ export default function PlansPage() {
             >
               {isFeatured && (
                 <span className="mb-3 inline-flex self-start rounded-full gold-gradient px-3 py-0.5 text-xs font-semibold text-primary-foreground">
-                  Recommended
+                  Most Popular
                 </span>
               )}
               <h3 className="font-display text-xl font-bold text-foreground">{plan.name}</h3>
@@ -76,7 +76,10 @@ export default function PlansPage() {
                 className="mt-8 w-full"
                 asChild
               >
-                <Link to="/cadastro?role=professional">Get Started</Link>
+                <Link to="/cadastro?role=professional">
+                  Get Started
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
               </Button>
             </div>
           );
@@ -88,6 +91,23 @@ export default function PlansPage() {
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       )}
+
+      {/* Trust signals */}
+      <div className="mt-16 grid gap-6 sm:grid-cols-3 max-w-3xl mx-auto">
+        {[
+          { icon: <Shield className="h-5 w-5" />, title: "Cancel Anytime", desc: "No long-term commitment. Cancel your subscription whenever you want." },
+          { icon: <Zap className="h-5 w-5" />, title: "Live in 24h", desc: "Your profile goes live within 24 hours after verification." },
+          { icon: <Users className="h-5 w-5" />, title: "Earn with Referrals", desc: "Invite professionals and earn 15% commission on their first payment." },
+        ].map((t) => (
+          <div key={t.title} className="text-center">
+            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              {t.icon}
+            </div>
+            <p className="text-sm font-semibold text-foreground">{t.title}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t.desc}</p>
+          </div>
+        ))}
+      </div>
 
       {/* CTA */}
       <div className="mt-16 text-center">
