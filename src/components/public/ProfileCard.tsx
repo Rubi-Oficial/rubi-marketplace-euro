@@ -109,7 +109,7 @@ export function ProfileCard({ profile }: { profile: EligibleProfile }) {
       to={`/perfil/${profile.slug}`}
       className="group block overflow-hidden rounded-lg border border-border bg-card transition-all hover:border-primary/30 hover:glow-gold"
     >
-      <div className="aspect-[3/4] overflow-hidden bg-muted">
+      <div className="relative aspect-[3/4] overflow-hidden bg-muted">
         {profile.thumb_url ? (
           <img
             src={profile.thumb_url}
