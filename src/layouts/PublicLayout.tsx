@@ -9,13 +9,15 @@ export default function PublicLayout() {
       <main className="pt-14">
         <Outlet />
       </main>
-      <footer className="border-t border-border/40 py-12 mt-8">
+      <footer className="border-t border-border/30 py-10 mt-8">
         <div className="container mx-auto px-4">
           <div className="grid gap-10 md:grid-cols-4">
             <div>
-              <span className="font-display text-lg font-bold tracking-[0.15em] text-primary">AURA</span>
+              <span className="font-display text-lg font-bold text-foreground">
+                <span className="text-primary">Rubi</span> Girls
+              </span>
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                Premium platform for independent professionals across Europe.
+                Premium catalogue for independent professionals across Europe.
               </p>
             </div>
             <div>
@@ -42,8 +44,8 @@ export default function PublicLayout() {
               </nav>
             </div>
           </div>
-          <div className="mt-10 border-t border-border/30 pt-6 text-center text-xs text-muted-foreground/60">
-            © {new Date().getFullYear()} AURA. All rights reserved.
+          <div className="mt-8 border-t border-border/20 pt-5 text-center text-xs text-muted-foreground/50">
+            © {new Date().getFullYear()} Rubi Girls. All rights reserved.
           </div>
         </div>
       </footer>

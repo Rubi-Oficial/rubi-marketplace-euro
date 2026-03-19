@@ -1,19 +1,19 @@
 export default function AboutPage() {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-12 animate-fade-in">
-      <h1 className="font-display text-4xl font-bold text-foreground">Sobre a AURA</h1>
+      <h1 className="font-display text-4xl font-bold text-foreground">About Rubi Girls</h1>
       <div className="mt-8 space-y-6 text-muted-foreground leading-relaxed">
         <p>
-          A AURA é uma plataforma premium criada para profissionais independentes na Europa
-          que buscam visibilidade, segurança e controle sobre sua presença online.
+          Rubi Girls is a premium platform created for independent professionals across Europe
+          who seek visibility, security, and control over their online presence.
         </p>
         <p>
-          Cada perfil publicado passa por moderação humana para garantir autenticidade e
-          qualidade. Nosso compromisso é com a privacidade e a confiança de todos os utilizadores.
+          Every published profile goes through human moderation to ensure authenticity and
+          quality. Our commitment is to the privacy and trust of all users.
         </p>
         <p>
-          Com planos acessíveis e ferramentas profissionais, a AURA oferece tudo o que
-          é necessário para gerir e promover seus serviços de forma independente.
+          With accessible plans and professional tools, Rubi Girls provides everything
+          needed to manage and promote your services independently.
         </p>
       </div>
     </div>
