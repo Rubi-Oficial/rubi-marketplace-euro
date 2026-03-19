@@ -48,7 +48,7 @@ export default function LoginPage() {
         .single();
 
       const role = userData?.role ?? "client";
-      const target = redirectTo || getRoleDashboard(role as any);
+      const target = redirectTo || getRoleDashboard(role);
       navigate(target, { replace: true });
     }
   };

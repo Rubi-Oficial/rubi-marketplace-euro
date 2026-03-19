@@ -48,6 +48,7 @@ const adminNav: NavItem[] = [
   { label: "Painel", path: "/admin", icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: "Perfis", path: "/admin/perfis", icon: <Users className="h-4 w-4" /> },
   { label: "Pendentes", path: "/admin/perfis/pendentes", icon: <Shield className="h-4 w-4" /> },
+  { label: "Mensagens", path: "/admin/mensagens", icon: <Mail className="h-4 w-4" /> },
   { label: "Planos", path: "/admin/planos", icon: <ClipboardList className="h-4 w-4" /> },
   { label: "Pagamentos", path: "/admin/pagamentos", icon: <Wallet className="h-4 w-4" /> },
   { label: "Afiliados", path: "/admin/afiliados", icon: <Link2 className="h-4 w-4" /> },
