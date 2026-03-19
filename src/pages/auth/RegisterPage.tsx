@@ -67,6 +67,8 @@ export default function RegisterPage() {
   };
 
   const handleGoogleRegister = async () => {
+    // Persist role + referral before OAuth redirect
+    saveOAuthPreState({ role, referral_code: referralCode || null });
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });

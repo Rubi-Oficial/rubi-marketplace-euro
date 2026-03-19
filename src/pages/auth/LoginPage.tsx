@@ -54,6 +54,11 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
+    // Preserve any referral code through OAuth
+    const ref = getStoredReferralCode();
+    if (ref) {
+      saveOAuthPreState({ role: "client", referral_code: ref });
+    }
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });

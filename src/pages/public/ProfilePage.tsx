@@ -45,36 +45,20 @@ export default function ProfilePage() {
     if (!slug) return;
 
     const load = async () => {
-      // Fetch approved profile
-      const { data: profileData } = await supabase
-        .from("profiles")
+      // Fetch from centralized eligible view (approved + active subscription)
+      const { data: eligibleData } = await supabase
+        .from("eligible_profiles" as any)
         .select("*")
         .eq("slug", slug)
-        .eq("status", "approved")
         .maybeSingle();
 
-      if (!profileData) {
+      if (!eligibleData) {
         setLoading(false);
         return;
       }
 
-      // Check active subscription
-      const { data: subData } = await supabase
-        .from("subscriptions")
-        .select("id")
-        .eq("user_id", profileData.user_id)
-        .eq("status", "active")
-        .limit(1);
-
-      const active = (subData && subData.length > 0) || false;
-      setHasActiveSub(active);
-
-      if (!active) {
-        setLoading(false);
-        return;
-      }
-
-      setProfile(profileData);
+      setHasActiveSub(true);
+      setProfile(eligibleData as any);
 
       // Fetch approved images
       const { data: imgData } = await supabase
