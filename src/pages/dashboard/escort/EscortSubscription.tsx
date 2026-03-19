@@ -124,9 +124,9 @@ export default function EscortSubscription() {
               </h2>
               {subscription.plans && (
                 <p className="text-sm text-muted-foreground">
-                  Plano {(subscription.plans as any).name} — €{" "}
-                  {Number((subscription.plans as any).price).toLocaleString("de-DE", { minimumFractionDigits: 2 })}
-                  /{(subscription.plans as any).billing_period === "quarterly" ? "trimestre" : "mês"}
+                  Plano {subscription.plans.name} — €{" "}
+                  {Number(subscription.plans.price).toLocaleString("de-DE", { minimumFractionDigits: 2 })}
+                  /{subscription.plans.billing_period === "quarterly" ? "trimestre" : "mês"}
                 </p>
               )}
               <div className="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">

@@ -47,6 +47,22 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Check for existing active or pending subscription to prevent duplicates
+    const { data: existingSub } = await supabase
+      .from("subscriptions")
+      .select("id, status")
+      .eq("user_id", user.id)
+      .in("status", ["active", "pending"])
+      .limit(1)
+      .maybeSingle();
+
+    if (existingSub?.status === "active") {
+      return new Response(
+        JSON.stringify({ error: "Você já possui uma assinatura ativa." }),
+        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Fetch plan
     const { data: plan, error: planError } = await supabase
       .from("plans")
@@ -64,15 +80,23 @@ Deno.serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-04-30.basil" });
 
+    // Reuse existing Stripe customer if available
+    let customerId: string | undefined;
+    const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
+    if (customers.data.length > 0) {
+      customerId = customers.data[0].id;
+    }
+
     // Determine Stripe interval
-    const interval = plan.billing_period === "quarterly" ? "month" : "month";
+    const interval = "month";
     const intervalCount = plan.billing_period === "quarterly" ? 3 : 1;
 
     // Create Stripe Checkout Session with inline price
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
-      customer_email: user.email,
+      customer: customerId,
+      customer_email: customerId ? undefined : user.email!,
       metadata: {
         user_id: user.id,
         plan_id: plan.id,
@@ -95,13 +119,23 @@ Deno.serve(async (req) => {
       cancel_url: `${req.headers.get("origin")}/app/plano?status=canceled`,
     });
 
-    // Create pending subscription record
-    await supabase.from("subscriptions").insert({
-      user_id: user.id,
-      plan_id: plan.id,
-      stripe_checkout_session_id: session.id,
-      status: "pending",
-    });
+    // If there's an existing pending sub, update it instead of creating a new one
+    if (existingSub?.status === "pending") {
+      await supabase
+        .from("subscriptions")
+        .update({
+          plan_id: plan.id,
+          stripe_checkout_session_id: session.id,
+        })
+        .eq("id", existingSub.id);
+    } else {
+      await supabase.from("subscriptions").insert({
+        user_id: user.id,
+        plan_id: plan.id,
+        stripe_checkout_session_id: session.id,
+        status: "pending",
+      });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       status: 200,
