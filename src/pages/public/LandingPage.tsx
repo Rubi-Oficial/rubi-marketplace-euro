@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Shield, Star, Users, Zap, ArrowRight, Search, MapPin } from "lucide-react";
+import { Shield, Star, Users, Zap, ArrowRight, Search, MapPin, CheckCircle } from "lucide-react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { useEffect, useState } from "react";
 import { fetchEligibleProfiles, fetchFilterOptions, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
@@ -30,22 +30,25 @@ export default function LandingPage() {
         <div className="relative z-10 mx-auto max-w-3xl px-4 text-center animate-fade-in">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-medium text-primary">
             <Zap className="h-3 w-3" />
-            Premium Platform for Independent Professionals
+            The Leading Platform for Independent Professionals in Europe
           </div>
 
           <h1 className="font-display text-4xl font-bold leading-tight text-foreground sm:text-5xl md:text-7xl">
-            Connect with{" "}
-            <span className="text-primary">excellence</span>
+            Where clients find{" "}
+            <span className="text-primary">top professionals</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground text-pretty">
-            The reference platform for independent professionals across Europe.
-            Security, privacy and premium visibility.
+            Verified profiles, premium visibility and dedicated support.
+            Join thousands of professionals already growing with AURA.
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Button variant="premium" size="lg" asChild>
-              <Link to="/cadastro?role=professional">Advertise Now</Link>
+              <Link to="/cadastro?role=professional">
+                Create Your Profile — It's Free
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
             <Button variant="outline-gold" size="lg" asChild>
               <Link to="/buscar">
@@ -53,6 +56,12 @@ export default function LandingPage() {
                 Explore Profiles
               </Link>
             </Button>
+          </div>
+
+          <div className="mt-6 flex items-center justify-center gap-6 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-primary" /> Verified profiles</span>
+            <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-primary" /> Cancel anytime</span>
+            <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-primary" /> GDPR compliant</span>
           </div>
         </div>
       </section>
@@ -159,12 +168,12 @@ export default function LandingPage() {
               {
                 icon: <Star className="h-6 w-6" />,
                 title: "Premium Visibility",
-                desc: "Optimised listings with high-quality photos and priority placement.",
+                desc: "Optimised listings with high-quality photos, SEO-friendly pages and priority placement.",
               },
               {
                 icon: <Users className="h-6 w-6" />,
                 title: "Affiliate Programme",
-                desc: "Refer professionals and earn recurring commissions on their subscriptions.",
+                desc: "Refer professionals and earn 15% recurring commission on their first subscription payment.",
               },
             ].map((f) => (
               <div
@@ -187,18 +196,26 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl text-center rounded-lg border border-primary/20 bg-primary/5 p-10">
             <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
-              Are You a Professional?
+              Ready to Grow Your Business?
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Create your verified profile and reach thousands of clients with AURA.
-              Plans starting from €49/month.
+              Create your verified profile in minutes and reach thousands of clients across Europe.
+              Plans from €49/month — cancel anytime.
             </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-primary" /> No setup fee</span>
+              <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-primary" /> Live in 24h after verification</span>
+              <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3 text-primary" /> Dedicated support</span>
+            </div>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button variant="premium" size="lg" asChild>
-                <Link to="/cadastro?role=professional">Get Started</Link>
+                <Link to="/cadastro?role=professional">
+                  Create Your Profile Now
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
               </Button>
               <Button variant="ghost" size="lg" asChild>
-                <Link to="/planos">View Plans</Link>
+                <Link to="/planos">View Plans & Pricing</Link>
               </Button>
             </div>
           </div>
