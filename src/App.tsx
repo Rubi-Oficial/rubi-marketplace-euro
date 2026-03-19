@@ -51,6 +51,7 @@ import AdminPayments from "@/pages/dashboard/admin/AdminPayments";
 import AdminAffiliates from "@/pages/dashboard/admin/AdminAffiliates";
 import AdminReports from "@/pages/dashboard/admin/AdminReports";
 import AdminSettings from "@/pages/dashboard/admin/AdminSettings";
+import AdminContactMessages from "@/pages/dashboard/admin/AdminContactMessages";
 
 import NotFound from "@/pages/NotFound";
 
