@@ -80,10 +80,10 @@ Deno.serve(async (req) => {
       line_items: [
         {
           price_data: {
-            currency: "brl",
+            currency: "eur",
             product_data: {
-              name: `AURA - Plano ${plan.name}`,
-              description: `Assinatura ${plan.billing_period === "quarterly" ? "trimestral" : "mensal"}`,
+              name: `AURA - ${plan.name} Plan`,
+              description: `${plan.billing_period === "quarterly" ? "Quarterly" : "Monthly"} subscription`,
             },
             unit_amount: Math.round(plan.price * 100),
             recurring: { interval, interval_count: intervalCount },
