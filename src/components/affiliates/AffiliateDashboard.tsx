@@ -2,7 +2,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { Copy, MousePointerClick, UserPlus, CreditCard, DollarSign } from "lucide-react";
+import {
+  Copy,
+  Share2,
+  MousePointerClick,
+  UserPlus,
+  CreditCard,
+  TrendingUp,
+  Gift,
+  Target,
+  CheckCircle2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface AffiliateStats {
@@ -67,6 +77,9 @@ function useAffiliateData(): AffiliateStats & { loading: boolean } {
   return { ...stats, loading };
 }
 
+const fmt = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
+
 export default function AffiliateDashboard() {
   const data = useAffiliateData();
 
@@ -77,7 +90,24 @@ export default function AffiliateDashboard() {
   const copyLink = () => {
     if (!referralLink) return;
     navigator.clipboard.writeText(referralLink);
-    toast.success("Link copiado!");
+    toast.success("Link copiado para a área de transferência!");
+  };
+
+  const shareLink = async () => {
+    if (!referralLink) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "AURA — Convite exclusivo",
+          text: "Junte-se à AURA, a plataforma premium para profissionais independentes.",
+          url: referralLink,
+        });
+      } catch {
+        copyLink();
+      }
+    } else {
+      copyLink();
+    }
   };
 
   if (data.loading) {
@@ -88,91 +118,140 @@ export default function AffiliateDashboard() {
     );
   }
 
-  const fmt = (v: number) =>
-    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const totalEarned = data.commissionPending + data.commissionApproved + data.commissionPaid;
+  const hasFirstConversion = data.conversions.length > 0;
+  const conversionRate = data.clicks > 0 ? ((data.signups / data.clicks) * 100).toFixed(1) : "0";
 
   return (
-    <div className="animate-fade-in">
-      <h1 className="font-display text-2xl font-bold text-foreground">Programa de Afiliados</h1>
-      <p className="mt-1 text-muted-foreground">
-        Indique novos usuários e ganhe 15% de comissão sobre o primeiro pagamento.
-      </p>
+    <div className="animate-fade-in space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="font-display text-2xl font-bold text-foreground">Programa de Afiliados</h1>
+        <p className="mt-1 text-muted-foreground">
+          Indique profissionais e ganhe <span className="text-primary font-semibold">15% de comissão</span> sobre o primeiro pagamento.
+        </p>
+      </div>
 
-      {/* Referral link */}
-      <div className="mt-6 rounded-lg border border-primary/20 bg-primary/5 p-5">
-        <p className="text-sm font-medium text-foreground">Seu link de indicação</p>
+      {/* Referral link — prominent CTA */}
+      <div className="rounded-xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 p-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Gift className="h-5 w-5 text-primary" />
+          <p className="text-base font-semibold text-foreground">Seu link exclusivo de indicação</p>
+        </div>
         {referralLink ? (
-          <div className="mt-2 flex items-center gap-2">
-            <code className="flex-1 truncate rounded bg-muted px-3 py-2 text-sm text-foreground">
-              {referralLink}
-            </code>
-            <Button size="sm" onClick={copyLink}>
-              <Copy className="mr-1.5 h-3.5 w-3.5" />
-              Copiar
-            </Button>
-          </div>
+          <>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <code className="flex-1 truncate rounded-lg bg-background/80 border border-border px-4 py-3 text-sm text-foreground font-mono">
+                {referralLink}
+              </code>
+              <div className="flex gap-2">
+                <Button size="default" onClick={copyLink} className="flex-1 sm:flex-none">
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copiar link
+                </Button>
+                <Button size="default" variant="outline-gold" onClick={shareLink} className="flex-1 sm:flex-none">
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Compartilhar
+                </Button>
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Envie este link para profissionais interessados. Quando se cadastrarem e realizarem o primeiro pagamento, sua comissão será creditada automaticamente.
+            </p>
+          </>
         ) : (
-          <p className="mt-1 text-sm text-muted-foreground">Carregando...</p>
+          <p className="text-sm text-muted-foreground">Carregando seu link...</p>
         )}
       </div>
 
-      {/* Stats cards */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* First conversion goal */}
+      {!hasFirstConversion && (
+        <div className="rounded-lg border border-primary/20 bg-card p-5 flex items-start gap-4">
+          <div className="rounded-full bg-primary/10 p-2.5 shrink-0">
+            <Target className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">Conquiste sua primeira comissão!</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Compartilhe seu link com profissionais que buscam visibilidade premium. Cada indicação que assinar um plano gera comissão direta para você.
+            </p>
+            <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-muted-foreground/30" />
+                Envie o link
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-muted-foreground/30" />
+                Cadastro realizado
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-muted-foreground/30" />
+                Pagamento confirmado
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-primary" />
+                Comissão creditada
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Funnel stats */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={<MousePointerClick className="h-4 w-4" />}
-          label="Cliques"
+          label="Cliques no link"
           value={data.clicks.toString()}
+          sublabel="Visitantes únicos"
         />
         <StatCard
           icon={<UserPlus className="h-4 w-4" />}
           label="Cadastros gerados"
           value={data.signups.toString()}
+          sublabel={`${conversionRate}% de conversão`}
         />
         <StatCard
           icon={<CreditCard className="h-4 w-4" />}
           label="Pagamentos convertidos"
           value={data.conversions.length.toString()}
+          sublabel="Comissões ativas"
         />
         <StatCard
-          icon={<DollarSign className="h-4 w-4" />}
+          icon={<TrendingUp className="h-4 w-4" />}
           label="Total em comissões"
-          value={fmt(data.commissionPending + data.commissionApproved + data.commissionPaid)}
+          value={fmt(totalEarned)}
+          sublabel="Acumulado geral"
+          highlight
         />
       </div>
 
       {/* Commission breakdown */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-border bg-card p-5">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Pendente</p>
-          <p className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground">
-            {fmt(data.commissionPending)}
-          </p>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-5">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Aprovada</p>
-          <p className="mt-1 font-display text-2xl font-bold tabular-nums text-primary">
-            {fmt(data.commissionApproved)}
-          </p>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-5">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Paga</p>
-          <p className="mt-1 font-display text-2xl font-bold tabular-nums text-green-500">
-            {fmt(data.commissionPaid)}
-          </p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <CommissionCard label="Pendente" sublabel="Aguardando aprovação" amount={data.commissionPending} variant="pending" />
+        <CommissionCard label="Aprovada" sublabel="Pronta para pagamento" amount={data.commissionApproved} variant="approved" />
+        <CommissionCard label="Paga" sublabel="Já recebida" amount={data.commissionPaid} variant="paid" />
       </div>
 
       {/* Conversion history */}
-      <div className="mt-8">
+      <div>
         <h2 className="mb-4 font-display text-lg font-semibold text-foreground">
-          Histórico de indicações
+          Histórico de Indicações
         </h2>
 
         {data.conversions.length === 0 ? (
-          <div className="rounded-lg border border-border bg-card p-8 text-center">
-            <p className="text-muted-foreground">
-              Nenhuma conversão registrada ainda. Compartilhe seu link!
+          <div className="rounded-lg border border-border bg-card p-10 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <Gift className="h-6 w-6 text-primary" />
+            </div>
+            <p className="font-medium text-foreground">Nenhuma indicação convertida ainda</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Quando alguém que você indicar assinar um plano, a conversão aparecerá aqui.
             </p>
+            <Button variant="outline-gold" size="sm" className="mt-4" onClick={copyLink}>
+              <Copy className="mr-2 h-3.5 w-3.5" />
+              Copiar meu link de indicação
+            </Button>
           </div>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-border">
@@ -188,11 +267,13 @@ export default function AffiliateDashboard() {
               <tbody>
                 {data.conversions.map((c) => (
                   <tr key={c.id} className="border-b border-border last:border-0">
-                    <td className="px-4 py-3 text-foreground">
+                    <td className="px-4 py-3 text-foreground tabular-nums">
                       {new Date(c.created_at).toLocaleDateString("pt-BR")}
                     </td>
-                    <td className="px-4 py-3 text-foreground capitalize">{c.conversion_type}</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-foreground">
+                    <td className="px-4 py-3 text-foreground capitalize">
+                      {c.conversion_type === "subscription" ? "Assinatura" : c.conversion_type}
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums font-medium text-foreground">
                       {fmt(Number(c.commission_amount))}
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -209,14 +290,64 @@ export default function AffiliateDashboard() {
   );
 }
 
-function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function StatCard({
+  icon,
+  label,
+  value,
+  sublabel,
+  highlight,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  sublabel?: string;
+  highlight?: boolean;
+}) {
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div className={`rounded-lg border bg-card p-5 ${highlight ? "border-primary/30" : "border-border"}`}>
       <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
-        <p className="text-sm">{label}</p>
+        <p className="text-xs sm:text-sm">{label}</p>
       </div>
-      <p className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground">{value}</p>
+      <p className={`mt-1 font-display text-2xl font-bold tabular-nums ${highlight ? "text-primary" : "text-foreground"}`}>
+        {value}
+      </p>
+      {sublabel && (
+        <p className="mt-0.5 text-xs text-muted-foreground">{sublabel}</p>
+      )}
+    </div>
+  );
+}
+
+function CommissionCard({
+  label,
+  sublabel,
+  amount,
+  variant,
+}: {
+  label: string;
+  sublabel: string;
+  amount: number;
+  variant: "pending" | "approved" | "paid";
+}) {
+  const styles = {
+    pending: "border-yellow-500/20",
+    approved: "border-primary/20",
+    paid: "border-green-500/20",
+  };
+  const valueStyles = {
+    pending: "text-foreground",
+    approved: "text-primary",
+    paid: "text-green-500",
+  };
+
+  return (
+    <div className={`rounded-lg border bg-card p-5 ${styles[variant]}`}>
+      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className={`mt-1 font-display text-2xl font-bold tabular-nums ${valueStyles[variant]}`}>
+        {fmt(amount)}
+      </p>
+      <p className="mt-0.5 text-xs text-muted-foreground">{sublabel}</p>
     </div>
   );
 }

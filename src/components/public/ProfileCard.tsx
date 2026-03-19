@@ -122,7 +122,7 @@ export function ProfileCard({ profile }: { profile: EligibleProfile }) {
         </div>
         {profile.pricing_from && (
           <p className="mt-2 text-sm font-semibold text-primary">
-            A partir de R$ {Number(profile.pricing_from).toLocaleString("pt-BR")}
+            From €{Number(profile.pricing_from).toLocaleString("en-EU")}
           </p>
         )}
       </div>

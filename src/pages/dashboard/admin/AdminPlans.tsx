@@ -24,7 +24,7 @@ interface Plan {
   created_at: string;
 }
 
-const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
 
 export default function AdminPlans() {
   const [plans, setPlans] = useState<Plan[]>([]);

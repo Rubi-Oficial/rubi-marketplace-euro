@@ -30,27 +30,27 @@ export default function LandingPage() {
         <div className="relative z-10 mx-auto max-w-3xl px-4 text-center animate-fade-in">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-medium text-primary">
             <Zap className="h-3 w-3" />
-            Plataforma Premium para Profissionais
+            Premium Platform for Independent Professionals
           </div>
 
           <h1 className="font-display text-4xl font-bold leading-tight text-foreground sm:text-5xl md:text-7xl">
-            Conecte-se com{" "}
-            <span className="text-primary">excelência</span>
+            Connect with{" "}
+            <span className="text-primary">excellence</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground text-pretty">
-            A plataforma de referência para profissionais independentes.
-            Segurança, privacidade e visibilidade premium.
+            The reference platform for independent professionals across Europe.
+            Security, privacy and premium visibility.
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Button variant="premium" size="lg" asChild>
-              <Link to="/cadastro?role=professional">Anunciar Agora</Link>
+              <Link to="/cadastro?role=professional">Advertise Now</Link>
             </Button>
             <Button variant="outline-gold" size="lg" asChild>
               <Link to="/buscar">
                 <Search className="mr-2 h-4 w-4" />
-                Explorar Perfis
+                Explore Profiles
               </Link>
             </Button>
           </div>
@@ -64,13 +64,13 @@ export default function LandingPage() {
             <div className="flex items-center justify-between mb-10">
               <div>
                 <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
-                  Perfis em Destaque
+                  Featured Profiles
                 </h2>
-                <p className="mt-1 text-muted-foreground">Profissionais verificadas e ativas.</p>
+                <p className="mt-1 text-muted-foreground">Verified and active professionals.</p>
               </div>
               <Button variant="ghost" asChild className="hidden sm:flex">
                 <Link to="/buscar">
-                  Ver todos <ArrowRight className="ml-1.5 h-4 w-4" />
+                  View all <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Link>
               </Button>
             </div>
@@ -83,7 +83,7 @@ export default function LandingPage() {
 
             <div className="mt-8 text-center sm:hidden">
               <Button variant="outline" asChild>
-                <Link to="/buscar">Ver todos os perfis</Link>
+                <Link to="/buscar">View all profiles</Link>
               </Button>
             </div>
           </div>
@@ -95,9 +95,9 @@ export default function LandingPage() {
         <section className="border-t border-border py-20">
           <div className="container mx-auto px-4">
             <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
-              Buscar por Cidade
+              Browse by City
             </h2>
-            <p className="mt-1 mb-8 text-muted-foreground">Encontre profissionais perto de você.</p>
+            <p className="mt-1 mb-8 text-muted-foreground">Find professionals near you.</p>
 
             <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
               {cities.map((city) => (
@@ -120,9 +120,9 @@ export default function LandingPage() {
         <section className="border-t border-border py-20">
           <div className="container mx-auto px-4">
             <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
-              Buscar por Categoria
+              Browse by Category
             </h2>
-            <p className="mt-1 mb-8 text-muted-foreground">Encontre o perfil ideal.</p>
+            <p className="mt-1 mb-8 text-muted-foreground">Find the perfect profile.</p>
 
             <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
               {categories.map((cat) => (
@@ -143,28 +143,28 @@ export default function LandingPage() {
       <section className="border-t border-border py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-center font-display text-2xl font-bold text-foreground sm:text-3xl">
-            Por que escolher a AURA?
+            Why Choose AURA?
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-center text-muted-foreground">
-            Construída para profissionais que exigem o melhor.
+            Built for professionals who demand the best.
           </p>
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
                 icon: <Shield className="h-6 w-6" />,
-                title: "Verificação Real",
-                desc: "Cada perfil passa por moderação humana. Sem perfis falsos, sem surpresas.",
+                title: "Real Verification",
+                desc: "Every profile goes through human moderation. No fake profiles, no surprises.",
               },
               {
                 icon: <Star className="h-6 w-6" />,
-                title: "Visibilidade Premium",
-                desc: "Anúncios otimizados com fotos de alta qualidade e posicionamento prioritário.",
+                title: "Premium Visibility",
+                desc: "Optimised listings with high-quality photos and priority placement.",
               },
               {
                 icon: <Users className="h-6 w-6" />,
-                title: "Programa de Afiliados",
-                desc: "Indique profissionais e ganhe comissões recorrentes sobre suas assinaturas.",
+                title: "Affiliate Programme",
+                desc: "Refer professionals and earn recurring commissions on their subscriptions.",
               },
             ].map((f) => (
               <div
@@ -187,18 +187,18 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl text-center rounded-lg border border-primary/20 bg-primary/5 p-10">
             <h2 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
-              É profissional?
+              Are You a Professional?
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Crie seu perfil verificado e alcance milhares de clientes com a AURA.
-              Planos a partir de R$ 99,90/mês.
+              Create your verified profile and reach thousands of clients with AURA.
+              Plans starting from €49/month.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button variant="premium" size="lg" asChild>
-                <Link to="/cadastro?role=professional">Começar Agora</Link>
+                <Link to="/cadastro?role=professional">Get Started</Link>
               </Button>
               <Button variant="ghost" size="lg" asChild>
-                <Link to="/planos">Ver Planos</Link>
+                <Link to="/planos">View Plans</Link>
               </Button>
             </div>
           </div>
