@@ -52,7 +52,7 @@ export default function AdminPlans() {
     setForm({
       name: plan.name,
       price: plan.price.toString(),
-      billing_period: plan.billing_period,
+      billing_period: plan.billing_period as "monthly" | "quarterly",
       features: Array.isArray(plan.features_json) ? plan.features_json.join("\n") : "",
     });
   };
