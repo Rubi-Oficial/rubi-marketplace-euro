@@ -138,7 +138,9 @@ export default function AdminUsers() {
                 const statusInfo = STATUS_MAP[p.status] || STATUS_MAP.draft;
                 return (
                   <tr key={p.id} className="border-b border-border last:border-0">
-                    <td className="px-4 py-3 text-foreground">{p.display_name || "—"}</td>
+                     <td className="px-4 py-3 text-foreground">
+                       <a href={`/admin/perfis/${p.id}`} className="hover:text-primary hover:underline transition-colors">{p.display_name || "—"}</a>
+                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{p.city || "—"}</td>
                     <td className="px-4 py-3 text-muted-foreground">{p.category || "—"}</td>
                     <td className="px-4 py-3 text-center">
