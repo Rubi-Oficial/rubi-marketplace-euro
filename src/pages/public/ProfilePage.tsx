@@ -77,7 +77,7 @@ export default function ProfilePage() {
 
       // Record lead
       await supabase.from("leads").insert({
-        profile_id: profileData.id,
+        profile_id: eligibleData.id,
         source: "profile_view",
       });
 
