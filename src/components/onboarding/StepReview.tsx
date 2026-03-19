@@ -26,7 +26,7 @@ export default function StepReview({ form }: Props) {
       <Field label="Categoria" value={form.category} />
       <Field label="Idiomas" value={form.languages} />
       <Field label="Bio" value={form.bio} />
-      <Field label="Preço a partir de" value={form.pricing_from ? `R$ ${form.pricing_from}` : ""} />
+      <Field label="Preço a partir de" value={form.pricing_from ? `€${form.pricing_from}` : ""} />
       <Field label="WhatsApp" value={form.whatsapp} />
       <Field label="Telegram" value={form.telegram} />
     </div>

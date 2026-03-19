@@ -147,7 +147,7 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
         {sidebarContent}
       </aside>
 
-      <main className="flex-1 p-4 pt-18 md:ml-60 md:p-8 md:pt-8">
+      <main className="flex-1 p-4 pt-20 md:ml-60 md:p-8 md:pt-8">
         <Outlet />
       </main>
     </div>
