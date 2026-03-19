@@ -142,7 +142,7 @@ export default function Navbar() {
               <button
                 key={city.slug}
                 onClick={() => setActiveCity(activeCity === city.slug ? "" : city.slug)}
-                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-all shrink-0 ${
+                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-all shrink-0 inline-flex items-center ${
                   activeCity === city.slug
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent"
