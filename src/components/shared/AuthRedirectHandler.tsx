@@ -78,7 +78,7 @@ export default function AuthRedirectHandler() {
 
         // Redirect based on intended role
         const targetRole = preState.role || userRole;
-        const target = getRoleDashboard(targetRole as any);
+        const target = getRoleDashboard(targetRole);
         if (targetRole === "professional") {
           navigate("/app/onboarding", { replace: true });
         } else {
@@ -86,7 +86,7 @@ export default function AuthRedirectHandler() {
         }
       } else {
         // No pre-state — standard redirect
-        const target = getRoleDashboard(userRole as any);
+        const target = getRoleDashboard(userRole);
         navigate(target, { replace: true });
       }
     })();
