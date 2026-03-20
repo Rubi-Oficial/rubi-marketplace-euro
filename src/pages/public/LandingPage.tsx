@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, SlidersHorizontal, MapPin } from "lucide-react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
