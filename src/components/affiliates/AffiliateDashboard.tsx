@@ -18,8 +18,7 @@ import { Button } from "@/components/ui/button";
 
 interface ReferredUser {
   id: string;
-  full_name: string | null;
-  email: string;
+  display_name: string | null;
   role: string;
   created_at: string;
 }
@@ -61,18 +60,17 @@ function useAffiliateData(): AffiliateStats & { loading: boolean } {
     if (!user) return;
 
     const load = async () => {
-      const [userRes, clicksRes, referredRes, conversionsRes] = await Promise.all([
+      const [userRes, clicksRes, referralsRes, conversionsRes] = await Promise.all([
         supabase.from("users").select("referral_code").eq("id", user.id).single(),
         supabase.from("referral_clicks").select("id", { count: "exact", head: true }).eq("referrer_user_id", user.id),
-        supabase.from("users").select("id, full_name, email, role, created_at").eq("referred_by_user_id", user.id).order("created_at", { ascending: false }),
+        supabase.rpc("get_my_referrals"),
         supabase.from("referral_conversions").select("*").eq("referrer_user_id", user.id).order("created_at", { ascending: false }),
       ]);
 
       const conversions = conversionsRes.data || [];
-      const referredUsers: ReferredUser[] = (referredRes.data || []).map((u: any) => ({
+      const referredUsers: ReferredUser[] = (referralsRes.data || []).map((u: any) => ({
         id: u.id,
-        full_name: u.full_name,
-        email: u.email,
+        display_name: u.display_name,
         role: u.role,
         created_at: u.created_at,
       }));
@@ -268,7 +266,7 @@ export default function AffiliateDashboard() {
                 {data.referredUsers.map((ru) => (
                   <tr key={ru.id} className="border-b border-border last:border-0">
                     <td className="px-4 py-3">
-                      <p className="text-foreground font-medium">{ru.full_name || "Utilizador"}</p>
+                      <p className="text-foreground font-medium">{ru.display_name || "Utilizador"}</p>
                       <p className="text-xs text-muted-foreground">{ru.role === "professional" ? "Profissional" : "Cliente"}</p>
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground capitalize">{roleLabel[ru.role] || ru.role}</td>
