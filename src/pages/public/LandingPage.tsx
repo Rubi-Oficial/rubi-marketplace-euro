@@ -8,6 +8,7 @@ import { VideoSection } from "@/components/public/VideoSection";
 import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
+import { ServiceSlugBar } from "@/components/public/ServiceSlugBar";
 import { useLocations } from "@/hooks/useLocations";
 import { useGeoCountry } from "@/hooks/useGeoCountry";
 
@@ -166,6 +167,13 @@ export default function LandingPage() {
             </div>
           )}
 
+          {/* Service slug bar */}
+          <ServiceSlugBar
+            services={services}
+            activeService={serviceFilter}
+            onServiceClick={setServiceFilter}
+          />
+
           {/* Active filter chips */}
           <ActiveFilterChips
             filters={{ country: countryFilter, city: cityFilter, category: categoryFilter, service: serviceFilter }}
@@ -197,7 +205,7 @@ export default function LandingPage() {
                     <div className="flex h-full items-center justify-center text-muted-foreground/20">
                       <div className="h-14 w-14 rounded-full bg-muted-foreground/10" />
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/10 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
                       <div className="h-4 w-24 rounded bg-muted-foreground/10 mb-1" />
                       <div className="h-3 w-16 rounded bg-muted-foreground/8" />

@@ -8,6 +8,7 @@ import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile
 import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
+import { ServiceSlugBar } from "@/components/public/ServiceSlugBar";
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -157,6 +158,13 @@ export default function SearchPage() {
           </button>
         )}
       </div>
+
+      {/* Service slug bar */}
+      <ServiceSlugBar
+        services={services}
+        activeService={serviceFilter}
+        onServiceClick={(slug) => updateParam("service", slug)}
+      />
 
       {/* Active filter chips */}
       <ActiveFilterChips
