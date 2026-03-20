@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
 import { ServiceSlugBar } from "@/components/public/ServiceSlugBar";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { CATEGORIES } from "@/components/shared/CategoryBar";
 
 export default function CategoryPage() {
   const { slug } = useParams();
@@ -12,7 +13,8 @@ export default function CategoryPage() {
   const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [serviceFilter, setServiceFilter] = useState("");
 
-  const categoryName = slug?.replace(/-/g, " ") || "";
+  const categoryMeta = CATEGORIES.find((c) => c.slug === slug);
+  const categoryName = categoryMeta?.label || slug?.replace(/-/g, " ") || "";
 
   useEffect(() => {
     fetchServices().then(setServices);
