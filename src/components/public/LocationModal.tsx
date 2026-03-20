@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { MapPin, ChevronRight, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MapPin, ChevronRight, ChevronDown, Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,120 +17,146 @@ interface LocationModalProps {
   suggestedCountry?: string;
 }
 
-function LocationBody({ selectedCountry, selectedCity, onApply, countries, getCitiesByCountry, onClose, suggestedCountry }: Omit<LocationModalProps, "open" | "onOpenChange"> & { onClose: () => void }) {
-  const [country, setCountry] = useState(selectedCountry);
-  const [city, setCity] = useState(selectedCity);
+function LocationBody({
+  selectedCountry,
+  selectedCity,
+  onApply,
+  countries,
+  getCitiesByCountry,
+  onClose,
+  suggestedCountry,
+}: Omit<LocationModalProps, "open" | "onOpenChange"> & { onClose: () => void }) {
+  const [expandedCountry, setExpandedCountry] = useState(selectedCountry);
 
-  const cities = country ? getCitiesByCountry(country) : [];
-
-  const handleCountrySelect = (slug: string) => {
-    if (country === slug) {
-      setCountry("");
-      setCity("");
+  const handleCountryClick = (slug: string) => {
+    if (expandedCountry === slug) {
+      // Collapse — also clear filters for this country
+      setExpandedCountry("");
+      onApply("", "");
+      onClose();
     } else {
-      setCountry(slug);
-      setCity("");
+      setExpandedCountry(slug);
     }
   };
 
-  const handleApply = () => {
-    onApply(country, city);
+  const handleCityClick = (countrySlug: string, citySlug: string) => {
+    onApply(countrySlug, citySlug);
     onClose();
   };
 
-  const handleClear = () => {
-    setCountry("");
-    setCity("");
+  const handleCountryOnly = (countrySlug: string) => {
+    // "All cities" option — apply country filter without city
+    onApply(countrySlug, "");
+    onClose();
   };
 
   return (
     <div className="flex flex-col h-full">
       <ScrollArea className="flex-1 -mx-1 px-1">
-        {/* Countries */}
-        <div className="mb-4">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 px-1">Country</p>
-          <div className="space-y-0.5">
-            {/* Show suggested country first with label */}
-            {suggestedCountry && (() => {
-              const suggested = countries.find((c) => c.slug === suggestedCountry);
-              if (!suggested || country === suggested.slug) return null;
-              return (
-                <div key="suggested" className="mb-2">
-                  <p className="text-[10px] text-muted-foreground/60 px-3 mb-1">Based on your location</p>
-                  <button
-                    onClick={() => handleCountrySelect(suggested.slug)}
-                    className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors text-foreground hover:bg-accent border border-dashed border-primary/20"
-                  >
-                    <span className="flex items-center gap-2.5">
-                      <MapPin className="h-3.5 w-3.5 text-primary" />
-                      {suggested.name}
-                    </span>
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />
-                  </button>
-                </div>
-              );
-            })()}
-            {countries.map((c) => (
-              <button
-                key={c.slug}
-                onClick={() => handleCountrySelect(c.slug)}
-                className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                  country === c.slug
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-foreground hover:bg-accent"
-                }`}
-              >
-                <span className="flex items-center gap-2.5">
-                  <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                  {c.name}
-                </span>
-                {country === c.slug ? (
-                  <Check className="h-3.5 w-3.5 text-primary" />
-                ) : (
-                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Cities */}
-        {cities.length > 0 && (
-          <div>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 px-1">City</p>
-            <div className="space-y-0.5">
-              {cities.map((c) => (
+        <div className="space-y-0.5">
+          {/* Suggested country hint */}
+          {suggestedCountry && !expandedCountry && (() => {
+            const suggested = countries.find((c) => c.slug === suggestedCountry);
+            if (!suggested) return null;
+            return (
+              <div className="mb-2">
+                <p className="text-[10px] text-muted-foreground/60 px-3 mb-1">Based on your location</p>
                 <button
-                  key={c.slug}
-                  onClick={() => setCity(city === c.slug ? "" : c.slug)}
+                  onClick={() => handleCountryClick(suggested.slug)}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors text-foreground hover:bg-accent border border-dashed border-primary/20"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <MapPin className="h-3.5 w-3.5 text-primary" />
+                    {suggested.name}
+                  </span>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />
+                </button>
+              </div>
+            );
+          })()}
+
+          {countries.map((c) => {
+            const isExpanded = expandedCountry === c.slug;
+            const cities = isExpanded ? getCitiesByCountry(c.slug) : [];
+
+            return (
+              <div key={c.slug}>
+                {/* Country row */}
+                <button
+                  onClick={() => handleCountryClick(c.slug)}
                   className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                    city === c.slug
+                    isExpanded
                       ? "bg-primary/10 text-primary font-medium"
                       : "text-foreground hover:bg-accent"
                   }`}
                 >
-                  <span className="pl-6">{c.name}</span>
-                  {city === c.slug && <Check className="h-3.5 w-3.5 text-primary" />}
+                  <span className="flex items-center gap-2.5">
+                    <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                    {c.name}
+                  </span>
+                  {isExpanded ? (
+                    <ChevronDown className="h-3.5 w-3.5 text-primary" />
+                  ) : (
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />
+                  )}
                 </button>
-              ))}
-            </div>
-          </div>
-        )}
+
+                {/* Cities — rendered inline right below the country */}
+                {isExpanded && cities.length > 0 && (
+                  <div className="ml-4 border-l border-border/30 pl-2 my-1 space-y-0.5">
+                    {/* "All cities" option */}
+                    <button
+                      onClick={() => handleCountryOnly(c.slug)}
+                      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
+                        selectedCountry === c.slug && !selectedCity
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                      }`}
+                    >
+                      <span>All cities</span>
+                      {selectedCountry === c.slug && !selectedCity && (
+                        <Check className="h-3.5 w-3.5 text-primary" />
+                      )}
+                    </button>
+
+                    {cities.map((city) => (
+                      <button
+                        key={city.slug}
+                        onClick={() => handleCityClick(c.slug, city.slug)}
+                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
+                          selectedCity === city.slug
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "text-foreground hover:bg-accent"
+                        }`}
+                      >
+                        <span>{city.name}</span>
+                        {selectedCity === city.slug && (
+                          <Check className="h-3.5 w-3.5 text-primary" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </ScrollArea>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between gap-3 border-t border-border/20 pt-4 mt-2">
-        {(country || city) ? (
-          <button onClick={handleClear} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            Clear
+      {/* Clear button */}
+      {(selectedCountry || selectedCity) && (
+        <div className="border-t border-border/20 pt-3 mt-2">
+          <button
+            onClick={() => {
+              onApply("", "");
+              onClose();
+            }}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Clear location filter
           </button>
-        ) : (
-          <span />
-        )}
-        <Button variant="premium" size="sm" className="px-6" onClick={handleApply}>
-          Apply
-        </Button>
-      </div>
+        </div>
+      )}
     </div>
   );
 }
