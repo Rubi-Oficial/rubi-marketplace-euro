@@ -1,29 +1,79 @@
 
 
-## Findings
+## Plan: Card Contrast + Clickable Service/Category Slugs Across Pages
 
-The database has **3 eligible profiles** (approved + active subscription): Sofia Laurent (Amsterdam), Isabella Reyes (Barcelona), Nina Dubois (Den Haag). Each has 3 approved images and 1 approved video. There's also "Diego teste" but it's in `draft` status so it doesn't appear publicly.
+### What changes
 
-To reach 6 cards, I need to insert 3 more profiles. Since the `eligible_profiles` view requires `status = 'approved'` AND an active subscription, I'll attach new profiles to the two existing users who already have active subscriptions.
+Inspired by the reference site (kinky.nl), two improvements:
 
-## Plan
+**1. ProfileCard contrast improvements**
+- Stronger gradient overlay at the bottom so text is always legible over any image
+- Add a subtle dark scrim behind the name/city text area
+- Category badge shown on the card (small, positioned top-right)
+- Slightly bolder text styling for name
 
-**1. Insert 3 new profiles** (via insert tool)
-Using the two existing user_ids that have active subscriptions:
-- **Camille Moreau** — Paris, Elite, age 25, user_id `95712848...`
-- **Elena Rossi** — Milan, Premium, age 26, user_id `6809d822...`  
-- **Lucia Fernandez** — Madrid, Companion, age 24, user_id `95712848...`
+**2. Clickable service/category slug chips — distributed across all public pages**
 
-All with `status: approved`, unique slugs, city_slugs matching existing cities, bio, whatsapp, languages.
+Like the reference site's horizontal scrollable category bar ("Women", "Escort inbound", "Shemales", etc.), add a reusable `ServiceSlugBar` component that renders all active services as clickable pills. This bar appears on:
+- **LandingPage** — above the profile grid, between filter buttons and cards
+- **SearchPage** — between filter buttons and results
+- **CityPage** — already has service chips, keep as-is
+- **CategoryPage** — add service chips for cross-filtering
+- **ProfilePage** — below the "Back to explore" link, showing the profile's category + city as clickable links (navigate to `/categoria/{slug}` and `/cidade/{city_slug}`)
 
-**2. Insert profile_images for each** (reusing existing storage paths from other profiles as placeholder images — same bucket, valid URLs)
-- 3 images per profile (9 records total), `moderation_status: approved`
+### Files to change
 
-**3. Insert profile_videos for each** (reusing existing video paths)
-- 1 video per profile (3 records total), `moderation_status: approved`
+**1. Create `src/components/public/ServiceSlugBar.tsx`**
+- Reusable horizontal scrollable bar of service chips
+- Props: `services`, `activeService`, `onServiceClick`
+- Styled as rounded pills, scrollable on mobile, with active state highlight (primary color)
 
-**4. No code changes needed** — the LandingPage already fetches from `eligible_profiles` and displays up to 20 cards. With 6 eligible profiles, the grid will populate automatically.
+**2. Edit `src/components/public/ProfileCard.tsx`**
+- Strengthen gradient: `from-black/80 via-black/30` instead of `from-background/90 via-background/10`
+- Add text shadow to name: `drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]`
+- Show category as small chip top-right (e.g., "Elite") with semi-transparent dark background
+- Make city text white with slight text shadow for contrast
 
-### Result
-6 profile cards with images visible on the landing page, each with a working profile detail page (`/perfil/{slug}`) showing gallery, bio, services, and contact info.
+**3. Edit `src/pages/public/LandingPage.tsx`**
+- Import and render `ServiceSlugBar` between filter buttons and profile grid
+- Clicking a service chip sets `serviceFilter` state (already wired)
+
+**4. Edit `src/pages/public/SearchPage.tsx`**
+- Import and render `ServiceSlugBar` between filter buttons and results
+- Clicking updates the `service` search param
+
+**5. Edit `src/pages/public/CategoryPage.tsx`**
+- Add `ServiceSlugBar` for cross-filtering within a category
+- Fetch services on mount, filter profiles by selected service
+
+**6. Edit `src/pages/public/ProfilePage.tsx`**
+- Below "Back to explore", add clickable breadcrumb-style chips:
+  - Category → links to `/categoria/{category-slug}`
+  - City → links to `/cidade/{city_slug}`
+  - Each service → links to `/buscar?service={slug}`
+
+### Technical Details
+
+**ServiceSlugBar component:**
+```text
+┌──────────────────────────────────────────────────────┐
+│ [All] [Escort] [Massage] [Companion] [BDSM] [...]  │  ← horizontal scroll
+└──────────────────────────────────────────────────────┘
+```
+- `overflow-x-auto scrollbar-hide` for mobile scroll
+- Active pill: `bg-primary text-primary-foreground`
+- Inactive pill: `bg-card border border-border/40 text-muted-foreground hover:border-primary/30`
+
+**ProfileCard contrast:**
+```text
+┌─────────────────┐
+│ ★Featured  Elite│  ← gold badge left, category right
+│                 │
+│   [image]       │
+│                 │
+│▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│  ← stronger dark gradient
+│ Sofia Laurent 25│  ← white text + text shadow
+│ 📍 Amsterdam   │
+└─────────────────┘
+```
 
