@@ -16,6 +16,7 @@ export interface EligibleProfile {
   is_featured: boolean;
   image_urls: string[];
   bio: string | null;
+  whatsapp: string | null;
 }
 
 export async function fetchEligibleProfiles(filters?: {
