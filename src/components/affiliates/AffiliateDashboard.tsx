@@ -18,8 +18,7 @@ import { Button } from "@/components/ui/button";
 
 interface ReferredUser {
   id: string;
-  full_name: string | null;
-  email: string;
+  display_name: string | null;
   role: string;
   created_at: string;
 }
