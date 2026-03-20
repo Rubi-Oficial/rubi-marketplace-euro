@@ -268,8 +268,8 @@ export default function AffiliateDashboard() {
                 {data.referredUsers.map((ru) => (
                   <tr key={ru.id} className="border-b border-border last:border-0">
                     <td className="px-4 py-3">
-                      <p className="text-foreground font-medium">{ru.full_name || "—"}</p>
-                      <p className="text-xs text-muted-foreground">{ru.email}</p>
+                      <p className="text-foreground font-medium">{ru.full_name || "Utilizador"}</p>
+                      <p className="text-xs text-muted-foreground">{ru.role === "professional" ? "Profissional" : "Cliente"}</p>
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground capitalize">{roleLabel[ru.role] || ru.role}</td>
                     <td className="px-4 py-3 tabular-nums text-muted-foreground">{new Date(ru.created_at).toLocaleDateString("pt-BR")}</td>
