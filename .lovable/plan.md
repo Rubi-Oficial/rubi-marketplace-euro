@@ -1,79 +1,84 @@
 
 
-## Plan: Card Contrast + Clickable Service/Category Slugs Across Pages
+# Plano: Traduzir 100% do site com seletor de idiomas
 
-### What changes
+## Resumo
 
-Inspired by the reference site (kinky.nl), two improvements:
+O seletor de idiomas já funciona nas páginas públicas principais, mas **~20 componentes e páginas** ainda contêm textos fixos em português ou inglês que não respondem à troca de idioma. Este plano corrige isso adicionando ~200 novas chaves de tradução nos 5 idiomas e substituindo todos os textos hardcoded por chamadas `t()`.
 
-**1. ProfileCard contrast improvements**
-- Stronger gradient overlay at the bottom so text is always legible over any image
-- Add a subtle dark scrim behind the name/city text area
-- Category badge shown on the card (small, positioned top-right)
-- Slightly bolder text styling for name
+## Áreas com textos não traduzidos (diagnóstico)
 
-**2. Clickable service/category slug chips — distributed across all public pages**
+### Componentes públicos compartilhados
+- **FilterModal**: "Filters", "Services", "Category", "Search filters...", "Clear all", "Show N results"
+- **LocationModal**: "Location", "All cities", "Based on your location", "Clear location filter"
+- **ActiveFilterChips**: "Clear all"
+- **ProfileCard**: "Featured"
+- **ProfileInfo**: "Featured", "years", "From €", "Services"
+- **VideoSection**: "Latest Videos", "Exclusive content...", "Details"
+- **ServiceSlugBar**: "Todos"
+- **CategoryBar**: "All" (hardcoded, não usa `t()`)
+- **NotFound**: todos os textos
 
-Like the reference site's horizontal scrollable category bar ("Women", "Escort inbound", "Shemales", etc.), add a reusable `ServiceSlugBar` component that renders all active services as clickable pills. This bar appears on:
-- **LandingPage** — above the profile grid, between filter buttons and cards
-- **SearchPage** — between filter buttons and results
-- **CityPage** — already has service chips, keep as-is
-- **CategoryPage** — add service chips for cross-filtering
-- **ProfilePage** — below the "Back to explore" link, showing the profile's category + city as clickable links (navigate to `/categoria/{slug}` and `/cidade/{city_slug}`)
+### Páginas de autenticação
+- **LoginPage**: "Acesse sua conta", "Email", "Senha", "Entrar", "Entrando...", "ou continue com", "Não tem conta?", "Cadastre-se", toast messages
+- **RegisterPage**: "Crie sua conta", "Nome completo", "Tipo de conta", "Cliente", "Profissional", "Criar conta", "Criando conta...", "ou continue com", "Já tem conta?", "Código de afiliado"
 
-### Files to change
+### Dashboard Layout e painéis internos
+- **DashboardLayout**: todos os labels de navegação lateral ("Painel", "Meu Perfil", "Fotos & Vídeos", etc.), labels de role ("Administrador", "Acompanhante", "Cliente"), botão "Sair"
+- **EscortSettings**: "Configurações", "Dados pessoais", "Alterar senha", "Salvar", etc.
+- **ClientSettings**: mesmos textos de settings
+- **EscortDashboard**: labels de status ("Rascunho", "Em análise"), textos de banners, estatísticas, links rápidos
+- **AdminDashboard**: "Painel Administrativo", seções de métricas, labels de sanidade
+- **AdminSettings**: "Configurações", "Histórico de Ações", formatAction labels
+- **AdminPayments**: labels de status, filtros
+- Toasts em múltiplos arquivos ("Dados atualizados!", "Erro ao salvar", etc.)
 
-**1. Create `src/components/public/ServiceSlugBar.tsx`**
-- Reusable horizontal scrollable bar of service chips
-- Props: `services`, `activeService`, `onServiceClick`
-- Styled as rounded pills, scrollable on mobile, with active state highlight (primary color)
+## Plano de implementação
 
-**2. Edit `src/components/public/ProfileCard.tsx`**
-- Strengthen gradient: `from-black/80 via-black/30` instead of `from-background/90 via-background/10`
-- Add text shadow to name: `drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]`
-- Show category as small chip top-right (e.g., "Elite") with semi-transparent dark background
-- Make city text white with slight text shadow for contrast
+### Passo 1 — Expandir `translations.ts` (~200 novas chaves)
+Adicionar chaves organizadas por seção nos 5 idiomas:
+- `filter.*` — FilterModal, ActiveFilterChips
+- `location.*` — LocationModal
+- `profile_info.*` — ProfileInfo labels
+- `video.*` — VideoSection
+- `auth.*` — LoginPage, RegisterPage (expandir as existentes)
+- `dashboard.*` — DashboardLayout nav labels
+- `settings.*` — EscortSettings, ClientSettings
+- `escort_dash.*` — EscortDashboard
+- `admin.*` — AdminDashboard, AdminSettings, AdminPayments
+- `notfound.*` — NotFound page
+- `common.*` — toasts reutilizáveis, "Featured", "years", etc.
 
-**3. Edit `src/pages/public/LandingPage.tsx`**
-- Import and render `ServiceSlugBar` between filter buttons and profile grid
-- Clicking a service chip sets `serviceFilter` state (already wired)
+### Passo 2 — Componentes públicos (6 arquivos)
+Adicionar `useLanguage` e substituir textos fixos em:
+1. `FilterModal.tsx`
+2. `LocationModal.tsx`
+3. `ActiveFilterChips.tsx`
+4. `ProfileCard.tsx` (badge "Featured")
+5. `ProfileInfo.tsx`
+6. `VideoSection.tsx`
+7. `ServiceSlugBar.tsx`
+8. `CategoryBar.tsx`
+9. `NotFound.tsx`
 
-**4. Edit `src/pages/public/SearchPage.tsx`**
-- Import and render `ServiceSlugBar` between filter buttons and results
-- Clicking updates the `service` search param
+### Passo 3 — Páginas de autenticação (2 arquivos)
+1. `LoginPage.tsx`
+2. `RegisterPage.tsx`
 
-**5. Edit `src/pages/public/CategoryPage.tsx`**
-- Add `ServiceSlugBar` for cross-filtering within a category
-- Fetch services on mount, filter profiles by selected service
+### Passo 4 — Dashboard e painéis internos (~6 arquivos)
+1. `DashboardLayout.tsx` — nav items e role labels dinâmicos
+2. `EscortSettings.tsx`
+3. `ClientSettings.tsx`
+4. `EscortDashboard.tsx`
+5. `AdminDashboard.tsx`
+6. `AdminSettings.tsx`
 
-**6. Edit `src/pages/public/ProfilePage.tsx`**
-- Below "Back to explore", add clickable breadcrumb-style chips:
-  - Category → links to `/categoria/{category-slug}`
-  - City → links to `/cidade/{city_slug}`
-  - Each service → links to `/buscar?service={slug}`
+### Regras mantidas
+- Nenhuma alteração de layout
+- Nenhuma alteração de funcionalidade
+- Apenas substituição de strings por `t("chave")`
+- Persistência de idioma via localStorage já funciona
 
-### Technical Details
-
-**ServiceSlugBar component:**
-```text
-┌──────────────────────────────────────────────────────┐
-│ [All] [Escort] [Massage] [Companion] [BDSM] [...]  │  ← horizontal scroll
-└──────────────────────────────────────────────────────┘
-```
-- `overflow-x-auto scrollbar-hide` for mobile scroll
-- Active pill: `bg-primary text-primary-foreground`
-- Inactive pill: `bg-card border border-border/40 text-muted-foreground hover:border-primary/30`
-
-**ProfileCard contrast:**
-```text
-┌─────────────────┐
-│ ★Featured  Elite│  ← gold badge left, category right
-│                 │
-│   [image]       │
-│                 │
-│▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│  ← stronger dark gradient
-│ Sofia Laurent 25│  ← white text + text shadow
-│ 📍 Amsterdam   │
-└─────────────────┘
-```
+### Resultado
+Ao trocar o idioma no seletor do navbar, **100% dos textos** visíveis no site (público + autenticado) serão traduzidos de forma consistente.
 
