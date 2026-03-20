@@ -187,4 +187,6 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
       </div>
     </div>
   );
-}
+});
+
+export default RegisterPage;
