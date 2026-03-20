@@ -77,7 +77,7 @@ export default function ClientFavorites() {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-[460px] rounded-xl" />
           ))}
@@ -97,7 +97,7 @@ export default function ClientFavorites() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {profiles.map((p) => (
             <ProfileCard key={p.id} profile={p} />
           ))}

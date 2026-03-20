@@ -179,7 +179,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
       onClick={() => navigate(`/perfil/${profile.slug}`)}
     >
       {/* Image section */}
-      <div className="relative h-[300px] sm:h-[320px] overflow-hidden bg-muted">
+      <div className="relative h-[340px] sm:h-[380px] overflow-hidden bg-muted">
         {urls.length > 0 ? (
           urls.map((url, idx) => (
             <img

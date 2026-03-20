@@ -163,7 +163,7 @@ export default function CategoryPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {profiles.map((p) => (
             <ProfileCard key={p.id} profile={p} />
           ))}
