@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Send, MapPin, Globe, Sparkles } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface ProfileInfoProps {
   profile: {
@@ -21,6 +22,8 @@ interface ProfileInfoProps {
 }
 
 export function ProfileInfo({ profile, services }: ProfileInfoProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-5 animate-fade-in" style={{ animationDelay: "0.1s" }}>
       {/* Name & Featured */}
@@ -31,12 +34,12 @@ export function ProfileInfo({ profile, services }: ProfileInfoProps) {
           </h1>
           {profile.is_featured && (
             <span className="inline-flex items-center gap-1 rounded-full gold-gradient px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-lg">
-              <Sparkles className="h-2.5 w-2.5" /> Featured
+              <Sparkles className="h-2.5 w-2.5" /> {t("common.featured")}
             </span>
           )}
         </div>
         {profile.age && (
-          <p className="mt-1 text-muted-foreground">{profile.age} years</p>
+          <p className="mt-1 text-muted-foreground">{profile.age} {t("common.years")}</p>
         )}
       </div>
 
@@ -58,7 +61,7 @@ export function ProfileInfo({ profile, services }: ProfileInfoProps) {
       {profile.pricing_from && (
         <div className="rounded-lg bg-primary/5 border border-primary/10 px-4 py-3 inline-flex items-center gap-2">
           <span className="font-display text-xl font-bold text-primary">
-            From €{Number(profile.pricing_from).toLocaleString("de-DE")}
+            {t("common.from_price", { price: Number(profile.pricing_from).toLocaleString("de-DE") })}
           </span>
         </div>
       )}
@@ -67,7 +70,7 @@ export function ProfileInfo({ profile, services }: ProfileInfoProps) {
       {services.length > 0 && (
         <div>
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
-            Services
+            {t("common.services")}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {services.map((s) => (

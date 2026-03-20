@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, Lock } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function ClientSettings() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
@@ -40,15 +42,15 @@ export default function ClientSettings() {
       .eq("id", user.id);
     setSaving(false);
     if (error) {
-      toast.error("Erro ao salvar.");
+      toast.error(t("settings.save_error"));
     } else {
-      toast.success("Dados atualizados!");
+      toast.success(t("settings.data_updated"));
     }
   };
 
   const changePassword = async () => {
     if (!newPassword || newPassword.length < 6) {
-      toast.error("A nova senha deve ter pelo menos 6 caracteres.");
+      toast.error(t("settings.password_min_new"));
       return;
     }
     setChangingPassword(true);
@@ -57,7 +59,7 @@ export default function ClientSettings() {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Senha alterada com sucesso!");
+      toast.success(t("settings.password_changed_success"));
       setCurrentPassword("");
       setNewPassword("");
     }
@@ -66,51 +68,49 @@ export default function ClientSettings() {
   return (
     <div className="animate-fade-in space-y-8 max-w-xl">
       <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">Configurações</h1>
-        <p className="mt-1 text-muted-foreground">Gerencie sua conta.</p>
+        <h1 className="font-display text-2xl font-bold text-foreground">{t("settings.title")}</h1>
+        <p className="mt-1 text-muted-foreground">{t("settings.manage")}</p>
       </div>
 
-      {/* Account info */}
       <div className="rounded-lg border border-border bg-card p-6 space-y-5">
         <div className="flex items-center gap-2 text-foreground">
           <User className="h-5 w-5 text-primary" />
-          <h2 className="font-display text-lg font-semibold">Dados pessoais</h2>
+          <h2 className="font-display text-lg font-semibold">{t("settings.personal")}</h2>
         </div>
 
         <div className="space-y-1">
-          <Label className="text-muted-foreground text-sm">E-mail</Label>
+          <Label className="text-muted-foreground text-sm">{t("settings.email")}</Label>
           <p className="text-sm text-foreground">{user?.email}</p>
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="fullName">Nome completo</Label>
+          <Label htmlFor="fullName">{t("settings.full_name")}</Label>
           <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} />
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="phone">Telefone</Label>
+          <Label htmlFor="phone">{t("settings.phone")}</Label>
           <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+55 11 99999-0000" />
         </div>
 
         <Button onClick={saveProfile} disabled={saving}>
-          {saving ? "Salvando..." : "Salvar alterações"}
+          {saving ? t("common.saving") : t("settings.save_changes")}
         </Button>
       </div>
 
-      {/* Password change */}
       <div className="rounded-lg border border-border bg-card p-6 space-y-5">
         <div className="flex items-center gap-2 text-foreground">
           <Lock className="h-5 w-5 text-primary" />
-          <h2 className="font-display text-lg font-semibold">Alterar senha</h2>
+          <h2 className="font-display text-lg font-semibold">{t("settings.change_password")}</h2>
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="newPassword">Nova senha</Label>
-          <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" />
+          <Label htmlFor="newPassword">{t("settings.new_password")}</Label>
+          <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t("settings.password_placeholder")} />
         </div>
 
         <Button variant="outline" onClick={changePassword} disabled={changingPassword}>
-          {changingPassword ? "Alterando..." : "Alterar senha"}
+          {changingPassword ? t("settings.changing") : t("settings.change_password")}
         </Button>
       </div>
     </div>

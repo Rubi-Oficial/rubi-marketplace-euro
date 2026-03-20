@@ -1,5 +1,6 @@
 import { Link, useParams, useLocation } from "react-router-dom";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const CATEGORIES = [
   { label: "Women", slug: "women" },
@@ -15,6 +16,7 @@ export { CATEGORIES };
 export default function CategoryBar() {
   const { slug } = useParams();
   const location = useLocation();
+  const { t } = useLanguage();
   const isCategory = location.pathname.startsWith("/categoria/");
   const activeSlug = isCategory ? slug : "";
   const isAllActive = !isCategory && (location.pathname === "/" || location.pathname === "/buscar");
@@ -32,7 +34,7 @@ export default function CategoryBar() {
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
-              All
+              {t("common.all")}
             </Link>
             {CATEGORIES.map((cat) => (
               <Link
