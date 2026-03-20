@@ -117,7 +117,8 @@ export default function EscortPhotos() {
       const file = files[i];
       if (!file.type.startsWith("image/")) { toast.error(`${file.name} não é uma imagem.`); continue; }
       if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) { toast.error(`${file.name} excede ${MAX_IMAGE_SIZE_MB}MB.`); continue; }
-      validFiles.push(file);
+      const compressed = await compressImage(file);
+      validFiles.push(compressed);
     }
 
     const toUpload = validFiles.slice(0, remaining);
