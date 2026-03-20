@@ -68,7 +68,7 @@ export default function LandingPage() {
       }
       setLoading(false);
     });
-  }, [searchQuery, cityFilter, categoryFilter, serviceFilter, countryFilter, filteredCities.length]);
+  }, [cityFilter, categoryFilter, serviceFilter, countryFilter, filteredCities.length]);
 
   const hasFilters = !!countryFilter || !!cityFilter || !!categoryFilter || !!serviceFilter;
   const hasLocationFilter = !!countryFilter || !!cityFilter;
