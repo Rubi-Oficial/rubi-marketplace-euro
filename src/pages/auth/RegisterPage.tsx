@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, ref) {
   const [email, setEmail] = useState("");
@@ -21,13 +22,12 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
   const referralCode = searchParams.get("ref") || getStoredReferralCode();
   const presetRole = searchParams.get("role");
   const { user, userRole, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
 
-  // Pre-select role from URL
   useEffect(() => {
     if (presetRole === "professional") setRole("professional");
   }, [presetRole]);
 
-  // Already logged in → redirect
   if (!authLoading && user && userRole) {
     return <Navigate to={getRoleDashboard(userRole)} replace />;
   }
@@ -57,7 +57,7 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
     }
 
     if (data.user) {
-      toast.success("Conta criada com sucesso!");
+      toast.success(t("auth.register_success"));
       if (role === "professional") {
         navigate("/app/onboarding", { replace: true });
       } else {
@@ -67,7 +67,6 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
   };
 
   const handleGoogleRegister = async () => {
-    // Persist role + referral before OAuth redirect
     saveOAuthPreState({ role, referral_code: referralCode || null });
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
@@ -80,47 +79,47 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
       <div className="w-full max-w-md animate-fade-in">
         <div className="mb-8 text-center">
           <Link to="/" className="font-display text-3xl font-bold text-primary">AURA</Link>
-          <p className="mt-2 text-muted-foreground">Crie sua conta</p>
+          <p className="mt-2 text-muted-foreground">{t("auth.create_account")}</p>
         </div>
 
         <div className="rounded-lg border border-border bg-card p-6">
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Nome completo</Label>
+              <Label htmlFor="fullName">{t("auth.full_name")}</Label>
               <Input
                 id="fullName"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Seu nome"
+                placeholder={t("auth.your_name")}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu@email.com"
+                placeholder={t("auth.email_placeholder")}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
+                placeholder={t("auth.password_placeholder")}
                 minLength={6}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Tipo de conta</Label>
+              <Label>{t("auth.account_type")}</Label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -131,7 +130,7 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
                       : "border-border text-muted-foreground hover:border-primary/40"
                   }`}
                 >
-                  Cliente
+                  {t("auth.client")}
                 </button>
                 <button
                   type="button"
@@ -142,19 +141,19 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
                       : "border-border text-muted-foreground hover:border-primary/40"
                   }`}
                 >
-                  Profissional
+                  {t("auth.professional")}
                 </button>
               </div>
             </div>
 
             {referralCode && (
               <p className="text-xs text-primary">
-                Código de afiliado: {referralCode}
+                {t("auth.referral_code")}: {referralCode}
               </p>
             )}
 
             <Button type="submit" variant="premium" className="w-full" disabled={loading}>
-              {loading ? "Criando conta..." : "Criar conta"}
+              {loading ? t("auth.creating") : t("auth.create")}
             </Button>
           </form>
 
@@ -163,7 +162,7 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
               <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-card px-2 text-muted-foreground">ou continue com</span>
+              <span className="bg-card px-2 text-muted-foreground">{t("auth.or_continue")}</span>
             </div>
           </div>
 
@@ -178,9 +177,9 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
           </Button>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Já tem conta?{" "}
+            {t("auth.has_account")}{" "}
             <Link to="/login" className="text-primary hover:underline">
-              Entrar
+              {t("auth.sign_in")}
             </Link>
           </p>
         </div>

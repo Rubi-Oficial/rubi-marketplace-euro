@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { MapPin, Play } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useState, useRef } from "react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export interface ProfileVideo {
   id: string;
@@ -27,7 +28,6 @@ export async function fetchProfileVideos(filters?: {
   city_slug?: string;
   service_slug?: string;
 }): Promise<ProfileVideo[]> {
-  // Get eligible profiles (with optional filters)
   let profileQuery = supabase
     .from("eligible_profiles")
     .select("id, display_name, city, city_slug, slug");
@@ -39,7 +39,6 @@ export async function fetchProfileVideos(filters?: {
 
   let profileIds = profiles.map((p: any) => p.id).filter(Boolean) as string[];
 
-  // Filter by service if needed
   if (filters?.service_slug && profileIds.length > 0) {
     const { data: svcData } = await supabase
       .from("services").select("id").eq("slug", filters.service_slug).single();
@@ -56,7 +55,6 @@ export async function fetchProfileVideos(filters?: {
 
   if (profileIds.length === 0) return [];
 
-  // Get approved videos
   const { data: videos } = await supabase
     .from("profile_videos")
     .select("id, profile_id, storage_path, thumbnail_path, duration_seconds")
@@ -87,6 +85,7 @@ export async function fetchProfileVideos(filters?: {
 const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }, _ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const { t } = useLanguage();
 
   const togglePlay = () => {
     if (!videoRef.current) return;
@@ -100,7 +99,6 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm transition-all hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5">
-      {/* Video container */}
       <div className="relative aspect-[3/4] w-full cursor-pointer overflow-hidden bg-muted" onClick={togglePlay}>
         <video
           ref={videoRef}
@@ -114,7 +112,6 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
         />
-        {/* Play overlay */}
         {!isPlaying && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity group-hover:bg-black/10">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/90 text-primary-foreground shadow-lg backdrop-blur-sm">
@@ -122,7 +119,6 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
             </div>
           </div>
         )}
-        {/* Duration badge */}
         {video.duration_seconds > 0 && (
           <span className="absolute bottom-2 right-2 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
             {formatDuration(video.duration_seconds)}
@@ -130,7 +126,6 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
         )}
       </div>
 
-      {/* Info bar */}
       <div className="flex items-center justify-between px-3 py-2.5">
         <div className="min-w-0">
           <Link
@@ -150,7 +145,7 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
           to={video.slug ? `/perfil/${video.slug}` : "#"}
           className="shrink-0 rounded-md border border-border/40 px-3 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
         >
-          Details
+          {t("common.details")}
         </Link>
       </div>
     </div>
@@ -161,6 +156,7 @@ VideoCard.displayName = "VideoCard";
 export function VideoSection({ filters }: { filters: { activeCity: string; activeService: string } }) {
   const [videos, setVideos] = useState<ProfileVideo[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     setLoading(true);
@@ -173,7 +169,6 @@ export function VideoSection({ filters }: { filters: { activeCity: string; activ
     });
   }, [filters.activeCity, filters.activeService]);
 
-  // Don't render the section if no videos and not loading
   if (!loading && videos.length === 0) return null;
 
   return (
@@ -181,10 +176,10 @@ export function VideoSection({ filters }: { filters: { activeCity: string; activ
       <div className="container mx-auto px-4">
         <div className="mb-6 text-center">
           <h2 className="font-display text-lg font-semibold text-foreground">
-            Latest Videos
+            {t("video.latest")}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Exclusive content from verified profiles.
+            {t("video.exclusive")}
           </p>
         </div>
 

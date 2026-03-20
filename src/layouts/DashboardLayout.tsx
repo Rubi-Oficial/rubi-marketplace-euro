@@ -1,5 +1,6 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
@@ -21,7 +22,7 @@ import {
   Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 interface NavItem {
   label: string;
@@ -29,34 +30,38 @@ interface NavItem {
   icon: React.ReactNode;
 }
 
-const clientNav: NavItem[] = [
-  { label: "Painel", path: "/cliente", icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: "Afiliados", path: "/cliente/afiliados", icon: <Link2 className="h-4 w-4" /> },
-  { label: "Configurações", path: "/cliente/configuracoes", icon: <Settings className="h-4 w-4" /> },
-];
+function useNavItems(role: "client" | "escort" | "admin") {
+  const { t } = useLanguage();
 
-const escortNav: NavItem[] = [
-  { label: "Painel", path: "/app", icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: "Meu Perfil", path: "/app/perfil", icon: <FileText className="h-4 w-4" /> },
-  { label: "Fotos & Vídeos", path: "/app/fotos", icon: <Image className="h-4 w-4" /> },
-  { label: "Pré-visualizar", path: "/app/preview", icon: <Eye className="h-4 w-4" /> },
-  { label: "Plano", path: "/app/plano", icon: <CreditCard className="h-4 w-4" /> },
-  { label: "Métricas", path: "/app/metricas", icon: <LineChart className="h-4 w-4" /> },
-  { label: "Afiliados", path: "/app/afiliados", icon: <Link2 className="h-4 w-4" /> },
-  { label: "Configurações", path: "/app/configuracoes", icon: <Settings className="h-4 w-4" /> },
-];
-
-const adminNav: NavItem[] = [
-  { label: "Painel", path: "/admin", icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: "Perfis", path: "/admin/perfis", icon: <Users className="h-4 w-4" /> },
-  { label: "Pendentes", path: "/admin/perfis/pendentes", icon: <Shield className="h-4 w-4" /> },
-  { label: "Mensagens", path: "/admin/mensagens", icon: <Mail className="h-4 w-4" /> },
-  { label: "Planos", path: "/admin/planos", icon: <ClipboardList className="h-4 w-4" /> },
-  { label: "Pagamentos", path: "/admin/pagamentos", icon: <Wallet className="h-4 w-4" /> },
-  { label: "Afiliados", path: "/admin/afiliados", icon: <Link2 className="h-4 w-4" /> },
-  { label: "Relatórios", path: "/admin/relatorios", icon: <BarChart3 className="h-4 w-4" /> },
-  { label: "Configurações", path: "/admin/configuracoes", icon: <Settings className="h-4 w-4" /> },
-];
+  return useMemo(() => {
+    if (role === "client") return [
+      { label: t("dash.panel"), path: "/cliente", icon: <LayoutDashboard className="h-4 w-4" /> },
+      { label: t("dash.affiliates"), path: "/cliente/afiliados", icon: <Link2 className="h-4 w-4" /> },
+      { label: t("dash.settings"), path: "/cliente/configuracoes", icon: <Settings className="h-4 w-4" /> },
+    ];
+    if (role === "escort") return [
+      { label: t("dash.panel"), path: "/app", icon: <LayoutDashboard className="h-4 w-4" /> },
+      { label: t("dash.my_profile"), path: "/app/perfil", icon: <FileText className="h-4 w-4" /> },
+      { label: t("dash.photos_videos"), path: "/app/fotos", icon: <Image className="h-4 w-4" /> },
+      { label: t("dash.preview"), path: "/app/preview", icon: <Eye className="h-4 w-4" /> },
+      { label: t("dash.plan"), path: "/app/plano", icon: <CreditCard className="h-4 w-4" /> },
+      { label: t("dash.metrics"), path: "/app/metricas", icon: <LineChart className="h-4 w-4" /> },
+      { label: t("dash.affiliates"), path: "/app/afiliados", icon: <Link2 className="h-4 w-4" /> },
+      { label: t("dash.settings"), path: "/app/configuracoes", icon: <Settings className="h-4 w-4" /> },
+    ];
+    return [
+      { label: t("dash.panel"), path: "/admin", icon: <LayoutDashboard className="h-4 w-4" /> },
+      { label: t("dash.profiles"), path: "/admin/perfis", icon: <Users className="h-4 w-4" /> },
+      { label: t("dash.pending"), path: "/admin/perfis/pendentes", icon: <Shield className="h-4 w-4" /> },
+      { label: t("dash.messages"), path: "/admin/mensagens", icon: <Mail className="h-4 w-4" /> },
+      { label: t("dash.plans"), path: "/admin/planos", icon: <ClipboardList className="h-4 w-4" /> },
+      { label: t("dash.payments"), path: "/admin/pagamentos", icon: <Wallet className="h-4 w-4" /> },
+      { label: t("dash.affiliates"), path: "/admin/afiliados", icon: <Link2 className="h-4 w-4" /> },
+      { label: t("dash.reports"), path: "/admin/relatorios", icon: <BarChart3 className="h-4 w-4" /> },
+      { label: t("dash.settings"), path: "/admin/configuracoes", icon: <Settings className="h-4 w-4" /> },
+    ];
+  }, [role, t]);
+}
 
 function SidebarNav({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => void }) {
   const location = useLocation();
@@ -89,9 +94,10 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ role }: DashboardLayoutProps) {
   const { signOut, user } = useAuth();
+  const { t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const navItems = role === "admin" ? adminNav : role === "escort" ? escortNav : clientNav;
-  const roleLabel = role === "admin" ? "Administrador" : role === "escort" ? "Acompanhante" : "Cliente";
+  const navItems = useNavItems(role);
+  const roleLabel = role === "admin" ? t("dash.role_admin") : role === "escort" ? t("dash.role_escort") : t("dash.role_client");
 
   const sidebarContent = (
     <>
@@ -120,7 +126,7 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
         </div>
         <Button variant="ghost" size="sm" className="w-full justify-start" onClick={signOut}>
           <LogOut className="mr-2 h-4 w-4" />
-          Sair
+          {t("dash.sign_out")}
         </Button>
       </div>
     </>
@@ -128,7 +134,6 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Mobile header */}
       <div className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-border bg-card px-4 md:hidden">
         <Link to="/" className="font-display text-lg font-bold text-primary">AURA</Link>
         <button onClick={() => setSidebarOpen(true)} className="text-foreground">
@@ -136,7 +141,6 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
         </button>
       </div>
 
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
@@ -146,7 +150,6 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
         </div>
       )}
 
-      {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-card md:flex">
         {sidebarContent}
       </aside>

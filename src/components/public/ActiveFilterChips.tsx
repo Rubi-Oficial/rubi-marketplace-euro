@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface ActiveFilterChipsProps {
   filters: {
@@ -12,11 +13,11 @@ interface ActiveFilterChipsProps {
   serviceName?: string;
   onRemove: (key: string) => void;
   onClearAll: () => void;
-  /** When true, renders chips inline without wrapper margins (for embedding in flex rows) */
   inline?: boolean;
 }
 
 export function ActiveFilterChips({ filters, countryName, cityName, serviceName, onRemove, onClearAll, inline }: ActiveFilterChipsProps) {
+  const { t } = useLanguage();
   const chips: { key: string; label: string }[] = [];
 
   if (filters.country && countryName) chips.push({ key: "country", label: countryName });
@@ -50,7 +51,7 @@ export function ActiveFilterChips({ filters, countryName, cityName, serviceName,
       {chipElements}
       {chips.length > 1 && (
         <button onClick={onClearAll} className="text-[11px] text-muted-foreground hover:text-foreground ml-1 transition-colors">
-          Clear all
+          {t("chips.clear_all")}
         </button>
       )}
     </div>

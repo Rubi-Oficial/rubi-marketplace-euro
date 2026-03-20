@@ -1,3 +1,5 @@
+import { useLanguage } from "@/i18n/LanguageContext";
+
 interface ServiceSlugBarProps {
   services: { id: string; name: string; slug: string }[];
   activeService: string;
@@ -5,6 +7,8 @@ interface ServiceSlugBarProps {
 }
 
 export function ServiceSlugBar({ services, activeService, onServiceClick }: ServiceSlugBarProps) {
+  const { t } = useLanguage();
+
   if (services.length === 0) return null;
 
   return (
@@ -17,7 +21,7 @@ export function ServiceSlugBar({ services, activeService, onServiceClick }: Serv
             : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
         }`}
       >
-        Todos
+        {t("common.all")}
       </button>
       {services.map((s) => (
         <button

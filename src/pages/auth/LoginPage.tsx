@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Navigate } from "react-router-dom";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -19,8 +20,8 @@ export default function LoginPage() {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirect");
   const { user, userRole, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
 
-  // Already logged in → redirect to dashboard
   if (!authLoading && user && userRole) {
     const target = redirectTo || getRoleDashboard(userRole);
     return <Navigate to={target} replace />;
@@ -39,8 +40,7 @@ export default function LoginPage() {
     }
 
     if (data.user) {
-      toast.success("Login realizado com sucesso");
-      // Fetch role to redirect correctly
+      toast.success(t("auth.login_success"));
       const { data: userData } = await supabase
         .from("users")
         .select("role")
@@ -54,7 +54,6 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    // Preserve any referral code through OAuth
     const ref = getStoredReferralCode();
     if (ref) {
       saveOAuthPreState({ role: "client", referral_code: ref });
@@ -70,24 +69,24 @@ export default function LoginPage() {
       <div className="w-full max-w-md animate-fade-in">
         <div className="mb-8 text-center">
           <Link to="/" className="font-display text-3xl font-bold text-primary">AURA</Link>
-          <p className="mt-2 text-muted-foreground">Acesse sua conta</p>
+          <p className="mt-2 text-muted-foreground">{t("auth.access_account")}</p>
         </div>
 
         <div className="rounded-lg border border-border bg-card p-6">
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu@email.com"
+                placeholder={t("auth.email_placeholder")}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -98,7 +97,7 @@ export default function LoginPage() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Entrando..." : "Entrar"}
+              {loading ? t("auth.logging_in") : t("auth.sign_in")}
             </Button>
           </form>
 
@@ -107,7 +106,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-card px-2 text-muted-foreground">ou continue com</span>
+              <span className="bg-card px-2 text-muted-foreground">{t("auth.or_continue")}</span>
             </div>
           </div>
 
@@ -122,9 +121,9 @@ export default function LoginPage() {
           </Button>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Não tem conta?{" "}
+            {t("auth.no_account")}{" "}
             <Link to="/cadastro" className="text-primary hover:underline">
-              Cadastre-se
+              {t("auth.register")}
             </Link>
           </p>
         </div>
