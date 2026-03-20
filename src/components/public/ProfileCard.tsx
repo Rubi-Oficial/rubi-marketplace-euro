@@ -12,6 +12,7 @@ export interface EligibleProfile {
   city: string | null;
   city_slug: string | null;
   category: string | null;
+  gender: string | null;
   slug: string | null;
   pricing_from: number | null;
   is_featured: boolean;
@@ -24,12 +25,13 @@ export async function fetchEligibleProfiles(filters?: {
   city?: string;
   city_slug?: string;
   category?: string;
+  gender?: string;
   search?: string;
   service_slug?: string;
 }): Promise<EligibleProfile[]> {
   let query = supabase
     .from("eligible_profiles")
-    .select("id, display_name, age, city, city_slug, category, slug, pricing_from, is_featured, bio, whatsapp")
+    .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, whatsapp")
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -39,6 +41,7 @@ export async function fetchEligibleProfiles(filters?: {
     query = query.ilike("city", filters.city);
   }
   if (filters?.category) query = query.ilike("category", filters.category);
+  if (filters?.gender) query = query.ilike("gender", filters.gender);
   if (filters?.search) {
     query = query.or(
       `display_name.ilike.%${filters.search}%,city.ilike.%${filters.search}%,category.ilike.%${filters.search}%`
@@ -81,7 +84,7 @@ export async function fetchEligibleProfiles(filters?: {
   return filteredProfileIds.map((id) => {
     const p = profileMap.get(id)!;
     return {
-      id: p.id!, display_name: p.display_name ?? "", age: p.age ?? null,
+      id: p.id!, display_name: p.display_name ?? "", age: p.age ?? null, gender: p.gender ?? null,
       city: p.city ?? null, city_slug: p.city_slug ?? null, category: p.category ?? null,
       slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
       is_featured: p.is_featured ?? false, image_urls: imageMap[p.id!] || [],
