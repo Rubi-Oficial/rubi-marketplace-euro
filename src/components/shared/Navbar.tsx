@@ -23,7 +23,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border/30">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border/50 shadow-sm">
       <div className="container mx-auto flex h-14 items-center justify-between gap-4 px-4">
         <Link to="/" className="font-display text-lg font-bold tracking-wide text-foreground shrink-0">
           <span className="text-primary">Rubi</span> Girls
