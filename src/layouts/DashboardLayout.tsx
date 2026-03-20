@@ -3,24 +3,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutDashboard,
-  Settings,
-  LogOut,
-  FileText,
-  Image,
-  CreditCard,
-  Users,
-  Shield,
-  BarChart3,
-  Link2,
-  Heart,
-  ClipboardList,
-  Wallet,
-  LineChart,
-  Menu,
-  X,
-  Mail,
-  Eye,
+  LayoutDashboard, Settings, LogOut, FileText, Image, CreditCard,
+  Users, UserCog, Shield, BarChart3, Link2, Heart, ClipboardList,
+  Wallet, LineChart, Menu, X, Mail, Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
