@@ -15,7 +15,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Outfit", "sans-serif"],
+        display: ["'Plus Jakarta Sans'", "sans-serif"],
         body: ["Inter", "sans-serif"],
       },
       colors: {
