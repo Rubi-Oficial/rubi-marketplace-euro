@@ -7,6 +7,7 @@ import { Upload, ImageIcon, Film, AlertCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { SortableMediaGrid } from "@/components/media/SortableMediaGrid";
+import { compressImage } from "@/lib/imageCompression";
 import type { MediaItem } from "@/components/media/SortableMediaItem";
 
 const MAX_IMAGES = 10;
