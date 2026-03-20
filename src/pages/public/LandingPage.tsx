@@ -111,16 +111,6 @@ export default function LandingPage() {
     <div className="min-h-screen">
       <section className="pt-4 pb-8">
         <div className="container mx-auto px-4">
-          {/* Search bar */}
-          <form onSubmit={handleSearch} className="relative mb-3">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, city..."
-              className="pl-10 h-11 bg-card border-border/40 text-sm rounded-xl"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </form>
 
           {/* Filter buttons */}
           <div className="flex items-center gap-2 mb-3">
