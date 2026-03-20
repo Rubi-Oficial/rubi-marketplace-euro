@@ -744,7 +744,6 @@ export type Database = {
           slug: string | null
           telegram: string | null
           updated_at: string | null
-          user_id: string | null
           whatsapp: string | null
         }
         Insert: {
@@ -765,7 +764,6 @@ export type Database = {
           slug?: string | null
           telegram?: string | null
           updated_at?: string | null
-          user_id?: string | null
           whatsapp?: string | null
         }
         Update: {
@@ -786,18 +784,9 @@ export type Database = {
           slug?: string | null
           telegram?: string | null
           updated_at?: string | null
-          user_id?: string | null
           whatsapp?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
