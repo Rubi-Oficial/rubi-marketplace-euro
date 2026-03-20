@@ -13,7 +13,6 @@ import { useGeoCountry } from "@/hooks/useGeoCountry";
 
 export default function LandingPage() {
   useReferralCapture();
-  const navigate = useNavigate();
 
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
   const [loading, setLoading] = useState(true);
