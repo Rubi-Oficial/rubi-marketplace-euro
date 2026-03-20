@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef } from "react";
 import { Link, useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { lovable } from "@/integrations/lovable";
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-export default function RegisterPage() {
+const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, ref) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -187,4 +187,6 @@ export default function RegisterPage() {
       </div>
     </div>
   );
-}
+});
+
+export default RegisterPage;

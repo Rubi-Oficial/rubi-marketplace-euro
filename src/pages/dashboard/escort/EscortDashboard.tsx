@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -134,7 +134,7 @@ function getFlowSteps(d: DashboardData) {
 }
 
 /* ── Main component ── */
-export default function EscortDashboard() {
+const EscortDashboard = forwardRef<HTMLDivElement>(function EscortDashboard(_props, ref) {
   const d = useDashboardData();
   const { user } = useAuth();
 
@@ -406,7 +406,9 @@ export default function EscortDashboard() {
       </div>
     </div>
   );
-}
+});
+
+export default EscortDashboard;
 
 function SmallStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
