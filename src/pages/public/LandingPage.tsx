@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, SlidersHorizontal, MapPin } from "lucide-react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
 import { VideoSection } from "@/components/public/VideoSection";
 import { FilterModal } from "@/components/public/FilterModal";
@@ -10,7 +10,6 @@ import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
 import { ServiceSlugBar } from "@/components/public/ServiceSlugBar";
 import { useLocations } from "@/hooks/useLocations";
-import { useGeoCountry } from "@/hooks/useGeoCountry";
 
 export default function LandingPage() {
   useReferralCapture();
@@ -26,22 +25,13 @@ export default function LandingPage() {
   const [cityFilter, setCityFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [serviceFilter, setServiceFilter] = useState("");
-  const [geoApplied, setGeoApplied] = useState(false);
 
-  const { countries, getCitiesByCountry } = useLocations();
-  const { countryCode } = useGeoCountry();
+  const { countries, cities, getCitiesByCountry } = useLocations();
 
-  // Auto-detect country from IP
-  useEffect(() => {
-    if (geoApplied || !countryCode || countries.length === 0) return;
-    const match = countries.find((c) => c.iso_code.toUpperCase() === countryCode);
-    if (match && !countryFilter) {
-      setCountryFilter(match.slug);
-    }
-    setGeoApplied(true);
-  }, [countryCode, countries, geoApplied, countryFilter]);
-
-  const filteredCities = countryFilter ? getCitiesByCountry(countryFilter) : [];
+  const filteredCities = useMemo(
+    () => (countryFilter ? getCitiesByCountry(countryFilter) : []),
+    [countryFilter, getCitiesByCountry]
+  );
 
   // Suggested cities from detected country
   const suggestedCities = useMemo(() => {
@@ -53,6 +43,11 @@ export default function LandingPage() {
     fetchServices().then(setServices);
   }, []);
 
+  const countryCitySlugs = useMemo(
+    () => new Set(filteredCities.map((c) => c.slug)),
+    [filteredCities]
+  );
+
   useEffect(() => {
     setLoading(true);
     fetchEligibleProfiles({
@@ -61,14 +56,13 @@ export default function LandingPage() {
       service_slug: serviceFilter || undefined,
     }).then((data) => {
       if (countryFilter && !cityFilter) {
-        const countryCitySlugs = new Set(filteredCities.map((c) => c.slug));
         setProfiles(data.filter((p) => p.city_slug && countryCitySlugs.has(p.city_slug)).slice(0, 20));
       } else {
         setProfiles(data.slice(0, 20));
       }
       setLoading(false);
     });
-  }, [cityFilter, categoryFilter, serviceFilter, countryFilter, filteredCities]);
+  }, [cityFilter, categoryFilter, serviceFilter, countryFilter, countryCitySlugs]);
 
   const hasFilters = !!countryFilter || !!cityFilter || !!categoryFilter || !!serviceFilter;
   const hasLocationFilter = !!countryFilter || !!cityFilter;
@@ -102,11 +96,7 @@ export default function LandingPage() {
   const cityName = filteredCities.find((c) => c.slug === cityFilter)?.name;
   const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
 
-  const detectedCountrySlug = useMemo(() => {
-    if (!countryCode || countries.length === 0) return "";
-    return countries.find((c) => c.iso_code.toUpperCase() === countryCode)?.slug || "";
-  }, [countryCode, countries]);
-
+  const detectedCountrySlug = "";
   return (
     <div className="min-h-screen">
       <section className="pt-4 pb-8">
