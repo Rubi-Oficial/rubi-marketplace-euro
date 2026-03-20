@@ -184,7 +184,7 @@ export default function EscortProfile() {
   const handleReactivate = async () => {
     if (!profileId) return;
     setSaving(true);
-    const { error } = await supabase.from("profiles").update({ status: "approved" }).eq("id", profileId);
+    const { error } = await supabase.rpc("reactivate_profile", { _profile_id: profileId });
     setSaving(false);
     if (error) { toast.error("Erro ao reativar"); return; }
     setStatus("approved");

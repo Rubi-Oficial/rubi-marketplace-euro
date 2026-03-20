@@ -766,6 +766,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      reactivate_profile: { Args: { _profile_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "client" | "professional" | "admin"
