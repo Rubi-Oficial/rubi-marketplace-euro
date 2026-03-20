@@ -149,5 +149,5 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
         </div>
       </div>
     </Link>
-  );
-}
+});
+ProfileCard.displayName = "ProfileCard";
