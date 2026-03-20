@@ -1,84 +1,58 @@
 
 
-# Plano: Traduzir 100% do site com seletor de idiomas
+## Plan: Enhanced Admin Profile Detail Page
 
-## Resumo
+### Current State
+The page at `/admin/perfis/:id` (AdminProfileDetail.tsx) already exists with basic profile viewing, inline editing, image moderation, and status actions. However it lacks: videos support, upload capability, drag-drop reorder, user email display, admin action history, featured/flags toggles, and confirmation dialogs for destructive actions.
 
-O seletor de idiomas já funciona nas páginas públicas principais, mas **~20 componentes e páginas** ainda contêm textos fixos em português ou inglês que não respondem à troca de idioma. Este plano corrige isso adicionando ~200 novas chaves de tradução nos 5 idiomas e substituindo todos os textos hardcoded por chamadas `t()`.
+### Changes
 
-## Áreas com textos não traduzidos (diagnóstico)
+#### 1. Enhance AdminProfileDetail.tsx (major rewrite)
+Split into organized sections with tabs for better UX:
 
-### Componentes públicos compartilhados
-- **FilterModal**: "Filters", "Services", "Category", "Search filters...", "Clear all", "Show N results"
-- **LocationModal**: "Location", "All cities", "Based on your location", "Clear location filter"
-- **ActiveFilterChips**: "Clear all"
-- **ProfileCard**: "Featured"
-- **ProfileInfo**: "Featured", "years", "From €", "Services"
-- **VideoSection**: "Latest Videos", "Exclusive content...", "Details"
-- **ServiceSlugBar**: "Todos"
-- **CategoryBar**: "All" (hardcoded, não usa `t()`)
-- **NotFound**: todos os textos
+**Section: Header** - Keep current back button, name, status badge, edit/save buttons. Add featured toggle (star icon).
 
-### Páginas de autenticação
-- **LoginPage**: "Acesse sua conta", "Email", "Senha", "Entrar", "Entrando...", "ou continue com", "Não tem conta?", "Cadastre-se", toast messages
-- **RegisterPage**: "Crie sua conta", "Nome completo", "Tipo de conta", "Cliente", "Profissional", "Criar conta", "Criando conta...", "ou continue com", "Já tem conta?", "Código de afiliado"
+**Section: Media (Tabs - Photos / Videos)**
+- Load `profile_videos` alongside `profile_images`
+- Show videos with thumbnail, play overlay, duration, moderation badge
+- Add video moderation buttons (approve/reject) and delete
+- Add image/video upload buttons (reuse compression logic from EscortPhotos)
+- Add drag-drop reorder using existing `@dnd-kit` + `SortableMediaGrid` component
+- Confirmation dialog before deleting any media
 
-### Dashboard Layout e painéis internos
-- **DashboardLayout**: todos os labels de navegação lateral ("Painel", "Meu Perfil", "Fotos & Vídeos", etc.), labels de role ("Administrador", "Acompanhante", "Cliente"), botão "Sair"
-- **EscortSettings**: "Configurações", "Dados pessoais", "Alterar senha", "Salvar", etc.
-- **ClientSettings**: mesmos textos de settings
-- **EscortDashboard**: labels de status ("Rascunho", "Em análise"), textos de banners, estatísticas, links rápidos
-- **AdminDashboard**: "Painel Administrativo", seções de métricas, labels de sanidade
-- **AdminSettings**: "Configurações", "Histórico de Ações", formatAction labels
-- **AdminPayments**: labels de status, filtros
-- Toasts em múltiplos arquivos ("Dados atualizados!", "Erro ao salvar", etc.)
+**Section: Details (view/edit)**
+- Add `is_featured` toggle (Switch component)
+- Add `featured_until` date field
+- Show `updated_at` timestamp
+- Show user email (fetch from `users` table via `user_id`)
 
-## Plano de implementação
+**Section: Contact & Services**
+- Keep current WhatsApp/Telegram fields
+- Show user email from `users` table
 
-### Passo 1 — Expandir `translations.ts` (~200 novas chaves)
-Adicionar chaves organizadas por seção nos 5 idiomas:
-- `filter.*` — FilterModal, ActiveFilterChips
-- `location.*` — LocationModal
-- `profile_info.*` — ProfileInfo labels
-- `video.*` — VideoSection
-- `auth.*` — LoginPage, RegisterPage (expandir as existentes)
-- `dashboard.*` — DashboardLayout nav labels
-- `settings.*` — EscortSettings, ClientSettings
-- `escort_dash.*` — EscortDashboard
-- `admin.*` — AdminDashboard, AdminSettings, AdminPayments
-- `notfound.*` — NotFound page
-- `common.*` — toasts reutilizáveis, "Featured", "years", etc.
+**Section: Bio** - Keep current implementation
 
-### Passo 2 — Componentes públicos (6 arquivos)
-Adicionar `useLanguage` e substituir textos fixos em:
-1. `FilterModal.tsx`
-2. `LocationModal.tsx`
-3. `ActiveFilterChips.tsx`
-4. `ProfileCard.tsx` (badge "Featured")
-5. `ProfileInfo.tsx`
-6. `VideoSection.tsx`
-7. `ServiceSlugBar.tsx`
-8. `CategoryBar.tsx`
-9. `NotFound.tsx`
+**Section: Admin Actions Log**
+- Fetch from `admin_actions` table where `target_profile_id = id`
+- Show action type, admin name, notes, timestamp in a simple list
 
-### Passo 3 — Páginas de autenticação (2 arquivos)
-1. `LoginPage.tsx`
-2. `RegisterPage.tsx`
+**Section: Status Actions**
+- Keep current approve/reject/pause/reactivate buttons
+- Add confirmation dialog for reject action
 
-### Passo 4 — Dashboard e painéis internos (~6 arquivos)
-1. `DashboardLayout.tsx` — nav items e role labels dinâmicos
-2. `EscortSettings.tsx`
-3. `ClientSettings.tsx`
-4. `EscortDashboard.tsx`
-5. `AdminDashboard.tsx`
-6. `AdminSettings.tsx`
+#### 2. Files to Create/Modify
+- **Modify**: `src/pages/dashboard/admin/AdminProfileDetail.tsx` - Complete rewrite with all sections
+- No new database tables needed - all data already exists
+- No migrations needed
 
-### Regras mantidas
-- Nenhuma alteração de layout
-- Nenhuma alteração de funcionalidade
-- Apenas substituição de strings por `t("chave")`
-- Persistência de idioma via localStorage já funciona
-
-### Resultado
-Ao trocar o idioma no seletor do navbar, **100% dos textos** visíveis no site (público + autenticado) serão traduzidos de forma consistente.
+#### 3. Technical Details
+- Reuse `SortableMediaGrid` + `SortableMediaItem` for drag-drop reorder of images
+- Use `supabase.storage.from("profile-images")` for uploads (same pattern as EscortPhotos)
+- Use `imageCompression` from `src/lib/imageCompression.ts` for photo uploads
+- Use `AlertDialog` for delete confirmations
+- Use `Switch` component for boolean toggles (is_featured)
+- Fetch user email: `supabase.from("users").select("email, full_name").eq("id", profile.user_id).single()`
+- Fetch admin actions: `supabase.from("admin_actions").select("*").eq("target_profile_id", id).order("created_at", { ascending: false })`
+- Video upload limit: 1 video, 100MB, 20s max (per existing constraints)
+- Image upload limit: 10 images, 2MB each (per existing constraints)
 
