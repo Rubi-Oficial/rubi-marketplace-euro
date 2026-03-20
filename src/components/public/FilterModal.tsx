@@ -57,7 +57,7 @@ function FilterSection({ title, defaultOpen = false, children }: { title: string
   );
 }
 
-function FilterBody({ filters, onApply, onClear, resultCount, services, categories = [] }: Omit<FilterModalProps, "open" | "onOpenChange">) {
+function FilterBody({ filters, onApply, onClear, resultCount, services, categories = [], onClose }: Omit<FilterModalProps, "open" | "onOpenChange"> & { onClose: () => void }) {
   const [searchInModal, setSearchInModal] = useState("");
 
   const filteredServices = useMemo(() => {
