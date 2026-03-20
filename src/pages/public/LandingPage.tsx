@@ -22,7 +22,6 @@ export default function LandingPage() {
 
   // Filter state
   const [countryFilter, setCountryFilter] = useState("");
-  const [countryFilter, setCountryFilter] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [serviceFilter, setServiceFilter] = useState("");
