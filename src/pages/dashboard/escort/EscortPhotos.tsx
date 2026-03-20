@@ -1,27 +1,12 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Upload, Trash2, ImageIcon, Film, Play } from "lucide-react";
+import { Upload, ImageIcon, Film } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface MediaItem {
-  id: string;
-  storage_path: string;
-  moderation_status: "pending" | "approved" | "rejected";
-  sort_order: number;
-  url: string;
-  type: "image" | "video";
-  duration_seconds?: number;
-}
-
-const STATUS_BADGE: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  pending: { label: "Pendente", variant: "outline" },
-  approved: { label: "Aprovada", variant: "default" },
-  rejected: { label: "Rejeitada", variant: "destructive" },
-};
+import { SortableMediaGrid } from "@/components/media/SortableMediaGrid";
+import type { MediaItem } from "@/components/media/SortableMediaItem";
 
 export default function EscortPhotos() {
   const { user } = useAuth();
@@ -33,13 +18,11 @@ export default function EscortPhotos() {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const fetchMedia = async (pid: string) => {
-    // Fetch images
-    const { data: imgData } = await supabase
-      .from("profile_images")
-      .select("*")
-      .eq("profile_id", pid)
-      .order("sort_order");
+  const fetchMedia = useCallback(async (pid: string) => {
+    const [{ data: imgData }, { data: vidData }] = await Promise.all([
+      supabase.from("profile_images").select("*").eq("profile_id", pid).order("sort_order"),
+      supabase.from("profile_videos").select("*").eq("profile_id", pid).order("sort_order"),
+    ]);
 
     if (imgData) {
       setImages(imgData.map((img) => ({
@@ -50,23 +33,16 @@ export default function EscortPhotos() {
       })));
     }
 
-    // Fetch videos
-    const { data: vidData } = await supabase
-      .from("profile_videos")
-      .select("*")
-      .eq("profile_id", pid)
-      .order("sort_order");
-
     if (vidData) {
       setVideos(vidData.map((v) => ({
         ...v,
         moderation_status: v.moderation_status as MediaItem["moderation_status"],
         url: supabase.storage.from("profile-images").getPublicUrl(v.storage_path).data.publicUrl,
         type: "video" as const,
-        duration_seconds: v.duration_seconds,
+        duration_seconds: v.duration_seconds ?? undefined,
       })));
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -78,8 +54,30 @@ export default function EscortPhotos() {
         }
         setLoading(false);
       });
-  }, [user]);
+  }, [user, fetchMedia]);
 
+  // ── Persist sort order ──
+  const persistOrder = useCallback(async (items: MediaItem[], table: "profile_images" | "profile_videos") => {
+    const updates = items.map((item) =>
+      supabase.from(table).update({ sort_order: item.sort_order }).eq("id", item.id)
+    );
+    const results = await Promise.all(updates);
+    const failed = results.filter((r) => r.error);
+    if (failed.length) toast.error("Erro ao salvar ordem.");
+    else toast.success("Ordem atualizada!");
+  }, []);
+
+  const handleReorderImages = useCallback((reordered: MediaItem[]) => {
+    setImages(reordered);
+    persistOrder(reordered, "profile_images");
+  }, [persistOrder]);
+
+  const handleReorderVideos = useCallback((reordered: MediaItem[]) => {
+    setVideos(reordered);
+    persistOrder(reordered, "profile_videos");
+  }, [persistOrder]);
+
+  // ── Upload handlers ──
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || !user || !profileId) return;
@@ -142,6 +140,7 @@ export default function EscortPhotos() {
     if (videoRef.current) videoRef.current.value = "";
   };
 
+  // ── Delete handlers ──
   const handleDeleteImage = async (item: MediaItem) => {
     await supabase.storage.from("profile-images").remove([item.storage_path]);
     await supabase.from("profile_images").delete().eq("id", item.id);
@@ -156,6 +155,7 @@ export default function EscortPhotos() {
     toast.success("Vídeo removido.");
   };
 
+  // ── Render ──
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -181,7 +181,7 @@ export default function EscortPhotos() {
     <div className="animate-fade-in">
       <h1 className="font-display text-2xl font-bold text-foreground">Fotos & Vídeos</h1>
       <p className="mt-1 text-muted-foreground text-sm">
-        Gerencie suas fotos e vídeos. Todo conteúdo passa por moderação antes de ficar visível.
+        Gerencie suas fotos e vídeos. Arraste para reordenar. Todo conteúdo passa por moderação.
       </p>
 
       <Tabs defaultValue="photos" className="mt-6">
@@ -220,28 +220,10 @@ export default function EscortPhotos() {
               </Button>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {images.map((img) => {
-                const badge = STATUS_BADGE[img.moderation_status] || STATUS_BADGE.pending;
-                return (
-                  <div key={img.id} className="group relative overflow-hidden rounded-lg border border-border bg-card">
-                    <div className="aspect-[3/4] w-full">
-                      <img src={img.url} alt="Foto do perfil" loading="lazy" className="h-full w-full object-cover" />
-                    </div>
-                    <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-background/90 to-transparent p-3 pt-8">
-                      <Badge variant={badge.variant}>{badge.label}</Badge>
-                      <Button variant="destructive" size="icon" className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
-                        onClick={() => handleDeleteImage(img)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <SortableMediaGrid items={images} onReorder={handleReorderImages} onDelete={handleDeleteImage} />
           )}
           <p className="mt-4 text-xs text-muted-foreground">
-            Máximo 5MB por foto. Formatos aceitos: JPG, PNG, WebP.
+            Máximo 5MB por foto. Formatos aceitos: JPG, PNG, WebP. Arraste os itens para reordenar.
           </p>
         </TabsContent>
 
@@ -269,39 +251,10 @@ export default function EscortPhotos() {
               </Button>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {videos.map((vid) => {
-                const badge = STATUS_BADGE[vid.moderation_status] || STATUS_BADGE.pending;
-                return (
-                  <div key={vid.id} className="group relative overflow-hidden rounded-lg border border-border bg-card">
-                    <div className="aspect-[3/4] w-full relative bg-muted">
-                      <video
-                        src={vid.url}
-                        className="h-full w-full object-cover"
-                        preload="metadata"
-                        muted
-                        playsInline
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/80 text-primary-foreground">
-                          <Play className="h-4 w-4 ml-0.5" fill="currentColor" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-background/90 to-transparent p-3 pt-8">
-                      <Badge variant={badge.variant}>{badge.label}</Badge>
-                      <Button variant="destructive" size="icon" className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
-                        onClick={() => handleDeleteVideo(vid)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <SortableMediaGrid items={videos} onReorder={handleReorderVideos} onDelete={handleDeleteVideo} />
           )}
           <p className="mt-4 text-xs text-muted-foreground">
-            Máximo 50MB por vídeo. Formatos aceitos: MP4, MOV, WebM.
+            Máximo 50MB por vídeo. Formatos aceitos: MP4, MOV, WebM. Arraste os itens para reordenar.
           </p>
         </TabsContent>
       </Tabs>
