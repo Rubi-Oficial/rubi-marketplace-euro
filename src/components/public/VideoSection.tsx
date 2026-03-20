@@ -116,7 +116,7 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
         />
         {/* Play overlay */}
         {!isPlaying && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/30 transition-opacity group-hover:bg-black/20">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity group-hover:bg-black/10">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/90 text-primary-foreground shadow-lg backdrop-blur-sm">
               <Play className="h-5 w-5 ml-0.5" fill="currentColor" />
             </div>

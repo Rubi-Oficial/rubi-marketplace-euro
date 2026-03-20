@@ -9,7 +9,7 @@ export default function PublicLayout() {
       <main className="pt-14">
         <Outlet />
       </main>
-      <footer className="border-t border-border/30 py-10 mt-8">
+      <footer className="border-t border-border/50 py-10 mt-8 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="grid gap-10 md:grid-cols-4">
             <div>

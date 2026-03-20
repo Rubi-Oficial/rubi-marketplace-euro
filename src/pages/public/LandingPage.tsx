@@ -222,7 +222,7 @@ export default function LandingPage() {
       <VideoSection filters={{ activeCity: cityFilter, activeService: serviceFilter }} />
 
       {/* CTA */}
-      <section className="border-t border-border/20 py-10">
+      <section className="border-t border-border/30 py-10 bg-secondary/20">
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-display text-lg font-semibold text-foreground">
             Ready to grow your business?
