@@ -1,24 +1,29 @@
 
 
-## Plan: Remove Duplicated Search Bar + Ensure 6 Real Cards
+## Findings
 
-### Problem
-The LandingPage has a search bar (lines 124-133) that duplicates the Navbar's search bar, creating visual redundancy. The user wants only the Filters + Location buttons visible below the navbar.
+The database has **3 eligible profiles** (approved + active subscription): Sofia Laurent (Amsterdam), Isabella Reyes (Barcelona), Nina Dubois (Den Haag). Each has 3 approved images and 1 approved video. There's also "Diego teste" but it's in `draft` status so it doesn't appear publicly.
 
-### Changes
+To reach 6 cards, I need to insert 3 more profiles. Since the `eligible_profiles` view requires `status = 'approved'` AND an active subscription, I'll attach new profiles to the two existing users who already have active subscriptions.
 
-**1. Edit `src/pages/public/LandingPage.tsx`**
-- Remove the search bar `<form>` block (lines 124-133)
-- Keep only: Filters button + Location button + suggested city chips + ActiveFilterChips
-- Ensure the grid fetches and displays up to 6 cards from real DB data (already fetches from `eligible_profiles` — just confirm `slice(0, 20)` works; if DB has profiles they'll show)
-- Add 6 placeholder/skeleton cards as fallback when no real profiles exist, so layout can be validated visually even with empty DB
+## Plan
 
-**2. No other file changes needed**
-- Navbar search bar stays as-is (it's the single source of search)
-- ProfileCard, FilterModal, LocationModal, ActiveFilterChips remain unchanged
+**1. Insert 3 new profiles** (via insert tool)
+Using the two existing user_ids that have active subscriptions:
+- **Camille Moreau** — Paris, Elite, age 25, user_id `95712848...`
+- **Elena Rossi** — Milan, Premium, age 26, user_id `6809d822...`  
+- **Lucia Fernandez** — Madrid, Companion, age 24, user_id `95712848...`
 
-### Technical Details
-- The `fetchEligibleProfiles` function already queries real profiles from the `eligible_profiles` view
-- The 3 test profiles (Sofia Laurent, Isabella Reyes, Nina Dubois) should appear as cards
-- If fewer than 6 real profiles exist, show placeholder cards with sample data to validate the grid layout
+All with `status: approved`, unique slugs, city_slugs matching existing cities, bio, whatsapp, languages.
+
+**2. Insert profile_images for each** (reusing existing storage paths from other profiles as placeholder images — same bucket, valid URLs)
+- 3 images per profile (9 records total), `moderation_status: approved`
+
+**3. Insert profile_videos for each** (reusing existing video paths)
+- 1 video per profile (3 records total), `moderation_status: approved`
+
+**4. No code changes needed** — the LandingPage already fetches from `eligible_profiles` and displays up to 20 cards. With 6 eligible profiles, the grid will populate automatically.
+
+### Result
+6 profile cards with images visible on the landing page, each with a working profile detail page (`/perfil/{slug}`) showing gallery, bio, services, and contact info.
 
