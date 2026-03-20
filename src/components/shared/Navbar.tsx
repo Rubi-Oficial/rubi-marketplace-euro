@@ -95,6 +95,11 @@ export default function Navbar() {
           <Link to="/buscar" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">
             <Search className="h-4 w-4 text-muted-foreground" /> Explore
           </Link>
+          {CATEGORIES.map((cat) => (
+            <Link key={cat.slug} to={`/categoria/${cat.slug}`} onClick={() => setMobileOpen(false)} className="block text-sm text-muted-foreground py-2 px-4 rounded-md hover:bg-accent transition-colors">
+              {cat.label}
+            </Link>
+          ))}
           <Link to="/planos" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">Plans</Link>
           <Link to="/sobre" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">About</Link>
           <div className="border-t border-border/30 pt-3 mt-2">
