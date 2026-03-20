@@ -1,38 +1,17 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LogOut, LayoutDashboard, Search, Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useLocations } from "@/hooks/useLocations";
-import { fetchServices } from "@/components/public/ProfileCard";
+import { useState } from "react";
 
 export default function Navbar() {
   const { user, userRole, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const dashboardPath = getRoleDashboard(userRole as any);
-  const location = useLocation();
   const navigate = useNavigate();
-  const isHome = location.pathname === "/";
 
   const [searchValue, setSearchValue] = useState("");
-  const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
-  const [activeCountry, setActiveCountry] = useState("");
-  const [activeCity, setActiveCity] = useState("");
-  const [activeService, setActiveService] = useState("");
-
-  const { countries, getCitiesByCountry } = useLocations();
-
-  useEffect(() => {
-    if (!isHome) return;
-    fetchServices().then(setServices);
-  }, [isHome]);
-
-  useEffect(() => {
-    if (isHome) {
-      window.dispatchEvent(new CustomEvent("rubi-filters", { detail: { activeCity, activeService, activeCountry } }));
-    }
-  }, [activeCity, activeService, activeCountry, isHome]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,19 +22,8 @@ export default function Navbar() {
     }
   };
 
-  const handleCountryClick = (slug: string) => {
-    if (activeCountry === slug) {
-      setActiveCountry("");
-      setActiveCity("");
-    } else {
-      setActiveCountry(slug);
-      setActiveCity("");
-    }
-  };
-
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border/30">
-      {/* Row 1: Logo + Search + Auth */}
       <div className="container mx-auto flex h-14 items-center justify-between gap-4 px-4">
         <Link to="/" className="font-display text-lg font-bold tracking-wide text-foreground shrink-0">
           <span className="text-primary">Rubi</span> Girls
@@ -105,55 +73,6 @@ export default function Navbar() {
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
-
-      {/* Row 2: Lightweight category chips — homepage only */}
-      {isHome && (
-        <div className="border-t border-border/20 bg-background/90">
-          <div className="container mx-auto px-4 flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-2">
-            {countries.slice(0, 6).map((country) => (
-              <button
-                key={country.slug}
-                onClick={() => handleCountryClick(country.slug)}
-                className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition-all shrink-0 ${
-                  activeCountry === country.slug
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                }`}
-              >
-                {country.name}
-              </button>
-            ))}
-
-            {services.length > 0 && (
-              <>
-                <span className="mx-1 h-3.5 w-px bg-border/30 shrink-0" />
-                {services.slice(0, 5).map((svc) => (
-                  <button
-                    key={svc.slug}
-                    onClick={() => setActiveService(activeService === svc.slug ? "" : svc.slug)}
-                    className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition-all shrink-0 ${
-                      activeService === svc.slug
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                    }`}
-                  >
-                    {svc.name}
-                  </button>
-                ))}
-              </>
-            )}
-
-            {(activeCountry || activeCity || activeService) && (
-              <button
-                onClick={() => { setActiveCountry(""); setActiveCity(""); setActiveService(""); }}
-                className="text-xs text-primary hover:underline ml-1 shrink-0"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Mobile menu */}
       {mobileOpen && (
