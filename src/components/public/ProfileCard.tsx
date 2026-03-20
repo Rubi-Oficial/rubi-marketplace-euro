@@ -167,15 +167,6 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
     [urls.length]
   );
 
-  const handleWhatsApp = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (!profile.whatsapp) return;
-      const msg = encodeURIComponent("Olá! Gostaria de mais informações sobre seus serviços.");
-      window.open(`https://wa.me/${profile.whatsapp.replace(/\D/g, "")}?text=${msg}`, "_blank");
-    },
-    [profile.whatsapp]
-  );
 
   if (!profile.slug) return null;
 
