@@ -40,6 +40,7 @@ import EscortPhotos from "@/pages/dashboard/escort/EscortPhotos";
 import EscortSubscription from "@/pages/dashboard/escort/EscortSubscription";
 import EscortMetrics from "@/pages/dashboard/escort/EscortMetrics";
 import EscortAffiliates from "@/pages/dashboard/escort/EscortAffiliates";
+import EscortPreview from "@/pages/dashboard/escort/EscortPreview";
 import EscortSettings from "@/pages/dashboard/escort/EscortSettings";
 
 // Admin
