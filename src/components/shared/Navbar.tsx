@@ -66,6 +66,27 @@ export default function Navbar() {
         </form>
 
         <div className="hidden md:flex items-center gap-2 shrink-0">
+          {/* Language selector — always visible, before auth buttons */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="shrink-0 rounded-full h-8 w-8 flex items-center justify-center text-lg leading-none transition-colors hover:bg-accent focus:outline-none" aria-label="Select language">
+                {currentLang.flag}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[120px]">
+              {LANGUAGES.map((l) => (
+                <DropdownMenuItem
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  className={`text-sm gap-2 ${lang === l.code ? "bg-accent font-semibold" : ""}`}
+                >
+                  <span className="text-base">{l.flag}</span>
+                  <span>{l.label}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {user ? (
             <>
               <Button variant="ghost" size="sm" asChild className="text-[13px]">
@@ -86,47 +107,7 @@ export default function Navbar() {
               <Button variant="premium" size="sm" asChild className="text-[13px] h-8 px-4">
                 <Link to="/cadastro">{t("nav.get_started")}</Link>
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="shrink-0 rounded-full h-8 w-8 flex items-center justify-center text-lg leading-none transition-colors hover:bg-accent focus:outline-none" aria-label="Select language">
-                    {currentLang.flag}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[120px]">
-                  {LANGUAGES.map((l) => (
-                    <DropdownMenuItem
-                      key={l.code}
-                      onClick={() => setLang(l.code)}
-                      className={`text-sm gap-2 ${lang === l.code ? "bg-accent font-semibold" : ""}`}
-                    >
-                      <span className="text-base">{l.flag}</span>
-                      <span>{l.label}</span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
             </>
-          )}
-          {user && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="shrink-0 rounded-full h-8 w-8 flex items-center justify-center text-lg leading-none transition-colors hover:bg-accent focus:outline-none" aria-label="Select language">
-                  {currentLang.flag}
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[120px]">
-                {LANGUAGES.map((l) => (
-                  <DropdownMenuItem
-                    key={l.code}
-                    onClick={() => setLang(l.code)}
-                    className={`text-sm gap-2 ${lang === l.code ? "bg-accent font-semibold" : ""}`}
-                  >
-                    <span className="text-base">{l.flag}</span>
-                    <span>{l.label}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
           )}
         </div>
 
