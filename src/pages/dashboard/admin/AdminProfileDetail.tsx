@@ -626,15 +626,68 @@ function EditField({ label, value, onChange, type = "text" }: { label: string; v
   );
 }
 
-function MediaCard({ item, type, index, onModerate, onDelete }: {
+/* ── DnD Media Grid ── */
+function DndMediaGrid({ items, onReorder, type, onModerate, onDelete }: {
+  items: MediaItem[]; onReorder: (items: MediaItem[]) => void; type: "image" | "video";
+  onModerate: (id: string, s: "approved" | "rejected") => void;
+  onDelete: (item: MediaItem) => void;
+}) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIdx = items.findIndex(i => i.id === active.id);
+    const newIdx = items.findIndex(i => i.id === over.id);
+    if (oldIdx === -1 || newIdx === -1) return;
+    const reordered = [...items];
+    const [moved] = reordered.splice(oldIdx, 1);
+    reordered.splice(newIdx, 0, moved);
+    onReorder(reordered.map((item, idx) => ({ ...item, sort_order: idx })));
+  };
+
+  const gridCols = type === "image"
+    ? "grid-cols-3 sm:grid-cols-4 lg:grid-cols-6"
+    : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4";
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
+        <div className={`grid gap-3 ${gridCols}`}>
+          {items.map((item, idx) => (
+            <SortableMediaCard key={item.id} item={item} type={type} index={idx}
+              onModerate={s => onModerate(item.id, s)} onDelete={() => onDelete(item)}
+            />
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
+  );
+}
+
+/* ── Sortable Media Card ── */
+function SortableMediaCard({ item, type, index, onModerate, onDelete }: {
   item: MediaItem; type: "image" | "video"; index: number;
   onModerate: (s: "approved" | "rejected") => void;
   onDelete: () => void;
 }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1, zIndex: isDragging ? 50 : 0 };
   const mod = MOD_BADGE[item.moderation_status] || MOD_BADGE.pending;
 
   return (
-    <div className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-muted">
+    <div ref={setNodeRef} style={style} className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-muted">
+      {/* Drag handle */}
+      <button {...attributes} {...listeners}
+        className="absolute top-1 left-1 z-20 flex h-6 w-6 items-center justify-center rounded bg-background/80 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+        aria-label="Arrastar"
+      >
+        <GripVertical className="h-3.5 w-3.5" />
+      </button>
+
       {type === "image" ? (
         <img src={item.url} alt="Mídia" className="h-full w-full object-cover" loading="lazy" />
       ) : (
@@ -648,16 +701,16 @@ function MediaCard({ item, type, index, onModerate, onDelete }: {
             <div className="rounded-full bg-black/50 p-2"><Play className="h-5 w-5 text-white fill-white" /></div>
           </div>
           {item.duration_seconds != null && (
-            <span className="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+            <span className="absolute top-8 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
               {formatDuration(item.duration_seconds)}
             </span>
           )}
         </>
       )}
 
-      {/* Index badge */}
+      {/* Cover badge */}
       {index === 0 && type === "image" && (
-        <span className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded font-medium">Capa</span>
+        <span className="absolute top-8 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded font-medium">Capa</span>
       )}
 
       {/* Moderation badge */}
@@ -666,8 +719,8 @@ function MediaCard({ item, type, index, onModerate, onDelete }: {
       </div>
 
       {/* Hover actions */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
-      <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors pointer-events-none" />
+      <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
         {item.moderation_status !== "approved" && (
           <button onClick={() => onModerate("approved")} className="rounded-full bg-green-600 p-1 text-white hover:bg-green-700 transition-colors" title="Aprovar">
             <CheckCircle className="h-3.5 w-3.5" />
