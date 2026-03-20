@@ -115,7 +115,8 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
   const hasMultiple = urls.length > 1;
   const [activeIdx, setActiveIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
-  const [favorited, setFavorited] = useState(false);
+  const { isFavorited, toggleFavorite, isToggling } = useFavorites();
+  const favorited = isFavorited(profile.id);
   const pausedUntilRef = useRef(0);
 
   const truncatedBio = profile.bio
