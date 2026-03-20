@@ -9,6 +9,7 @@ import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
 import { ServiceSlugBar } from "@/components/public/ServiceSlugBar";
+import { CATEGORIES } from "@/components/shared/CategoryBar";
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
