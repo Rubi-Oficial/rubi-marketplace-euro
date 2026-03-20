@@ -21,7 +21,7 @@ export default function LandingPage() {
   const [locationOpen, setLocationOpen] = useState(false);
 
   // Filter state
-  const [searchQuery, setSearchQuery] = useState("");
+  const [countryFilter, setCountryFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
