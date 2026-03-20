@@ -28,7 +28,7 @@ export async function fetchEligibleProfiles(filters?: {
 }): Promise<EligibleProfile[]> {
   let query = supabase
     .from("eligible_profiles")
-    .select("id, display_name, age, city, city_slug, category, slug, pricing_from, is_featured, bio")
+    .select("id, display_name, age, city, city_slug, category, slug, pricing_from, is_featured, bio, whatsapp")
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
 
