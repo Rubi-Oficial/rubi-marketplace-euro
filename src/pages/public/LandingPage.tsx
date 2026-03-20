@@ -1,7 +1,6 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ArrowRight, Search, SlidersHorizontal, MapPin } from "lucide-react";
+import { ArrowRight, SlidersHorizontal, MapPin } from "lucide-react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { useEffect, useState, useMemo } from "react";
 import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
@@ -14,7 +13,6 @@ import { useGeoCountry } from "@/hooks/useGeoCountry";
 
 export default function LandingPage() {
   useReferralCapture();
-  const navigate = useNavigate();
 
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +21,6 @@ export default function LandingPage() {
   const [locationOpen, setLocationOpen] = useState(false);
 
   // Filter state
-  const [searchQuery, setSearchQuery] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -58,7 +55,6 @@ export default function LandingPage() {
   useEffect(() => {
     setLoading(true);
     fetchEligibleProfiles({
-      search: searchQuery || undefined,
       city_slug: cityFilter || undefined,
       category: categoryFilter || undefined,
       service_slug: serviceFilter || undefined,
@@ -71,7 +67,7 @@ export default function LandingPage() {
       }
       setLoading(false);
     });
-  }, [searchQuery, cityFilter, categoryFilter, serviceFilter, countryFilter, filteredCities.length]);
+  }, [cityFilter, categoryFilter, serviceFilter, countryFilter, filteredCities.length]);
 
   const hasFilters = !!countryFilter || !!cityFilter || !!categoryFilter || !!serviceFilter;
   const hasLocationFilter = !!countryFilter || !!cityFilter;
@@ -101,13 +97,6 @@ export default function LandingPage() {
     else if (key === "service") setServiceFilter("");
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/buscar?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
   const countryName = countries.find((c) => c.slug === countryFilter)?.name;
   const cityName = filteredCities.find((c) => c.slug === cityFilter)?.name;
   const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
@@ -121,16 +110,6 @@ export default function LandingPage() {
     <div className="min-h-screen">
       <section className="pt-4 pb-8">
         <div className="container mx-auto px-4">
-          {/* Search bar */}
-          <form onSubmit={handleSearch} className="relative mb-3">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, city..."
-              className="pl-10 h-11 bg-card border-border/40 text-sm rounded-xl"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </form>
 
           {/* Filter buttons */}
           <div className="flex items-center gap-2 mb-3">
@@ -211,8 +190,21 @@ export default function LandingPage() {
               ))}
             </div>
           ) : (
-            <div className="py-20 text-center text-muted-foreground text-sm">
-              No profiles available at the moment.
+            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="group relative block overflow-hidden rounded-xl bg-card">
+                  <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+                    <div className="flex h-full items-center justify-center text-muted-foreground/20">
+                      <div className="h-14 w-14 rounded-full bg-muted-foreground/10" />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/10 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <div className="h-4 w-24 rounded bg-muted-foreground/10 mb-1" />
+                      <div className="h-3 w-16 rounded bg-muted-foreground/8" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
