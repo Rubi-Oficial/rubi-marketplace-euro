@@ -13,6 +13,7 @@ import {
   Shield,
   BarChart3,
   Link2,
+  Heart,
   ClipboardList,
   Wallet,
   LineChart,
