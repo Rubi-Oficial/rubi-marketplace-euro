@@ -84,7 +84,7 @@ export async function fetchProfileVideos(filters?: {
   });
 }
 
-function VideoCard({ video }: { video: ProfileVideo }) {
+const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }, _ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
