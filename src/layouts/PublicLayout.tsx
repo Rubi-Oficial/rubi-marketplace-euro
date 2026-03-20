@@ -1,18 +1,16 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "@/components/shared/Navbar";
-import CategoryBar from "@/components/shared/CategoryBar";
 import { Link } from "react-router-dom";
 
 export default function PublicLayout() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="pt-14">
-        <CategoryBar />
+      <div className="pt-[6.5rem]">
+        <main>
+          <Outlet />
+        </main>
       </div>
-      <main>
-        <Outlet />
-      </main>
       <footer className="border-t border-border/50 py-10 mt-8 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="grid gap-10 md:grid-cols-4">

@@ -1,18 +1,25 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LogOut, LayoutDashboard, Search, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export default function Navbar() {
   const { user, userRole, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const dashboardPath = getRoleDashboard(userRole as any);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { slug } = useParams();
 
   const [searchValue, setSearchValue] = useState("");
+
+  const isCategory = location.pathname.startsWith("/categoria/");
+  const activeSlug = isCategory ? slug : "";
+  const isAllActive = !isCategory && (location.pathname === "/" || location.pathname === "/buscar");
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +32,7 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border/50 shadow-sm">
+      {/* Top row: logo, search, auth */}
       <div className="container mx-auto flex h-14 items-center justify-between gap-4 px-4">
         <Link to="/" className="font-display text-lg tracking-tight text-foreground shrink-0">
           <span className="font-bold text-primary">Rubi</span>
@@ -74,6 +82,40 @@ export default function Navbar() {
         <button className="md:hidden text-foreground p-1" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
+      </div>
+
+      {/* Category row integrated */}
+      <div className="border-t border-border/20">
+        <div className="container mx-auto px-4">
+          <ScrollArea className="w-full">
+            <div className="flex items-center gap-1 py-1.5">
+              <Link
+                to="/buscar"
+                className={`shrink-0 rounded-full px-4 py-1 text-xs font-medium transition-colors ${
+                  isAllActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                }`}
+              >
+                All
+              </Link>
+              {CATEGORIES.map((cat) => (
+                <Link
+                  key={cat.slug}
+                  to={`/categoria/${cat.slug}`}
+                  className={`shrink-0 rounded-full px-4 py-1 text-xs font-medium transition-colors ${
+                    activeSlug === cat.slug
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  }`}
+                >
+                  {cat.label}
+                </Link>
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" className="h-0" />
+          </ScrollArea>
+        </div>
       </div>
 
       {/* Mobile menu */}
