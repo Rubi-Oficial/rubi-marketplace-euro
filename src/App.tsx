@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -7,67 +8,74 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
 import AuthRedirectHandler from "@/components/shared/AuthRedirectHandler";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import PublicLayout from "@/layouts/PublicLayout";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
-// Public
-import LandingPage from "@/pages/public/LandingPage";
-import CityPage from "@/pages/public/CityPage";
-import CategoryPage from "@/pages/public/CategoryPage";
-import SearchPage from "@/pages/public/SearchPage";
-import ProfilePage from "@/pages/public/ProfilePage";
-import PlansPage from "@/pages/public/PlansPage";
-import AboutPage from "@/pages/public/AboutPage";
-import ContactPage from "@/pages/public/ContactPage";
-import BlogPage from "@/pages/public/BlogPage";
-import TermsPage from "@/pages/public/TermsPage";
-import PrivacyPage from "@/pages/public/PrivacyPage";
-import CookiesPage from "@/pages/public/CookiesPage";
+// Lazy-loaded route components
+const LandingPage = lazy(() => import("@/pages/public/LandingPage"));
+const CityPage = lazy(() => import("@/pages/public/CityPage"));
+const CategoryPage = lazy(() => import("@/pages/public/CategoryPage"));
+const SearchPage = lazy(() => import("@/pages/public/SearchPage"));
+const ProfilePage = lazy(() => import("@/pages/public/ProfilePage"));
+const PlansPage = lazy(() => import("@/pages/public/PlansPage"));
+const AboutPage = lazy(() => import("@/pages/public/AboutPage"));
+const ContactPage = lazy(() => import("@/pages/public/ContactPage"));
+const BlogPage = lazy(() => import("@/pages/public/BlogPage"));
+const TermsPage = lazy(() => import("@/pages/public/TermsPage"));
+const PrivacyPage = lazy(() => import("@/pages/public/PrivacyPage"));
+const CookiesPage = lazy(() => import("@/pages/public/CookiesPage"));
 
-// Auth
-import LoginPage from "@/pages/auth/LoginPage";
-import RegisterPage from "@/pages/auth/RegisterPage";
+const LoginPage = lazy(() => import("@/pages/auth/LoginPage"));
+const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage"));
 
-// Client
-import ClientDashboard from "@/pages/dashboard/client/ClientDashboard";
-import ClientAffiliates from "@/pages/dashboard/client/ClientAffiliates";
-import ClientSettings from "@/pages/dashboard/client/ClientSettings";
+const ClientDashboard = lazy(() => import("@/pages/dashboard/client/ClientDashboard"));
+const ClientAffiliates = lazy(() => import("@/pages/dashboard/client/ClientAffiliates"));
+const ClientSettings = lazy(() => import("@/pages/dashboard/client/ClientSettings"));
 
-// Escort
-import EscortDashboard from "@/pages/dashboard/escort/EscortDashboard";
-import EscortProfile from "@/pages/dashboard/escort/EscortProfile";
-import EscortOnboarding from "@/pages/dashboard/escort/EscortOnboarding";
-import EscortPhotos from "@/pages/dashboard/escort/EscortPhotos";
-import EscortSubscription from "@/pages/dashboard/escort/EscortSubscription";
-import EscortMetrics from "@/pages/dashboard/escort/EscortMetrics";
-import EscortAffiliates from "@/pages/dashboard/escort/EscortAffiliates";
-import EscortPreview from "@/pages/dashboard/escort/EscortPreview";
-import EscortSettings from "@/pages/dashboard/escort/EscortSettings";
+const EscortDashboard = lazy(() => import("@/pages/dashboard/escort/EscortDashboard"));
+const EscortProfile = lazy(() => import("@/pages/dashboard/escort/EscortProfile"));
+const EscortOnboarding = lazy(() => import("@/pages/dashboard/escort/EscortOnboarding"));
+const EscortPhotos = lazy(() => import("@/pages/dashboard/escort/EscortPhotos"));
+const EscortSubscription = lazy(() => import("@/pages/dashboard/escort/EscortSubscription"));
+const EscortMetrics = lazy(() => import("@/pages/dashboard/escort/EscortMetrics"));
+const EscortAffiliates = lazy(() => import("@/pages/dashboard/escort/EscortAffiliates"));
+const EscortPreview = lazy(() => import("@/pages/dashboard/escort/EscortPreview"));
+const EscortSettings = lazy(() => import("@/pages/dashboard/escort/EscortSettings"));
 
-// Admin
-import AdminDashboard from "@/pages/dashboard/admin/AdminDashboard";
-import AdminUsers from "@/pages/dashboard/admin/AdminUsers";
-import AdminPendingProfiles from "@/pages/dashboard/admin/AdminPendingProfiles";
-import AdminPlans from "@/pages/dashboard/admin/AdminPlans";
-import AdminPayments from "@/pages/dashboard/admin/AdminPayments";
-import AdminAffiliates from "@/pages/dashboard/admin/AdminAffiliates";
-import AdminReports from "@/pages/dashboard/admin/AdminReports";
-import AdminSettings from "@/pages/dashboard/admin/AdminSettings";
-import AdminContactMessages from "@/pages/dashboard/admin/AdminContactMessages";
-import AdminProfileDetail from "@/pages/dashboard/admin/AdminProfileDetail";
+const AdminDashboard = lazy(() => import("@/pages/dashboard/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("@/pages/dashboard/admin/AdminUsers"));
+const AdminPendingProfiles = lazy(() => import("@/pages/dashboard/admin/AdminPendingProfiles"));
+const AdminPlans = lazy(() => import("@/pages/dashboard/admin/AdminPlans"));
+const AdminPayments = lazy(() => import("@/pages/dashboard/admin/AdminPayments"));
+const AdminAffiliates = lazy(() => import("@/pages/dashboard/admin/AdminAffiliates"));
+const AdminReports = lazy(() => import("@/pages/dashboard/admin/AdminReports"));
+const AdminSettings = lazy(() => import("@/pages/dashboard/admin/AdminSettings"));
+const AdminContactMessages = lazy(() => import("@/pages/dashboard/admin/AdminContactMessages"));
+const AdminProfileDetail = lazy(() => import("@/pages/dashboard/admin/AdminProfileDetail"));
 
-import NotFound from "@/pages/NotFound";
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient();
+
+function PageLoader() {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+    </div>
+  );
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
     <AuthProvider>
       <TooltipProvider>
+        <ErrorBoundary>
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Post-OAuth redirect handler */}
             <Route element={<PublicLayout />}>
@@ -143,7 +151,9 @@ const App = () => (
 
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
         </BrowserRouter>
+        </ErrorBoundary>
       </TooltipProvider>
     </AuthProvider>
     </LanguageProvider>
