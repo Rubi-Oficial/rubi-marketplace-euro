@@ -98,13 +98,6 @@ export default function LandingPage() {
     else if (key === "service") setServiceFilter("");
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/buscar?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
   const countryName = countries.find((c) => c.slug === countryFilter)?.name;
   const cityName = filteredCities.find((c) => c.slug === cityFilter)?.name;
   const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
