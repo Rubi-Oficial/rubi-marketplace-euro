@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { Save, Send, Eye, Pause, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { CITIES, CATEGORIES, type ServiceOption } from "@/components/onboarding/types";
+import { CATEGORIES, type ServiceOption } from "@/components/onboarding/types";
+import { useLocations } from "@/hooks/useLocations";
 
 interface ProfileForm {
   display_name: string;
