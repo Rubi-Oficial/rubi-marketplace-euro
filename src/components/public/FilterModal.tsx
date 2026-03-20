@@ -57,7 +57,7 @@ function FilterSection({ title, defaultOpen = false, children }: { title: string
   );
 }
 
-function FilterBody({ filters, onApply, onClear, resultCount, services, categories = [] }: Omit<FilterModalProps, "open" | "onOpenChange">) {
+function FilterBody({ filters, onApply, onClear, resultCount, services, categories = [], onClose }: Omit<FilterModalProps, "open" | "onOpenChange"> & { onClose: () => void }) {
   const [searchInModal, setSearchInModal] = useState("");
 
   const filteredServices = useMemo(() => {
@@ -133,7 +133,7 @@ function FilterBody({ filters, onApply, onClear, resultCount, services, categori
         ) : (
           <span />
         )}
-        <Button variant="premium" size="sm" className="px-6">
+        <Button variant="premium" size="sm" className="px-6" onClick={onClose}>
           Show {resultCount} result{resultCount !== 1 ? "s" : ""}
         </Button>
       </div>
@@ -152,7 +152,7 @@ export function FilterModal(props: FilterModalProps) {
           <SheetHeader className="pb-2">
             <SheetTitle className="font-display text-base">Filters</SheetTitle>
           </SheetHeader>
-          <FilterBody {...bodyProps} />
+          <FilterBody {...bodyProps} onClose={() => onOpenChange(false)} />
         </SheetContent>
       </Sheet>
     );
@@ -164,7 +164,7 @@ export function FilterModal(props: FilterModalProps) {
         <DialogHeader className="pb-2">
           <DialogTitle className="font-display text-base">Filters</DialogTitle>
         </DialogHeader>
-        <FilterBody {...bodyProps} />
+        <FilterBody {...bodyProps} onClose={() => onOpenChange(false)} />
       </DialogContent>
     </Dialog>
   );

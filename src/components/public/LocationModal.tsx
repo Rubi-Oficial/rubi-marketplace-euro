@@ -1,4 +1,4 @@
-import { useState, forwardRef } from "react";
+import { useState } from "react";
 import { MapPin, ChevronRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -18,7 +18,7 @@ interface LocationModalProps {
   suggestedCountry?: string;
 }
 
-const LocationBody = forwardRef<HTMLDivElement, Omit<LocationModalProps, "open" | "onOpenChange"> & { onClose: () => void }>(function LocationBody({ selectedCountry, selectedCity, onApply, countries, getCitiesByCountry, onClose, suggestedCountry }, ref) {
+function LocationBody({ selectedCountry, selectedCity, onApply, countries, getCitiesByCountry, onClose, suggestedCountry }: Omit<LocationModalProps, "open" | "onOpenChange"> & { onClose: () => void }) {
   const [country, setCountry] = useState(selectedCountry);
   const [city, setCity] = useState(selectedCity);
 
@@ -134,7 +134,7 @@ const LocationBody = forwardRef<HTMLDivElement, Omit<LocationModalProps, "open" 
       </div>
     </div>
   );
-});
+}
 
 export function LocationModal(props: LocationModalProps) {
   const isMobile = useIsMobile();
