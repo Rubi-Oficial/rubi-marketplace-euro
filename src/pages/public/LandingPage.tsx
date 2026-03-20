@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ArrowRight, Search, SlidersHorizontal, MapPin } from "lucide-react";
+import { ArrowRight, SlidersHorizontal, MapPin } from "lucide-react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { useEffect, useState, useMemo } from "react";
 import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
