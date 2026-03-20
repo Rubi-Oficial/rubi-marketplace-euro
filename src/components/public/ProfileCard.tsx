@@ -100,7 +100,7 @@ export async function fetchServices() {
   return (data || []) as { id: string; name: string; slug: string }[];
 }
 
-export function ProfileCard({ profile }: { profile: EligibleProfile }) {
+export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProfile }>(({ profile }, ref) => {
   return (
     <Link
       to={`/perfil/${profile.slug}`}
