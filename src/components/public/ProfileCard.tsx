@@ -1,6 +1,7 @@
 import { forwardRef, useState, useEffect, useCallback, useRef } from "react";
-import { Link } from "react-router-dom";
-import { MapPin, Sparkles, ChevronLeft, ChevronRight, DollarSign } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { MapPin, Sparkles, ChevronLeft, ChevronRight, DollarSign, Heart, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
 export interface EligibleProfile {
