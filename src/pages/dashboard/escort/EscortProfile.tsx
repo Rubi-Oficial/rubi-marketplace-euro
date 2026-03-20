@@ -133,6 +133,7 @@ export default function EscortProfile() {
       city: form.city || null,
       city_slug: form.city_slug || null,
       country: form.country || null,
+      country_slug: form.country || null,
       category: form.category || null,
       bio: form.bio.trim() || null,
       languages: form.languages ? form.languages.split(",").map((l) => l.trim()).filter(Boolean) : null,
