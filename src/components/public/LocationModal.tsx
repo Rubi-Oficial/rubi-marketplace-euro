@@ -137,7 +137,7 @@ export function LocationModal(props: LocationModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm max-h-[70vh] flex flex-col p-5">
+      <DialogContent className="sm:max-w-sm max-h-[70vh] flex flex-col p-5" aria-describedby={undefined}>
         <DialogHeader className="pb-2">
           <DialogTitle className="font-display text-base flex items-center gap-2">
             <MapPin className="h-4 w-4 text-primary" />

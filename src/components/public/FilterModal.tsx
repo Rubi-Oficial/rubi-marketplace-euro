@@ -160,7 +160,7 @@ export function FilterModal(props: FilterModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[70vh] flex flex-col p-5">
+      <DialogContent className="sm:max-w-md max-h-[70vh] flex flex-col p-5" aria-describedby={undefined}>
         <DialogHeader className="pb-2">
           <DialogTitle className="font-display text-base">Filters</DialogTitle>
         </DialogHeader>
