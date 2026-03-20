@@ -38,6 +38,7 @@ const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secon
 
 export default function EscortProfile() {
   const { user } = useAuth();
+  const { countries, getCitiesByCountry, getCountryByCity, loading: locLoading } = useLocations();
   const [profileId, setProfileId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("draft");
   const [slug, setSlug] = useState<string | null>(null);
@@ -51,6 +52,14 @@ export default function EscortProfile() {
     category: "", bio: "", languages: "English",
     pricing_from: "", whatsapp: "", telegram: "",
   });
+
+  // Auto-detect country from existing city_slug
+  useEffect(() => {
+    if (form.city_slug && !form.country && !locLoading) {
+      const country = getCountryByCity(form.city_slug);
+      if (country) setForm((prev) => ({ ...prev, country: country.slug }));
+    }
+  }, [form.city_slug, form.country, locLoading]);
 
   useEffect(() => {
     if (!user) return;
