@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useLocations } from "@/hooks/useLocations";
 import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
 import { FilterModal } from "@/components/public/FilterModal";
+import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
 
 export default function SearchPage() {
@@ -14,6 +15,7 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(true);
   const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
 
   const { countries, getCitiesByCountry } = useLocations();
 
@@ -55,16 +57,33 @@ export default function SearchPage() {
     setSearchParams(params);
   };
 
-  const clearFilters = () => setSearchParams({});
+  const clearFilters = () => setSearchParams(searchQuery ? { q: searchQuery } : {});
   const hasFilters = !!countryFilter || !!cityFilter || !!categoryFilter || !!serviceFilter;
+  const hasLocationFilter = !!countryFilter || !!cityFilter;
+  const hasGeneralFilter = !!categoryFilter || !!serviceFilter;
 
-  const handleApplyFilters = (partial: Partial<{ country: string; city: string; category: string; service: string }>) => {
+  const handleApplyFilters = (partial: Partial<{ category: string; service: string }>) => {
     const params = new URLSearchParams(searchParams);
     Object.entries(partial).forEach(([k, v]) => {
       if (v) params.set(k, v);
       else params.delete(k);
     });
-    if ("country" in partial && partial.country !== countryFilter) params.delete("city");
+    setSearchParams(params);
+  };
+
+  const handleApplyLocation = (country: string, city: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (country) params.set("country", country);
+    else params.delete("country");
+    if (city) params.set("city", city);
+    else params.delete("city");
+    setSearchParams(params);
+  };
+
+  const handleClearGeneralFilters = () => {
+    const params = new URLSearchParams(searchParams);
+    params.delete("category");
+    params.delete("service");
     setSearchParams(params);
   };
 
@@ -89,30 +108,54 @@ export default function SearchPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">
-      {/* Search bar + Filters button */}
-      <div className="flex gap-2 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, city..."
-            className="pl-10 h-10 bg-card border-border/50"
-            value={searchQuery}
-            onChange={(e) => updateParam("q", e.target.value)}
-          />
-        </div>
+      {/* Search bar — full width */}
+      <div className="relative mb-3">
+        <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search by name, city..."
+          className="pl-10 h-11 bg-card border-border/40 text-sm rounded-xl"
+          value={searchQuery}
+          onChange={(e) => updateParam("q", e.target.value)}
+        />
+      </div>
+
+      {/* Filter buttons row */}
+      <div className="flex items-center gap-2 mb-4">
         <Button
           variant="outline"
+          size="sm"
           onClick={() => setFilterOpen(true)}
-          className={`h-10 shrink-0 gap-2 border-border/50 ${hasFilters ? "border-primary/40 text-primary" : ""}`}
+          className={`h-9 gap-2 rounded-full border-border/40 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
         >
-          <SlidersHorizontal className="h-4 w-4" />
-          <span className="hidden sm:inline text-sm">Filters</span>
-          {hasFilters && (
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          <span className="text-xs">Filters</span>
+          {hasGeneralFilter && (
             <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
-              {[countryFilter, cityFilter, categoryFilter, serviceFilter].filter(Boolean).length}
+              {[categoryFilter, serviceFilter].filter(Boolean).length}
             </span>
           )}
         </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setLocationOpen(true)}
+          className={`h-9 gap-2 rounded-full border-border/40 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
+        >
+          <MapPin className="h-3.5 w-3.5" />
+          <span className="text-xs">Location</span>
+          {hasLocationFilter && (
+            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
+              {[countryFilter, cityFilter].filter(Boolean).length}
+            </span>
+          )}
+        </Button>
+
+        {hasFilters && (
+          <button onClick={clearFilters} className="text-xs text-muted-foreground hover:text-foreground ml-auto transition-colors">
+            Clear all
+          </button>
+        )}
       </div>
 
       {/* Active filter chips */}
@@ -156,17 +199,26 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Filter modal */}
+      {/* Filter modal — services & category only */}
       <FilterModal
         open={filterOpen}
         onOpenChange={setFilterOpen}
-        filters={{ country: countryFilter, city: cityFilter, category: categoryFilter, service: serviceFilter }}
+        filters={{ category: categoryFilter, service: serviceFilter }}
         onApply={handleApplyFilters}
-        onClear={clearFilters}
+        onClear={handleClearGeneralFilters}
         resultCount={profiles.length}
+        services={services}
+      />
+
+      {/* Location modal — country & city */}
+      <LocationModal
+        open={locationOpen}
+        onOpenChange={setLocationOpen}
+        selectedCountry={countryFilter}
+        selectedCity={cityFilter}
+        onApply={handleApplyLocation}
         countries={countries}
         getCitiesByCountry={getCitiesByCountry}
-        services={services}
       />
     </div>
   );

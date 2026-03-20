@@ -22,7 +22,6 @@ export default function Navbar() {
   const [activeService, setActiveService] = useState("");
 
   const { countries, getCitiesByCountry } = useLocations();
-  const filteredCities = activeCountry ? getCitiesByCountry(activeCountry) : [];
 
   useEffect(() => {
     if (!isHome) return;
@@ -107,11 +106,11 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Row 2: Lightweight filter chips — homepage only */}
+      {/* Row 2: Lightweight category chips — homepage only */}
       {isHome && (
         <div className="border-t border-border/20 bg-background/90">
-          <div className="container mx-auto px-4 flex items-center gap-1 overflow-x-auto scrollbar-hide py-2">
-            {countries.map((country) => (
+          <div className="container mx-auto px-4 flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-2">
+            {countries.slice(0, 6).map((country) => (
               <button
                 key={country.slug}
                 onClick={() => handleCountryClick(country.slug)}
@@ -125,29 +124,10 @@ export default function Navbar() {
               </button>
             ))}
 
-            {filteredCities.length > 0 && (
-              <>
-                <span className="mx-1 h-3.5 w-px bg-border/30 shrink-0" />
-                {filteredCities.map((city) => (
-                  <button
-                    key={city.slug}
-                    onClick={() => setActiveCity(activeCity === city.slug ? "" : city.slug)}
-                    className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition-all shrink-0 ${
-                      activeCity === city.slug
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                    }`}
-                  >
-                    {city.name}
-                  </button>
-                ))}
-              </>
-            )}
-
             {services.length > 0 && (
               <>
                 <span className="mx-1 h-3.5 w-px bg-border/30 shrink-0" />
-                {services.map((svc) => (
+                {services.slice(0, 5).map((svc) => (
                   <button
                     key={svc.slug}
                     onClick={() => setActiveService(activeService === svc.slug ? "" : svc.slug)}

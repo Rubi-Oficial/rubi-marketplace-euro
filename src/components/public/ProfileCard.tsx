@@ -121,27 +121,27 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
           </div>
         )}
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-transparent to-transparent" />
+        {/* Gradient overlay — lighter for cleaner look */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/10 to-transparent" />
 
         {/* Featured badge */}
         {profile.is_featured && (
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 rounded-full gold-gradient px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-md">
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 rounded-full gold-gradient px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-md">
             <Sparkles className="h-2.5 w-2.5" />
             Featured
           </div>
         )}
 
-        {/* Info at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-3.5">
-          <h3 className="font-display text-[15px] font-semibold text-foreground leading-tight truncate">
+        {/* Info at bottom — name + city only */}
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <h3 className="font-display text-base font-semibold text-foreground leading-tight truncate">
             {profile.display_name}
             {profile.age && (
               <span className="ml-1.5 text-xs font-normal text-muted-foreground">{profile.age}</span>
             )}
           </h3>
           {profile.city && (
-            <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+            <div className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
               <MapPin className="h-2.5 w-2.5 text-primary/50" />
               {profile.city}
             </div>
