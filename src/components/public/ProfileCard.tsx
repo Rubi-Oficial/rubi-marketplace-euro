@@ -1,6 +1,6 @@
-import { forwardRef } from "react";
+import { forwardRef, useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Sparkles } from "lucide-react";
+import { MapPin, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export interface EligibleProfile {
@@ -13,7 +13,7 @@ export interface EligibleProfile {
   slug: string | null;
   pricing_from: number | null;
   is_featured: boolean;
-  thumb_url: string | null;
+  image_urls: string[];
 }
 
 export async function fetchEligibleProfiles(filters?: {
@@ -64,12 +64,12 @@ export async function fetchEligibleProfiles(filters?: {
     .in("profile_id", filteredProfileIds).eq("moderation_status", "approved")
     .order("sort_order", { ascending: true });
 
-  const thumbMap: Record<string, string> = {};
+  const imageMap: Record<string, string[]> = {};
   (images || []).forEach((img: any) => {
-    if (!thumbMap[img.profile_id]) {
-      thumbMap[img.profile_id] = supabase.storage
-        .from("profile-images").getPublicUrl(img.storage_path).data.publicUrl;
-    }
+    if (!imageMap[img.profile_id]) imageMap[img.profile_id] = [];
+    imageMap[img.profile_id].push(
+      supabase.storage.from("profile-images").getPublicUrl(img.storage_path).data.publicUrl
+    );
   });
 
   const profileMap = new Map(profiles.map((p: any) => [p.id, p]));
@@ -80,7 +80,7 @@ export async function fetchEligibleProfiles(filters?: {
       id: p.id!, display_name: p.display_name ?? "", age: p.age ?? null,
       city: p.city ?? null, city_slug: p.city_slug ?? null, category: p.category ?? null,
       slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
-      is_featured: p.is_featured ?? false, thumb_url: thumbMap[p.id!] || null,
+      is_featured: p.is_featured ?? false, image_urls: imageMap[p.id!] || [],
     };
   });
 }
@@ -100,31 +100,127 @@ export async function fetchServices() {
   return (data || []) as { id: string; name: string; slug: string }[];
 }
 
+const ROTATION_INTERVAL = 5000;
+const PAUSE_AFTER_MANUAL = 10000;
+
 export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProfile }>(({ profile }, ref) => {
+  const urls = profile.image_urls;
+  const hasMultiple = urls.length > 1;
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const pausedUntilRef = useRef(0);
+
+  // Auto-rotation
+  useEffect(() => {
+    if (!hasMultiple) return;
+    const id = setInterval(() => {
+      if (hovered) return;
+      if (Date.now() < pausedUntilRef.current) return;
+      setActiveIdx((i) => (i + 1) % urls.length);
+    }, ROTATION_INTERVAL);
+    return () => clearInterval(id);
+  }, [hasMultiple, hovered, urls.length]);
+
+  const goTo = useCallback(
+    (idx: number, e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setActiveIdx(idx);
+      pausedUntilRef.current = Date.now() + PAUSE_AFTER_MANUAL;
+    },
+    []
+  );
+
+  const goPrev = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setActiveIdx((i) => (i - 1 + urls.length) % urls.length);
+      pausedUntilRef.current = Date.now() + PAUSE_AFTER_MANUAL;
+    },
+    [urls.length]
+  );
+
+  const goNext = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setActiveIdx((i) => (i + 1) % urls.length);
+      pausedUntilRef.current = Date.now() + PAUSE_AFTER_MANUAL;
+    },
+    [urls.length]
+  );
+
   if (!profile.slug) return null;
 
   return (
     <Link
       ref={ref}
       to={`/perfil/${profile.slug}`}
-      className="group relative block overflow-hidden rounded-xl bg-card shadow-sm border border-border/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20"
+      className="group relative block overflow-hidden rounded-xl bg-card shadow-sm border border-border/50 transition-shadow duration-300 hover:shadow-lg hover:shadow-primary/5"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-        {profile.thumb_url ? (
-          <img
-            src={profile.thumb_url}
-            alt={profile.display_name}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            loading="lazy"
-          />
+        {/* Images stack with crossfade */}
+        {urls.length > 0 ? (
+          urls.map((url, idx) => (
+            <img
+              key={url}
+              src={url}
+              alt={`${profile.display_name} — ${idx + 1}`}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
+                idx === activeIdx ? "opacity-100" : "opacity-0"
+              }`}
+              loading={idx === 0 ? "eager" : "lazy"}
+            />
+          ))
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground/20">
             <div className="h-14 w-14 rounded-full bg-muted-foreground/10" />
           </div>
         )}
 
-        {/* Gradient overlay — strong for text legibility */}
+        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+        {/* Navigation arrows — visible on hover */}
+        {hasMultiple && (
+          <>
+            <button
+              onClick={goPrev}
+              className="absolute left-1.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/90 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-black/60 active:scale-95"
+              aria-label="Previous"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={goNext}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/90 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-black/60 active:scale-95"
+              aria-label="Next"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </>
+        )}
+
+        {/* Dot indicators */}
+        {hasMultiple && (
+          <div className="absolute bottom-10 left-0 right-0 flex items-center justify-center gap-1.5 z-10">
+            {urls.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={(e) => goTo(idx, e)}
+                className={`rounded-full transition-all duration-300 ${
+                  idx === activeIdx
+                    ? "h-2 w-2 bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.6)]"
+                    : "h-1.5 w-1.5 bg-white/50 hover:bg-white/80"
+                }`}
+                aria-label={`Image ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Featured badge */}
         {profile.is_featured && (
@@ -134,19 +230,19 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
           </div>
         )}
 
-        {/* Category badge top-right */}
+        {/* Category badge */}
         {profile.category && (
           <div className="absolute top-2.5 right-2.5 rounded-full bg-black/50 backdrop-blur-sm px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/90">
             {profile.category}
           </div>
         )}
 
-        {/* Info at bottom — name + city only */}
+        {/* Info at bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-3">
-          <h3 className="font-display text-base font-bold text-white leading-tight truncate drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+          <h3 className="font-display text-lg font-bold text-white leading-tight truncate drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
             {profile.display_name}
             {profile.age && (
-              <span className="ml-1.5 text-xs font-normal text-white/70">{profile.age}</span>
+              <span className="ml-1.5 text-sm font-medium text-primary/90">{profile.age}</span>
             )}
           </h3>
           {profile.city && (
