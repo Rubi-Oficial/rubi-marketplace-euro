@@ -3,24 +3,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutDashboard,
-  Settings,
-  LogOut,
-  FileText,
-  Image,
-  CreditCard,
-  Users,
-  Shield,
-  BarChart3,
-  Link2,
-  Heart,
-  ClipboardList,
-  Wallet,
-  LineChart,
-  Menu,
-  X,
-  Mail,
-  Eye,
+  LayoutDashboard, Settings, LogOut, FileText, Image, CreditCard,
+  Users, UserCog, Shield, BarChart3, Link2, Heart, ClipboardList,
+  Wallet, LineChart, Menu, X, Mail, Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
@@ -54,6 +39,7 @@ function useNavItems(role: "client" | "escort" | "admin") {
     return [
       { label: t("dash.panel"), path: "/admin", icon: <LayoutDashboard className="h-4 w-4" /> },
       { label: t("dash.profiles"), path: "/admin/perfis", icon: <Users className="h-4 w-4" /> },
+      { label: "Usuários", path: "/admin/usuarios", icon: <UserCog className="h-4 w-4" /> },
       { label: t("dash.pending"), path: "/admin/perfis/pendentes", icon: <Shield className="h-4 w-4" /> },
       { label: t("dash.messages"), path: "/admin/mensagens", icon: <Mail className="h-4 w-4" /> },
       { label: t("dash.plans"), path: "/admin/planos", icon: <ClipboardList className="h-4 w-4" /> },
