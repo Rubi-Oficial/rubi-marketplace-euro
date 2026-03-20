@@ -63,14 +63,14 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         gold: {
-          DEFAULT: "hsl(35 60% 55%)",
-          light: "hsl(35 60% 70%)",
-          dark: "hsl(25 70% 45%)",
+          DEFAULT: "hsl(35 60% 50%)",
+          light: "hsl(35 60% 65%)",
+          dark: "hsl(25 70% 42%)",
         },
         ruby: {
-          DEFAULT: "hsl(350 65% 52%)",
-          light: "hsl(350 60% 65%)",
-          dark: "hsl(340 70% 40%)",
+          DEFAULT: "hsl(350 65% 48%)",
+          light: "hsl(350 60% 62%)",
+          dark: "hsl(340 70% 38%)",
         },
       },
       borderRadius: {

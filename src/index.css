@@ -101,12 +101,12 @@
     background: var(--surface-gradient);
   }
   .glass {
-    @apply bg-card/60 backdrop-blur-md border border-border/50;
+    @apply bg-card/80 backdrop-blur-md border border-border/50;
   }
   .glow-ruby {
-    box-shadow: 0 0 20px hsl(350 65% 52% / 0.15), inset 0 1px 0 hsl(350 65% 52% / 0.1);
+    box-shadow: 0 0 20px hsl(350 65% 48% / 0.12), inset 0 1px 0 hsl(350 65% 48% / 0.08);
   }
   .glow-gold {
-    box-shadow: 0 0 20px hsl(35 60% 55% / 0.15), inset 0 1px 0 hsl(35 60% 55% / 0.1);
+    box-shadow: 0 0 20px hsl(35 60% 50% / 0.15), inset 0 1px 0 hsl(35 60% 50% / 0.1);
   }
 }
