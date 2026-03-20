@@ -95,7 +95,7 @@ export default function AdminUserManagement() {
       .order("created_at", { ascending: false });
 
     if (filterRole !== "all") {
-      query = query.eq("role", filterRole);
+      query = query.eq("role", filterRole as "client" | "professional" | "admin");
     }
     if (searchText.trim()) {
       const term = `%${searchText.trim()}%`;

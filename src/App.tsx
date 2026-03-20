@@ -54,6 +54,7 @@ const AdminReports = lazy(() => import("@/pages/dashboard/admin/AdminReports"));
 const AdminSettings = lazy(() => import("@/pages/dashboard/admin/AdminSettings"));
 const AdminContactMessages = lazy(() => import("@/pages/dashboard/admin/AdminContactMessages"));
 const AdminProfileDetail = lazy(() => import("@/pages/dashboard/admin/AdminProfileDetail"));
+const AdminUserManagement = lazy(() => import("@/pages/dashboard/admin/AdminUserManagement"));
 
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
