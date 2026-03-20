@@ -15,9 +15,10 @@ interface LocationModalProps {
   onApply: (country: string, city: string) => void;
   countries: Country[];
   getCitiesByCountry: (slug: string) => City[];
+  suggestedCountry?: string;
 }
 
-function LocationBody({ selectedCountry, selectedCity, onApply, countries, getCitiesByCountry, onClose }: Omit<LocationModalProps, "open" | "onOpenChange"> & { onClose: () => void }) {
+function LocationBody({ selectedCountry, selectedCity, onApply, countries, getCitiesByCountry, onClose, suggestedCountry }: Omit<LocationModalProps, "open" | "onOpenChange"> & { onClose: () => void }) {
   const [country, setCountry] = useState(selectedCountry);
   const [city, setCity] = useState(selectedCity);
 

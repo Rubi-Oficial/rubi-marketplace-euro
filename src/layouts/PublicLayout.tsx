@@ -3,13 +3,10 @@ import Navbar from "@/components/shared/Navbar";
 import { Link } from "react-router-dom";
 
 export default function PublicLayout() {
-  const location = useLocation();
-  const isHome = location.pathname === "/";
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className={isHome ? "pt-[6.5rem]" : "pt-14"}>
+      <main className="pt-14">
         <Outlet />
       </main>
       <footer className="border-t border-border/30 py-10 mt-8">
