@@ -742,9 +742,7 @@ export type Database = {
           languages: string[] | null
           pricing_from: number | null
           slug: string | null
-          telegram: string | null
           updated_at: string | null
-          whatsapp: string | null
         }
         Insert: {
           age?: number | null
@@ -762,9 +760,7 @@ export type Database = {
           languages?: string[] | null
           pricing_from?: number | null
           slug?: string | null
-          telegram?: string | null
           updated_at?: string | null
-          whatsapp?: string | null
         }
         Update: {
           age?: number | null
@@ -782,9 +778,7 @@ export type Database = {
           languages?: string[] | null
           pricing_from?: number | null
           slug?: string | null
-          telegram?: string | null
           updated_at?: string | null
-          whatsapp?: string | null
         }
         Relationships: []
       }
