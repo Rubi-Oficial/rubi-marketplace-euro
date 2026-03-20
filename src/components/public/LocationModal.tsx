@@ -18,7 +18,7 @@ interface LocationModalProps {
   suggestedCountry?: string;
 }
 
-function LocationBody({ selectedCountry, selectedCity, onApply, countries, getCitiesByCountry, onClose, suggestedCountry }: Omit<LocationModalProps, "open" | "onOpenChange"> & { onClose: () => void }) {
+const LocationBody = forwardRef<HTMLDivElement, Omit<LocationModalProps, "open" | "onOpenChange"> & { onClose: () => void }>(function LocationBody({ selectedCountry, selectedCity, onApply, countries, getCitiesByCountry, onClose, suggestedCountry }, ref) {
   const [country, setCountry] = useState(selectedCountry);
   const [city, setCity] = useState(selectedCity);
 
