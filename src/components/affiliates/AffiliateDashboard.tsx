@@ -16,10 +16,19 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+interface ReferredUser {
+  id: string;
+  full_name: string | null;
+  email: string;
+  role: string;
+  created_at: string;
+}
+
 interface AffiliateStats {
   referralCode: string | null;
   clicks: number;
   signups: number;
+  referredUsers: ReferredUser[];
   conversions: {
     id: string;
     referred_user_id: string;
@@ -41,6 +50,7 @@ function useAffiliateData(): AffiliateStats & { loading: boolean } {
     referralCode: null,
     clicks: 0,
     signups: 0,
+    referredUsers: [],
     conversions: [],
     commissionPending: 0,
     commissionApproved: 0,
@@ -51,19 +61,27 @@ function useAffiliateData(): AffiliateStats & { loading: boolean } {
     if (!user) return;
 
     const load = async () => {
-      const [userRes, clicksRes, signupsRes, conversionsRes] = await Promise.all([
+      const [userRes, clicksRes, referredRes, conversionsRes] = await Promise.all([
         supabase.from("users").select("referral_code").eq("id", user.id).single(),
         supabase.from("referral_clicks").select("id", { count: "exact", head: true }).eq("referrer_user_id", user.id),
-        supabase.from("users").select("id", { count: "exact", head: true }).eq("referred_by_user_id", user.id),
+        supabase.from("users").select("id, full_name, email, role, created_at").eq("referred_by_user_id", user.id).order("created_at", { ascending: false }),
         supabase.from("referral_conversions").select("*").eq("referrer_user_id", user.id).order("created_at", { ascending: false }),
       ]);
 
       const conversions = conversionsRes.data || [];
+      const referredUsers: ReferredUser[] = (referredRes.data || []).map((u: any) => ({
+        id: u.id,
+        full_name: u.full_name,
+        email: u.email,
+        role: u.role,
+        created_at: u.created_at,
+      }));
 
       setStats({
         referralCode: userRes.data?.referral_code ?? null,
         clicks: clicksRes.count ?? 0,
-        signups: signupsRes.count ?? 0,
+        signups: referredUsers.length,
+        referredUsers,
         conversions,
         commissionPending: conversions.filter((c) => c.status === "pending").reduce((s, c) => s + Number(c.commission_amount), 0),
         commissionApproved: conversions.filter((c) => c.status === "approved").reduce((s, c) => s + Number(c.commission_amount), 0),
@@ -80,6 +98,8 @@ function useAffiliateData(): AffiliateStats & { loading: boolean } {
 
 const fmt = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
+
+const roleLabel: Record<string, string> = { client: "Cliente", professional: "Profissional", admin: "Admin" };
 
 export default function AffiliateDashboard() {
   const data = useAffiliateData();
@@ -144,29 +164,27 @@ export default function AffiliateDashboard() {
           Partilhe este link por WhatsApp, redes sociais ou email. Cada profissional que assinar gera comissão para si.
         </p>
         {referralLink ? (
-          <>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <code className="flex-1 truncate rounded-lg bg-background/80 border border-border px-4 py-3 text-sm text-foreground font-mono select-all">
-                {referralLink}
-              </code>
-              <div className="flex gap-2">
-                <Button variant="premium" size="lg" onClick={copyLink} className="flex-1 sm:flex-none">
-                  <Copy className="mr-2 h-4 w-4" />
-                  Copiar Link
-                </Button>
-                <Button size="lg" variant="outline-gold" onClick={shareLink} className="flex-1 sm:flex-none">
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Partilhar
-                </Button>
-              </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <code className="flex-1 truncate rounded-lg bg-background/80 border border-border px-4 py-3 text-sm text-foreground font-mono select-all">
+              {referralLink}
+            </code>
+            <div className="flex gap-2">
+              <Button variant="premium" size="lg" onClick={copyLink} className="flex-1 sm:flex-none">
+                <Copy className="mr-2 h-4 w-4" />
+                Copiar Link
+              </Button>
+              <Button size="lg" variant="outline-gold" onClick={shareLink} className="flex-1 sm:flex-none">
+                <Share2 className="mr-2 h-4 w-4" />
+                Partilhar
+              </Button>
             </div>
-          </>
+          </div>
         ) : (
           <p className="text-sm text-muted-foreground">Carregando seu link...</p>
         )}
       </div>
 
-      {/* First conversion goal / How it works */}
+      {/* How it works */}
       {!hasFirstConversion && (
         <div className="rounded-lg border border-primary/20 bg-card p-6">
           <div className="flex items-start gap-4">
@@ -206,31 +224,10 @@ export default function AffiliateDashboard() {
       <div>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Funil de Conversão</h2>
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            icon={<MousePointerClick className="h-4 w-4" />}
-            label="Cliques no link"
-            value={data.clicks.toString()}
-            sublabel="Visitantes que clicaram"
-          />
-          <StatCard
-            icon={<UserPlus className="h-4 w-4" />}
-            label="Cadastros gerados"
-            value={data.signups.toString()}
-            sublabel={`${conversionRate}% de conversão`}
-          />
-          <StatCard
-            icon={<CreditCard className="h-4 w-4" />}
-            label="Pagamentos convertidos"
-            value={data.conversions.length.toString()}
-            sublabel={`${paymentRate}% dos cadastros`}
-          />
-          <StatCard
-            icon={<TrendingUp className="h-4 w-4" />}
-            label="Total em comissões"
-            value={fmt(totalEarned)}
-            sublabel="Acumulado geral"
-            highlight
-          />
+          <StatCard icon={<MousePointerClick className="h-4 w-4" />} label="Cliques no link" value={data.clicks.toString()} sublabel="Visitantes que clicaram" />
+          <StatCard icon={<UserPlus className="h-4 w-4" />} label="Cadastros gerados" value={data.signups.toString()} sublabel={`${conversionRate}% de conversão`} />
+          <StatCard icon={<CreditCard className="h-4 w-4" />} label="Pagamentos convertidos" value={data.conversions.length.toString()} sublabel={`${paymentRate}% dos cadastros`} />
+          <StatCard icon={<TrendingUp className="h-4 w-4" />} label="Total em comissões" value={fmt(totalEarned)} sublabel="Acumulado geral" highlight />
         </div>
       </div>
 
@@ -244,10 +241,50 @@ export default function AffiliateDashboard() {
         </div>
       </div>
 
+      {/* Referred users list */}
+      <div>
+        <h2 className="mb-4 font-display text-lg font-semibold text-foreground">
+          Cadastros Indicados ({data.referredUsers.length})
+        </h2>
+
+        {data.referredUsers.length === 0 ? (
+          <div className="rounded-lg border border-border bg-card p-8 text-center">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+              <UserPlus className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground">Nenhum cadastro realizado através do seu link ainda.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nome</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Tipo</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Data</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.referredUsers.map((ru) => (
+                  <tr key={ru.id} className="border-b border-border last:border-0">
+                    <td className="px-4 py-3">
+                      <p className="text-foreground font-medium">{ru.full_name || "—"}</p>
+                      <p className="text-xs text-muted-foreground">{ru.email}</p>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground capitalize">{roleLabel[ru.role] || ru.role}</td>
+                    <td className="px-4 py-3 tabular-nums text-muted-foreground">{new Date(ru.created_at).toLocaleDateString("pt-BR")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* Conversion history */}
       <div>
         <h2 className="mb-4 font-display text-lg font-semibold text-foreground">
-          Histórico de Indicações
+          Histórico de Conversões ({data.conversions.length})
         </h2>
 
         {data.conversions.length === 0 ? (
@@ -255,9 +292,9 @@ export default function AffiliateDashboard() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
               <Gift className="h-6 w-6 text-primary" />
             </div>
-            <p className="font-medium text-foreground">Nenhuma indicação convertida ainda</p>
+            <p className="font-medium text-foreground">Nenhuma conversão financeira ainda</p>
             <p className="mt-1 text-sm text-muted-foreground max-w-sm mx-auto">
-              Partilhe o seu link com profissionais que procuram visibilidade premium na Europa. Cada assinatura gera comissão para si.
+              Quando um dos seus indicados assinar um plano, a comissão aparecerá aqui.
             </p>
             <Button variant="premium" size="sm" className="mt-4" onClick={copyLink}>
               <Copy className="mr-2 h-3.5 w-3.5" />
@@ -302,63 +339,27 @@ export default function AffiliateDashboard() {
   );
 }
 
-function StatCard({
-  icon,
-  label,
-  value,
-  sublabel,
-  highlight,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  sublabel?: string;
-  highlight?: boolean;
-}) {
+function StatCard({ icon, label, value, sublabel, highlight }: { icon: React.ReactNode; label: string; value: string; sublabel?: string; highlight?: boolean }) {
   return (
     <div className={`rounded-lg border bg-card p-5 ${highlight ? "border-primary/30" : "border-border"}`}>
       <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
         <p className="text-xs sm:text-sm">{label}</p>
       </div>
-      <p className={`mt-1 font-display text-2xl font-bold tabular-nums ${highlight ? "text-primary" : "text-foreground"}`}>
-        {value}
-      </p>
-      {sublabel && (
-        <p className="mt-0.5 text-xs text-muted-foreground">{sublabel}</p>
-      )}
+      <p className={`mt-1 font-display text-2xl font-bold tabular-nums ${highlight ? "text-primary" : "text-foreground"}`}>{value}</p>
+      {sublabel && <p className="mt-0.5 text-xs text-muted-foreground">{sublabel}</p>}
     </div>
   );
 }
 
-function CommissionCard({
-  label,
-  sublabel,
-  amount,
-  variant,
-}: {
-  label: string;
-  sublabel: string;
-  amount: number;
-  variant: "pending" | "approved" | "paid";
-}) {
-  const styles = {
-    pending: "border-yellow-500/20",
-    approved: "border-primary/20",
-    paid: "border-green-500/20",
-  };
-  const valueStyles = {
-    pending: "text-foreground",
-    approved: "text-primary",
-    paid: "text-green-500",
-  };
+function CommissionCard({ label, sublabel, amount, variant }: { label: string; sublabel: string; amount: number; variant: "pending" | "approved" | "paid" }) {
+  const styles = { pending: "border-yellow-500/20", approved: "border-primary/20", paid: "border-green-500/20" };
+  const valueStyles = { pending: "text-foreground", approved: "text-primary", paid: "text-green-600" };
 
   return (
     <div className={`rounded-lg border bg-card p-5 ${styles[variant]}`}>
       <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className={`mt-1 font-display text-2xl font-bold tabular-nums ${valueStyles[variant]}`}>
-        {fmt(amount)}
-      </p>
+      <p className={`mt-1 font-display text-2xl font-bold tabular-nums ${valueStyles[variant]}`}>{fmt(amount)}</p>
       <p className="mt-0.5 text-xs text-muted-foreground">{sublabel}</p>
     </div>
   );
@@ -371,13 +372,7 @@ function StatusBadge({ status }: { status: string }) {
     paid: "bg-green-500/10 text-green-600",
     rejected: "bg-destructive/10 text-destructive",
   };
-
-  const labels: Record<string, string> = {
-    pending: "Pendente",
-    approved: "Aprovada",
-    paid: "Paga",
-    rejected: "Rejeitada",
-  };
+  const labels: Record<string, string> = { pending: "Pendente", approved: "Aprovada", paid: "Paga", rejected: "Rejeitada" };
 
   return (
     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status] || ""}`}>
