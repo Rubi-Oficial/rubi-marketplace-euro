@@ -742,9 +742,7 @@ export type Database = {
           languages: string[] | null
           pricing_from: number | null
           slug: string | null
-          telegram: string | null
           updated_at: string | null
-          whatsapp: string | null
         }
         Insert: {
           age?: number | null
@@ -762,9 +760,7 @@ export type Database = {
           languages?: string[] | null
           pricing_from?: number | null
           slug?: string | null
-          telegram?: string | null
           updated_at?: string | null
-          whatsapp?: string | null
         }
         Update: {
           age?: number | null
@@ -782,9 +778,7 @@ export type Database = {
           languages?: string[] | null
           pricing_from?: number | null
           slug?: string | null
-          telegram?: string | null
           updated_at?: string | null
-          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -801,6 +795,7 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
+      get_profile_contact: { Args: { p_profile_id: string }; Returns: Json }
       get_referrer_id_by_code: { Args: { _code: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }

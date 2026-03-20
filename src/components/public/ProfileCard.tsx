@@ -18,7 +18,6 @@ export interface EligibleProfile {
   is_featured: boolean;
   image_urls: string[];
   bio: string | null;
-  whatsapp: string | null;
 }
 
 export async function fetchEligibleProfiles(filters?: {
@@ -31,7 +30,7 @@ export async function fetchEligibleProfiles(filters?: {
 }): Promise<EligibleProfile[]> {
   let query = supabase
     .from("eligible_profiles")
-    .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, whatsapp")
+    .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio")
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -88,7 +87,7 @@ export async function fetchEligibleProfiles(filters?: {
       city: p.city ?? null, city_slug: p.city_slug ?? null, category: p.category ?? null,
       slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
       is_featured: p.is_featured ?? false, image_urls: imageMap[p.id!] || [],
-      bio: p.bio ?? null, whatsapp: p.whatsapp ?? null,
+      bio: p.bio ?? null,
     };
   });
 }
@@ -168,15 +167,6 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
     [urls.length]
   );
 
-  const handleWhatsApp = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (!profile.whatsapp) return;
-      const msg = encodeURIComponent("Olá! Gostaria de mais informações sobre seus serviços.");
-      window.open(`https://wa.me/${profile.whatsapp.replace(/\D/g, "")}?text=${msg}`, "_blank");
-    },
-    [profile.whatsapp]
-  );
 
   if (!profile.slug) return null;
 
@@ -320,20 +310,6 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
             <Heart className={`h-4 w-4 ${favorited ? "fill-primary" : ""}`} />
           </Button>
 
-          {profile.whatsapp ? (
-            <Button
-              size="sm"
-              variant="outline"
-              className="shrink-0 rounded-lg px-3 border-border/60 text-[#25D366] hover:bg-[#25D366]/10 hover:border-[#25D366]/40 transition-colors duration-200"
-              onClick={handleWhatsApp}
-              aria-label="Contato via WhatsApp"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
-                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.553 4.12 1.52 5.857L.057 23.648l5.944-1.56A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.82c-1.97 0-3.867-.53-5.52-1.53l-.396-.236-3.525.925.94-3.44-.258-.41A9.79 9.79 0 012.18 12C2.18 6.58 6.58 2.18 12 2.18S21.82 6.58 21.82 12 17.42 21.82 12 21.82z" />
-              </svg>
-            </Button>
-          ) : null}
         </div>
       </div>
     </div>

@@ -52,7 +52,16 @@ export default function ProfilePage() {
         .maybeSingle();
 
       if (!eligible) { setLoading(false); return; }
-      setProfile(eligible as PublicProfile);
+
+      // Fetch contact details via secure RPC
+      const { data: contactData } = await supabase.rpc("get_profile_contact", { p_profile_id: eligible.id });
+      const contact = contactData as { whatsapp: string | null; telegram: string | null } | null;
+
+      setProfile({
+        ...eligible,
+        whatsapp: contact?.whatsapp ?? null,
+        telegram: contact?.telegram ?? null,
+      } as unknown as PublicProfile);
 
       const { data: imgData } = await supabase
         .from("profile_images")
