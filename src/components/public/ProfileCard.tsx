@@ -107,11 +107,13 @@ const ROTATION_INTERVAL = 5000;
 const PAUSE_AFTER_MANUAL = 10000;
 const BIO_MAX_LENGTH = 150;
 
-export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProfile }>(({ profile }, ref) => {
+export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile }>(({ profile }, ref) => {
+  const navigate = useNavigate();
   const urls = profile.image_urls;
   const hasMultiple = urls.length > 1;
   const [activeIdx, setActiveIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
+  const [favorited, setFavorited] = useState(false);
   const pausedUntilRef = useRef(0);
 
   const truncatedBio = profile.bio
@@ -120,7 +122,6 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
       : profile.bio
     : null;
 
-  // Auto-rotation
   useEffect(() => {
     if (!hasMultiple) return;
     const id = setInterval(() => {
@@ -161,17 +162,27 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
     [urls.length]
   );
 
+  const handleWhatsApp = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (!profile.whatsapp) return;
+      const msg = encodeURIComponent("Olá! Gostaria de mais informações sobre seus serviços.");
+      window.open(`https://wa.me/${profile.whatsapp.replace(/\D/g, "")}?text=${msg}`, "_blank");
+    },
+    [profile.whatsapp]
+  );
+
   if (!profile.slug) return null;
 
   return (
-    <Link
+    <div
       ref={ref}
-      to={`/perfil/${profile.slug}`}
-      className="group relative block overflow-hidden rounded-xl bg-white shadow-sm border border-border/40 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/8"
+      className="group relative flex flex-col overflow-hidden rounded-xl bg-white shadow-sm border border-border/40 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/8 cursor-pointer"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={() => navigate(`/perfil/${profile.slug}`)}
     >
-      {/* Image section — taller */}
+      {/* Image section */}
       <div className="relative h-[300px] sm:h-[320px] overflow-hidden bg-muted">
         {urls.length > 0 ? (
           urls.map((url, idx) => (
@@ -191,10 +202,8 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
           </div>
         )}
 
-        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-        {/* Navigation arrows */}
         {hasMultiple && (
           <>
             <button
@@ -214,7 +223,6 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
           </>
         )}
 
-        {/* Dot indicators */}
         {hasMultiple && (
           <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-1.5 z-10">
             {urls.map((_, idx) => (
@@ -232,7 +240,6 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
           </div>
         )}
 
-        {/* Featured badge */}
         {profile.is_featured && (
           <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full gold-gradient px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-md">
             <Sparkles className="h-2.5 w-2.5" />
@@ -240,7 +247,6 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
           </div>
         )}
 
-        {/* Category badge */}
         {profile.category && (
           <div className="absolute top-3 right-3 rounded-full bg-black/50 backdrop-blur-sm px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90">
             {profile.category}
@@ -249,8 +255,7 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
       </div>
 
       {/* Info sections */}
-      <div className="px-5 py-4 space-y-3">
-        {/* Section 1 — Name + Age */}
+      <div className="flex flex-1 flex-col px-5 py-4 space-y-3">
         <div className="flex items-baseline gap-2">
           <h3 className="font-display text-xl font-bold text-foreground leading-tight truncate">
             {profile.display_name}
@@ -260,7 +265,6 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
           )}
         </div>
 
-        {/* Section 2 — Location */}
         {profile.city && (
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <MapPin className="h-3.5 w-3.5 text-primary/60 shrink-0" />
@@ -268,7 +272,6 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
           </div>
         )}
 
-        {/* Section 3 — Bio */}
         {truncatedBio && (
           <div className="rounded-lg bg-surface-light px-3 py-2.5">
             <p className="text-sm leading-relaxed text-foreground/80 line-clamp-3">
@@ -277,15 +280,56 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
           </div>
         )}
 
-        {/* Section 4 — Pricing */}
         {profile.pricing_from != null && profile.pricing_from > 0 && (
           <div className="flex items-center gap-1.5 text-base font-semibold text-primary">
             <DollarSign className="h-4 w-4" />
             <span>A partir de R$ {profile.pricing_from}</span>
           </div>
         )}
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-2 pt-1 mt-auto" onClick={(e) => e.stopPropagation()}>
+          <Button
+            size="sm"
+            className="flex-1 gap-1.5 rounded-lg text-sm font-semibold"
+            onClick={() => navigate(`/perfil/${profile.slug}`)}
+            aria-label={`Ver perfil de ${profile.display_name}`}
+          >
+            Ver Perfil
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            className={`shrink-0 rounded-lg px-3 transition-colors duration-200 ${
+              favorited
+                ? "bg-primary/10 border-primary/30 text-primary"
+                : "bg-surface-light border-border/60 text-muted-foreground hover:text-primary hover:border-primary/30"
+            }`}
+            onClick={() => setFavorited((f) => !f)}
+            aria-label={favorited ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+          >
+            <Heart className={`h-4 w-4 ${favorited ? "fill-primary" : ""}`} />
+          </Button>
+
+          {profile.whatsapp ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="shrink-0 rounded-lg px-3 border-border/60 text-[#25D366] hover:bg-[#25D366]/10 hover:border-[#25D366]/40 transition-colors duration-200"
+              onClick={handleWhatsApp}
+              aria-label="Contato via WhatsApp"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.553 4.12 1.52 5.857L.057 23.648l5.944-1.56A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.82c-1.97 0-3.867-.53-5.52-1.53l-.396-.236-3.525.925.94-3.44-.258-.41A9.79 9.79 0 012.18 12C2.18 6.58 6.58 2.18 12 2.18S21.82 6.58 21.82 12 17.42 21.82 12 21.82z" />
+              </svg>
+            </Button>
+          ) : null}
+        </div>
       </div>
-    </Link>
+    </div>
   );
 });
 ProfileCard.displayName = "ProfileCard";
