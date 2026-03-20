@@ -97,6 +97,7 @@ export default function LandingPage() {
   const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
 
   const detectedCountrySlug = "";
+
   return (
     <div className="min-h-screen">
       <section className="pt-4 pb-8">
