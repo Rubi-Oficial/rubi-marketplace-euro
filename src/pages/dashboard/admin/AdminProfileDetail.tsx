@@ -17,9 +17,15 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
+  DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { SortableContext, rectSortingStrategy, useSortable, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   ArrowLeft, CheckCircle, XCircle, Pause, Play, Pencil, Save, X,
   Trash2, Upload, Star, Clock, Mail, Phone, User, Calendar,
-  ImageIcon, Video,
+  ImageIcon, Video, GripVertical,
 } from "lucide-react";
 
 /* ───────── types ───────── */
