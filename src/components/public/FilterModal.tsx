@@ -133,7 +133,7 @@ function FilterBody({ filters, onApply, onClear, resultCount, services, categori
         ) : (
           <span />
         )}
-        <Button variant="premium" size="sm" className="px-6">
+        <Button variant="premium" size="sm" className="px-6" onClick={onClose}>
           Show {resultCount} result{resultCount !== 1 ? "s" : ""}
         </Button>
       </div>
