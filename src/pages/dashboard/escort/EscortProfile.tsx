@@ -101,6 +101,12 @@ export default function EscortProfile() {
   const update = (field: keyof ProfileForm, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
+  const selectCountry = (slug: string) => {
+    update("country", slug);
+    update("city", "");
+    update("city_slug", "");
+  };
+
   const selectCity = (name: string, slug: string) => {
     update("city", name);
     update("city_slug", slug);
