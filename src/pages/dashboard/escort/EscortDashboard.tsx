@@ -170,7 +170,7 @@ export default function EscortDashboard() {
 
   const handleReactivate = async () => {
     if (!d.profile?.id) return;
-    const { error } = await supabase.from("profiles").update({ status: "approved" }).eq("id", d.profile.id);
+    const { error } = await supabase.rpc("reactivate_profile", { _profile_id: d.profile.id });
     if (error) { toast.error("Erro ao reativar perfil"); return; }
     toast.success("Perfil reativado!");
     window.location.reload();
