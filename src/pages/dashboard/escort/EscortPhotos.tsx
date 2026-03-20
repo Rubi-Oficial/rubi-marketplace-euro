@@ -3,10 +3,30 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Upload, ImageIcon, Film } from "lucide-react";
+import { Upload, ImageIcon, Film, AlertCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { SortableMediaGrid } from "@/components/media/SortableMediaGrid";
 import type { MediaItem } from "@/components/media/SortableMediaItem";
+
+const MAX_IMAGES = 10;
+const MAX_IMAGE_SIZE_MB = 2;
+const MAX_VIDEOS = 1;
+const MAX_VIDEO_SIZE_MB = 100;
+const MAX_VIDEO_DURATION_S = 20;
+
+function getVideoDuration(file: File): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(video.src);
+      resolve(video.duration);
+    };
+    video.onerror = () => reject(new Error("Não foi possível ler o vídeo."));
+    video.src = URL.createObjectURL(file);
+  });
+}
 
 export default function EscortPhotos() {
   const { user } = useAuth();
@@ -16,6 +36,9 @@ export default function EscortPhotos() {
   const [images, setImages] = useState<MediaItem[]>([]);
   const [videos, setVideos] = useState<MediaItem[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadTotal, setUploadTotal] = useState(0);
+  const [uploadCurrent, setUploadCurrent] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const fetchMedia = useCallback(async (pid: string) => {
@@ -56,7 +79,6 @@ export default function EscortPhotos() {
       });
   }, [user, fetchMedia]);
 
-  // ── Persist sort order ──
   const persistOrder = useCallback(async (items: MediaItem[], table: "profile_images" | "profile_videos") => {
     const updates = items.map((item) =>
       supabase.from(table).update({ sort_order: item.sort_order }).eq("id", item.id)
@@ -82,13 +104,38 @@ export default function EscortPhotos() {
     const files = e.target.files;
     if (!files || !user || !profileId) return;
 
-    setUploading(true);
-    const maxOrder = images.length > 0 ? Math.max(...images.map((i) => i.sort_order)) : -1;
+    const remaining = MAX_IMAGES - images.length;
+    if (remaining <= 0) {
+      toast.error(`Limite de ${MAX_IMAGES} fotos atingido.`);
+      if (imageRef.current) imageRef.current.value = "";
+      return;
+    }
 
+    const validFiles: File[] = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (!file.type.startsWith("image/")) { toast.error(`${file.name} não é uma imagem.`); continue; }
-      if (file.size > 5 * 1024 * 1024) { toast.error(`${file.name} excede 5MB.`); continue; }
+      if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) { toast.error(`${file.name} excede ${MAX_IMAGE_SIZE_MB}MB.`); continue; }
+      validFiles.push(file);
+    }
+
+    const toUpload = validFiles.slice(0, remaining);
+    if (validFiles.length > remaining) {
+      toast.warning(`Apenas ${remaining} foto(s) serão enviadas (limite de ${MAX_IMAGES}).`);
+    }
+    if (toUpload.length === 0) { if (imageRef.current) imageRef.current.value = ""; return; }
+
+    setUploading(true);
+    setUploadTotal(toUpload.length);
+    setUploadCurrent(0);
+    setUploadProgress(0);
+
+    const maxOrder = images.length > 0 ? Math.max(...images.map((i) => i.sort_order)) : -1;
+
+    for (let i = 0; i < toUpload.length; i++) {
+      const file = toUpload[i];
+      setUploadCurrent(i + 1);
+      setUploadProgress(Math.round(((i) / toUpload.length) * 100));
 
       const ext = file.name.split(".").pop();
       const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
@@ -101,10 +148,13 @@ export default function EscortPhotos() {
         profile_id: profileId, storage_path: path, sort_order: maxOrder + 1 + i,
       });
       if (dbError) toast.error("Erro ao salvar imagem: " + dbError.message);
+
+      setUploadProgress(Math.round(((i + 1) / toUpload.length) * 100));
     }
 
     await fetchMedia(profileId);
     setUploading(false);
+    setUploadProgress(0);
     toast.success("Upload concluído!");
     if (imageRef.current) imageRef.current.value = "";
   };
@@ -113,29 +163,61 @@ export default function EscortPhotos() {
     const files = e.target.files;
     if (!files || !user || !profileId) return;
 
-    setUploading(true);
-    const maxOrder = videos.length > 0 ? Math.max(...videos.map((v) => v.sort_order)) : -1;
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (!file.type.startsWith("video/")) { toast.error(`${file.name} não é um vídeo.`); continue; }
-      if (file.size > 50 * 1024 * 1024) { toast.error(`${file.name} excede 50MB.`); continue; }
-
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("profile-images").upload(path, file, { cacheControl: "3600", upsert: false });
-      if (uploadError) { toast.error("Erro no upload: " + uploadError.message); continue; }
-
-      const { error: dbError } = await supabase.from("profile_videos").insert({
-        profile_id: profileId, storage_path: path, sort_order: maxOrder + 1 + i,
-      });
-      if (dbError) toast.error("Erro ao salvar vídeo: " + dbError.message);
+    if (videos.length >= MAX_VIDEOS) {
+      toast.error(`Limite de ${MAX_VIDEOS} vídeo atingido. Remova o atual antes de enviar outro.`);
+      if (videoRef.current) videoRef.current.value = "";
+      return;
     }
 
+    const file = files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("video/")) { toast.error(`${file.name} não é um vídeo.`); if (videoRef.current) videoRef.current.value = ""; return; }
+    if (file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) { toast.error(`${file.name} excede ${MAX_VIDEO_SIZE_MB}MB.`); if (videoRef.current) videoRef.current.value = ""; return; }
+
+    try {
+      const duration = await getVideoDuration(file);
+      if (duration > MAX_VIDEO_DURATION_S) {
+        toast.error(`Vídeo tem ${Math.round(duration)}s — máximo permitido é ${MAX_VIDEO_DURATION_S}s.`);
+        if (videoRef.current) videoRef.current.value = "";
+        return;
+      }
+    } catch {
+      toast.error("Não foi possível verificar a duração do vídeo.");
+      if (videoRef.current) videoRef.current.value = "";
+      return;
+    }
+
+    setUploading(true);
+    setUploadTotal(1);
+    setUploadCurrent(1);
+    setUploadProgress(10);
+
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("profile-images").upload(path, file, { cacheControl: "3600", upsert: false });
+
+    if (uploadError) {
+      toast.error("Erro no upload: " + uploadError.message);
+      setUploading(false);
+      setUploadProgress(0);
+      if (videoRef.current) videoRef.current.value = "";
+      return;
+    }
+
+    setUploadProgress(70);
+
+    const { error: dbError } = await supabase.from("profile_videos").insert({
+      profile_id: profileId, storage_path: path, sort_order: 0,
+    });
+    if (dbError) toast.error("Erro ao salvar vídeo: " + dbError.message);
+
+    setUploadProgress(100);
     await fetchMedia(profileId);
     setUploading(false);
+    setUploadProgress(0);
     toast.success("Upload de vídeo concluído!");
     if (videoRef.current) videoRef.current.value = "";
   };
@@ -176,6 +258,8 @@ export default function EscortPhotos() {
   const pendingImages = images.filter((i) => i.moderation_status === "pending").length;
   const approvedVideos = videos.filter((v) => v.moderation_status === "approved").length;
   const pendingVideos = videos.filter((v) => v.moderation_status === "pending").length;
+  const imageSlotsPct = (images.length / MAX_IMAGES) * 100;
+  const videoSlotsPct = (videos.length / MAX_VIDEOS) * 100;
 
   return (
     <div className="animate-fade-in">
@@ -184,31 +268,51 @@ export default function EscortPhotos() {
         Gerencie suas fotos e vídeos. Arraste para reordenar. Todo conteúdo passa por moderação.
       </p>
 
+      {/* Upload progress bar */}
+      {uploading && (
+        <div className="mt-4 space-y-1.5 rounded-lg border border-border bg-muted/50 p-4">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-foreground font-medium">Enviando {uploadCurrent} de {uploadTotal}...</span>
+            <span className="text-muted-foreground">{uploadProgress}%</span>
+          </div>
+          <Progress value={uploadProgress} className="h-2" />
+        </div>
+      )}
+
       <Tabs defaultValue="photos" className="mt-6">
         <TabsList>
           <TabsTrigger value="photos" className="gap-1.5">
             <ImageIcon className="h-3.5 w-3.5" />
-            Fotos ({images.length})
+            Fotos ({images.length}/{MAX_IMAGES})
           </TabsTrigger>
           <TabsTrigger value="videos" className="gap-1.5">
             <Film className="h-3.5 w-3.5" />
-            Vídeos ({videos.length})
+            Vídeos ({videos.length}/{MAX_VIDEOS})
           </TabsTrigger>
         </TabsList>
 
         {/* Photos Tab */}
         <TabsContent value="photos" className="mt-4">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs text-muted-foreground">
-              {approvedImages} aprovada(s) • {pendingImages} pendente(s)
-            </p>
-            <div>
-              <input ref={imageRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
-              <Button size="sm" onClick={() => imageRef.current?.click()} disabled={uploading}>
-                <Upload className="mr-1.5 h-3.5 w-3.5" />
-                {uploading ? "Enviando..." : "Enviar fotos"}
-              </Button>
+          {/* Slot usage bar */}
+          <div className="mb-4 space-y-1.5">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>{images.length} de {MAX_IMAGES} fotos utilizadas</span>
+              <span>{approvedImages} aprovada(s) • {pendingImages} pendente(s)</span>
             </div>
+            <Progress value={imageSlotsPct} className="h-1.5" />
+            {images.length >= MAX_IMAGES && (
+              <p className="flex items-center gap-1 text-xs text-destructive">
+                <AlertCircle className="h-3 w-3" /> Limite atingido. Remova fotos para enviar novas.
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center justify-end mb-4">
+            <input ref={imageRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+            <Button size="sm" onClick={() => imageRef.current?.click()} disabled={uploading || images.length >= MAX_IMAGES}>
+              <Upload className="mr-1.5 h-3.5 w-3.5" />
+              {uploading ? "Enviando..." : "Enviar fotos"}
+            </Button>
           </div>
 
           {images.length === 0 ? (
@@ -223,23 +327,32 @@ export default function EscortPhotos() {
             <SortableMediaGrid items={images} onReorder={handleReorderImages} onDelete={handleDeleteImage} />
           )}
           <p className="mt-4 text-xs text-muted-foreground">
-            Máximo 5MB por foto. Formatos aceitos: JPG, PNG, WebP. Arraste os itens para reordenar.
+            Máximo {MAX_IMAGE_SIZE_MB}MB por foto • Até {MAX_IMAGES} fotos • JPG, PNG, WebP • Arraste para reordenar.
           </p>
         </TabsContent>
 
         {/* Videos Tab */}
         <TabsContent value="videos" className="mt-4">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs text-muted-foreground">
-              {approvedVideos} aprovado(s) • {pendingVideos} pendente(s)
-            </p>
-            <div>
-              <input ref={videoRef} type="file" accept="video/*" multiple className="hidden" onChange={handleVideoUpload} />
-              <Button size="sm" onClick={() => videoRef.current?.click()} disabled={uploading}>
-                <Upload className="mr-1.5 h-3.5 w-3.5" />
-                {uploading ? "Enviando..." : "Enviar vídeos"}
-              </Button>
+          {/* Slot usage bar */}
+          <div className="mb-4 space-y-1.5">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>{videos.length} de {MAX_VIDEOS} vídeo utilizado</span>
+              <span>{approvedVideos} aprovado(s) • {pendingVideos} pendente(s)</span>
             </div>
+            <Progress value={videoSlotsPct} className="h-1.5" />
+            {videos.length >= MAX_VIDEOS && (
+              <p className="flex items-center gap-1 text-xs text-destructive">
+                <AlertCircle className="h-3 w-3" /> Limite atingido. Remova o vídeo atual para enviar outro.
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center justify-end mb-4">
+            <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} />
+            <Button size="sm" onClick={() => videoRef.current?.click()} disabled={uploading || videos.length >= MAX_VIDEOS}>
+              <Upload className="mr-1.5 h-3.5 w-3.5" />
+              {uploading ? "Enviando..." : "Enviar vídeo"}
+            </Button>
           </div>
 
           {videos.length === 0 ? (
@@ -254,7 +367,7 @@ export default function EscortPhotos() {
             <SortableMediaGrid items={videos} onReorder={handleReorderVideos} onDelete={handleDeleteVideo} />
           )}
           <p className="mt-4 text-xs text-muted-foreground">
-            Máximo 50MB por vídeo. Formatos aceitos: MP4, MOV, WebM. Arraste os itens para reordenar.
+            Máximo {MAX_VIDEO_SIZE_MB}MB • Até {MAX_VIDEO_DURATION_S}s de duração • {MAX_VIDEOS} vídeo • MP4, MOV, WebM.
           </p>
         </TabsContent>
       </Tabs>
