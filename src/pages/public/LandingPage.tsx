@@ -56,7 +56,6 @@ export default function LandingPage() {
   useEffect(() => {
     setLoading(true);
     fetchEligibleProfiles({
-      search: searchQuery || undefined,
       city_slug: cityFilter || undefined,
       category: categoryFilter || undefined,
       service_slug: serviceFilter || undefined,
