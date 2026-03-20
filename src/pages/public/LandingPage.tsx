@@ -12,7 +12,6 @@ export default function LandingPage() {
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
   const [filters, setFilters] = useState({ activeCity: "", activeService: "" });
 
-  // Listen to filter changes from Navbar
   const handleFilters = useCallback((e: Event) => {
     const detail = (e as CustomEvent).detail;
     setFilters({ activeCity: detail.activeCity, activeService: detail.activeService });
@@ -33,10 +32,10 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen">
       {/* Profiles grid */}
-      <section className="pt-4 pb-6">
+      <section className="pt-4 pb-8">
         <div className="container mx-auto px-4">
           {profiles.length > 0 ? (
-            <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {profiles.map((p) => (
                 <ProfileCard key={p.id} profile={p} />
               ))}
@@ -59,7 +58,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Videos section — filters applied */}
       <VideoSection filters={filters} />
 
       {/* Minimal CTA */}

@@ -103,8 +103,9 @@ export async function fetchServices() {
 export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProfile }>(({ profile }, ref) => {
   return (
     <Link
+      ref={ref}
       to={`/perfil/${profile.slug}`}
-      className="group relative block overflow-hidden rounded-xl bg-card transition-all duration-300 hover:ring-1 hover:ring-primary/40 hover:shadow-[0_0_15px_hsl(350_65%_52%_/_0.1)]"
+      className="group relative block overflow-hidden rounded-xl bg-card transition-all duration-300 hover:ring-1 hover:ring-primary/30 hover:shadow-lg hover:shadow-primary/5"
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-muted">
         {profile.thumb_url ? (
@@ -115,34 +116,33 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground/30">
-            <div className="h-12 w-12 rounded-full bg-muted-foreground/10" />
+          <div className="flex h-full items-center justify-center text-muted-foreground/20">
+            <div className="h-14 w-14 rounded-full bg-muted-foreground/10" />
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-transparent to-transparent" />
 
+        {/* Featured badge */}
         {profile.is_featured && (
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 rounded-full gold-gradient px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-lg">
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 rounded-full gold-gradient px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-md">
             <Sparkles className="h-2.5 w-2.5" />
             Featured
           </div>
         )}
 
-        {profile.pricing_from && (
-          <div className="absolute top-2.5 right-2.5 rounded-full bg-background/60 backdrop-blur-sm px-2 py-0.5 text-[11px] font-semibold text-primary">
-            €{Number(profile.pricing_from).toLocaleString("de-DE")}
-          </div>
-        )}
-
-        <div className="absolute bottom-0 left-0 right-0 p-3">
-          <h3 className="font-display text-sm font-semibold text-foreground truncate leading-tight">
+        {/* Info at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-3.5">
+          <h3 className="font-display text-[15px] font-semibold text-foreground leading-tight truncate">
             {profile.display_name}
-            {profile.age && <span className="ml-1 text-xs font-normal text-muted-foreground">{profile.age}</span>}
+            {profile.age && (
+              <span className="ml-1.5 text-xs font-normal text-muted-foreground">{profile.age}</span>
+            )}
           </h3>
           {profile.city && (
-            <div className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
-              <MapPin className="h-2.5 w-2.5 text-primary/60" />
+            <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+              <MapPin className="h-2.5 w-2.5 text-primary/50" />
               {profile.city}
             </div>
           )}
