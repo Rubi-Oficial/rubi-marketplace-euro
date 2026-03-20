@@ -101,6 +101,8 @@ export async function fetchServices() {
 }
 
 export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProfile }>(({ profile }, ref) => {
+  if (!profile.slug) return null;
+
   return (
     <Link
       ref={ref}

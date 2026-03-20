@@ -42,15 +42,15 @@ export function getRolePrefix(role: AppRole | null): string {
   }
 }
 
-async function fetchUserRole(userId: string): Promise<AppRole> {
+async function fetchUserRole(userId: string): Promise<AppRole | null> {
   const { data, error } = await supabase
     .from("users")
     .select("role")
     .eq("id", userId)
     .single();
 
-  if (error || !data) return "client";
-  return (data.role as AppRole) ?? "client";
+  if (error || !data) return null;
+  return (data.role as AppRole) ?? null;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

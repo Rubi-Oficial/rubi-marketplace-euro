@@ -23,9 +23,18 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
+  // Authenticated but role not yet loaded → keep loading
+  if (!userRole) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   // Authenticated but wrong role → redirect to correct dashboard
-  if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
-    const correctPath = getRoleDashboard(userRole as any);
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
+    const correctPath = getRoleDashboard(userRole);
     return <Navigate to={correctPath} replace />;
   }
 

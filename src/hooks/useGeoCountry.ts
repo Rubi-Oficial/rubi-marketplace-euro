@@ -14,17 +14,28 @@ export function useGeoCountry() {
       return;
     }
 
-    fetch("https://ipapi.co/json/")
-      .then((r) => r.json())
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+
+    fetch("https://ipapi.co/json/", { signal: controller.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error("geo fetch failed");
+        return r.json();
+      })
       .then((data) => {
-        const code = (data?.country_code || "").toUpperCase();
+        const code = typeof data?.country_code === "string" ? data.country_code.toUpperCase() : "";
         if (code) {
           sessionStorage.setItem(CACHE_KEY, code);
           setCountryCode(code);
         }
       })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch(() => {
+        // Silently fail — geo is non-critical
+      })
+      .finally(() => {
+        clearTimeout(timeout);
+        setLoading(false);
+      });
   }, []);
 
   return { countryCode, loading };
