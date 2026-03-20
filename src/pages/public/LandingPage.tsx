@@ -167,6 +167,13 @@ export default function LandingPage() {
             </div>
           )}
 
+          {/* Service slug bar */}
+          <ServiceSlugBar
+            services={services}
+            activeService={serviceFilter}
+            onServiceClick={setServiceFilter}
+          />
+
           {/* Active filter chips */}
           <ActiveFilterChips
             filters={{ country: countryFilter, city: cityFilter, category: categoryFilter, service: serviceFilter }}

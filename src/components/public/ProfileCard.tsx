@@ -123,8 +123,8 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
           </div>
         )}
 
-        {/* Gradient overlay — lighter for cleaner look */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/10 to-transparent" />
+        {/* Gradient overlay — strong for text legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
         {/* Featured badge */}
         {profile.is_featured && (
@@ -134,17 +134,24 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
           </div>
         )}
 
+        {/* Category badge top-right */}
+        {profile.category && (
+          <div className="absolute top-2.5 right-2.5 rounded-full bg-black/50 backdrop-blur-sm px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/90">
+            {profile.category}
+          </div>
+        )}
+
         {/* Info at bottom — name + city only */}
         <div className="absolute bottom-0 left-0 right-0 p-3">
-          <h3 className="font-display text-base font-semibold text-foreground leading-tight truncate">
+          <h3 className="font-display text-base font-bold text-white leading-tight truncate drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
             {profile.display_name}
             {profile.age && (
-              <span className="ml-1.5 text-xs font-normal text-muted-foreground">{profile.age}</span>
+              <span className="ml-1.5 text-xs font-normal text-white/70">{profile.age}</span>
             )}
           </h3>
           {profile.city && (
-            <div className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
-              <MapPin className="h-2.5 w-2.5 text-primary/50" />
+            <div className="mt-0.5 flex items-center gap-1 text-[11px] text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
+              <MapPin className="h-2.5 w-2.5 text-primary/70" />
               {profile.city}
             </div>
           )}

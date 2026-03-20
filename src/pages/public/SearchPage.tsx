@@ -159,6 +159,13 @@ export default function SearchPage() {
         )}
       </div>
 
+      {/* Service slug bar */}
+      <ServiceSlugBar
+        services={services}
+        activeService={serviceFilter}
+        onServiceClick={(slug) => updateParam("service", slug)}
+      />
+
       {/* Active filter chips */}
       <ActiveFilterChips
         filters={{ country: countryFilter, city: cityFilter, category: categoryFilter, service: serviceFilter }}

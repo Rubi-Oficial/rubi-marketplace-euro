@@ -134,10 +134,39 @@ export default function ProfilePage() {
     <div className="container mx-auto px-4 py-6 animate-fade-in">
       <Link
         to="/buscar"
-        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-5 transition-colors group"
+        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-3 transition-colors group"
       >
         <ArrowLeft className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" /> Back to explore
       </Link>
+
+      {/* Breadcrumb chips: category, city, services */}
+      <div className="flex items-center gap-1.5 flex-wrap mb-5">
+        {profile.category && (
+          <Link
+            to={`/categoria/${profile.category.toLowerCase().replace(/\s+/g, "-")}`}
+            className="rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
+          >
+            {profile.category}
+          </Link>
+        )}
+        {profile.city && profile.city_slug && (
+          <Link
+            to={`/cidade/${profile.city_slug}`}
+            className="rounded-full bg-card border border-border/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:border-primary/30 hover:text-foreground transition-colors"
+          >
+            {profile.city}
+          </Link>
+        )}
+        {services.map((s) => (
+          <Link
+            key={s.slug}
+            to={`/buscar?service=${s.slug}`}
+            className="rounded-full bg-card border border-border/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:border-primary/30 hover:text-foreground transition-colors"
+          >
+            {s.name}
+          </Link>
+        ))}
+      </div>
 
       <div className="grid gap-8 lg:grid-cols-5">
         <div className="lg:col-span-3">
