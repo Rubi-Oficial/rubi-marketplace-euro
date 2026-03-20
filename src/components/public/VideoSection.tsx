@@ -155,7 +155,8 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
       </div>
     </div>
   );
-}
+});
+VideoCard.displayName = "VideoCard";
 
 export function VideoSection({ filters }: { filters: { activeCity: string; activeService: string } }) {
   const [videos, setVideos] = useState<ProfileVideo[]>([]);
