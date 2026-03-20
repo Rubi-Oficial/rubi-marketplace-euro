@@ -8,7 +8,6 @@ import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile
 import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
-import { ServiceSlugBar } from "@/components/public/ServiceSlugBar";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 
 export default function SearchPage() {
@@ -96,7 +95,6 @@ export default function SearchPage() {
     setSearchParams(params);
   };
 
-  // Resolve names for chips
   const countryName = countries.find((c) => c.slug === countryFilter)?.name;
   const cityName = filteredCities.find((c) => c.slug === cityFilter)?.name;
   const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
@@ -110,27 +108,26 @@ export default function SearchPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">
-      {/* Search bar — full width */}
-      <div className="relative mb-3">
-        <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Search by name, city..."
-          className="pl-10 h-11 bg-card border-border/40 text-sm rounded-xl"
-          value={searchQuery}
-          onChange={(e) => updateParam("q", e.target.value)}
-        />
-      </div>
-
-      {/* Filter buttons row */}
+      {/* Search + filter buttons — single row */}
       <div className="flex items-center gap-2 mb-4">
+        <div className="relative flex-1 min-w-0">
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, city..."
+            className="pl-10 h-10 bg-card border-border/40 text-sm rounded-xl"
+            value={searchQuery}
+            onChange={(e) => updateParam("q", e.target.value)}
+          />
+        </div>
+
         <Button
           variant="outline"
           size="sm"
           onClick={() => setFilterOpen(true)}
-          className={`h-9 gap-2 rounded-full border-border/40 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
+          className={`h-10 gap-1.5 rounded-full border-border/40 shrink-0 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
         >
           <SlidersHorizontal className="h-3.5 w-3.5" />
-          <span className="text-xs">Filters</span>
+          <span className="text-xs hidden sm:inline">Filters</span>
           {hasGeneralFilter && (
             <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
               {[categoryFilter, serviceFilter].filter(Boolean).length}
@@ -142,30 +139,17 @@ export default function SearchPage() {
           variant="outline"
           size="sm"
           onClick={() => setLocationOpen(true)}
-          className={`h-9 gap-2 rounded-full border-border/40 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
+          className={`h-10 gap-1.5 rounded-full border-border/40 shrink-0 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
         >
           <MapPin className="h-3.5 w-3.5" />
-          <span className="text-xs">Location</span>
+          <span className="text-xs hidden sm:inline">Location</span>
           {hasLocationFilter && (
             <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
               {[countryFilter, cityFilter].filter(Boolean).length}
             </span>
           )}
         </Button>
-
-        {hasFilters && (
-          <button onClick={clearFilters} className="text-xs text-muted-foreground hover:text-foreground ml-auto transition-colors">
-            Clear all
-          </button>
-        )}
       </div>
-
-      {/* Service slug bar */}
-      <ServiceSlugBar
-        services={services}
-        activeService={serviceFilter}
-        onServiceClick={(slug) => updateParam("service", slug)}
-      />
 
       {/* Active filter chips */}
       <ActiveFilterChips
@@ -208,7 +192,7 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Filter modal — services & category only */}
+      {/* Filter modal */}
       <FilterModal
         open={filterOpen}
         onOpenChange={setFilterOpen}
@@ -220,7 +204,7 @@ export default function SearchPage() {
         categories={CATEGORIES.map((c) => c.label)}
       />
 
-      {/* Location modal — country & city */}
+      {/* Location modal */}
       <LocationModal
         open={locationOpen}
         onOpenChange={setLocationOpen}

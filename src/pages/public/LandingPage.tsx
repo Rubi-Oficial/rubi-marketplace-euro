@@ -2,14 +2,14 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, SlidersHorizontal, MapPin } from "lucide-react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
 import { VideoSection } from "@/components/public/VideoSection";
 import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
-import { ServiceSlugBar } from "@/components/public/ServiceSlugBar";
 import { useLocations } from "@/hooks/useLocations";
+import { CATEGORIES } from "@/components/shared/CategoryBar";
 
 export default function LandingPage() {
   useReferralCapture();
@@ -20,24 +20,17 @@ export default function LandingPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
 
-  // Filter state
   const [countryFilter, setCountryFilter] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [serviceFilter, setServiceFilter] = useState("");
 
-  const { countries, cities, getCitiesByCountry } = useLocations();
+  const { countries, getCitiesByCountry } = useLocations();
 
   const filteredCities = useMemo(
     () => (countryFilter ? getCitiesByCountry(countryFilter) : []),
     [countryFilter, getCitiesByCountry]
   );
-
-  // Suggested cities from detected country
-  const suggestedCities = useMemo(() => {
-    if (!countryFilter) return [];
-    return filteredCities.filter((c) => c.is_featured).slice(0, 6);
-  }, [countryFilter, filteredCities]);
 
   useEffect(() => {
     fetchServices().then(setServices);
@@ -96,15 +89,13 @@ export default function LandingPage() {
   const cityName = filteredCities.find((c) => c.slug === cityFilter)?.name;
   const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
 
-  const detectedCountrySlug = "";
-
   return (
     <div className="min-h-screen">
       <section className="pt-4 pb-8">
         <div className="container mx-auto px-4">
 
-          {/* Filter buttons */}
-          <div className="flex items-center gap-2 mb-3">
+          {/* Single filter row: buttons + active chips */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             <Button
               variant="outline"
               size="sm"
@@ -135,45 +126,23 @@ export default function LandingPage() {
               )}
             </Button>
 
+            {/* Inline active chips */}
+            <ActiveFilterChips
+              filters={{ country: countryFilter, city: cityFilter, category: categoryFilter, service: serviceFilter }}
+              countryName={countryName}
+              cityName={cityName}
+              serviceName={serviceName}
+              onRemove={handleRemoveFilter}
+              onClearAll={clearFilters}
+              inline
+            />
+
             {hasFilters && (
               <button onClick={clearFilters} className="text-xs text-muted-foreground hover:text-foreground ml-auto transition-colors">
                 Clear all
               </button>
             )}
           </div>
-
-          {/* Suggested city chips */}
-          {suggestedCities.length > 0 && !cityFilter && (
-            <div className="flex items-center gap-1.5 mb-3 overflow-x-auto scrollbar-hide">
-              <span className="text-[11px] text-muted-foreground/70 shrink-0">Suggested:</span>
-              {suggestedCities.map((c) => (
-                <button
-                  key={c.slug}
-                  onClick={() => setCityFilter(c.slug)}
-                  className="whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-all shrink-0 border border-border/30"
-                >
-                  {c.name}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Service slug bar */}
-          <ServiceSlugBar
-            services={services}
-            activeService={serviceFilter}
-            onServiceClick={setServiceFilter}
-          />
-
-          {/* Active filter chips */}
-          <ActiveFilterChips
-            filters={{ country: countryFilter, city: cityFilter, category: categoryFilter, service: serviceFilter }}
-            countryName={countryName}
-            cityName={cityName}
-            serviceName={serviceName}
-            onRemove={handleRemoveFilter}
-            onClearAll={clearFilters}
-          />
 
           {/* Profile grid */}
           {loading ? (
@@ -247,6 +216,7 @@ export default function LandingPage() {
         onClear={() => { setCategoryFilter(""); setServiceFilter(""); }}
         resultCount={profiles.length}
         services={services}
+        categories={CATEGORIES.map((c) => c.label)}
       />
 
       <LocationModal
@@ -257,7 +227,6 @@ export default function LandingPage() {
         onApply={handleApplyLocation}
         countries={countries}
         getCitiesByCountry={getCitiesByCountry}
-        suggestedCountry={detectedCountrySlug}
       />
     </div>
   );

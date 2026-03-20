@@ -17,6 +17,7 @@ export default function CategoryBar() {
   const location = useLocation();
   const isCategory = location.pathname.startsWith("/categoria/");
   const activeSlug = isCategory ? slug : "";
+  const isAllActive = !isCategory && (location.pathname === "/" || location.pathname === "/buscar");
 
   return (
     <div className="border-b border-border/40 bg-card/80 backdrop-blur-sm">
@@ -26,7 +27,7 @@ export default function CategoryBar() {
             <Link
               to="/buscar"
               className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${
-                !activeSlug && location.pathname === "/buscar"
+                isAllActive
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
