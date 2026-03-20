@@ -1,6 +1,6 @@
 import { forwardRef, useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Sparkles, ChevronLeft, ChevronRight, DollarSign } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export interface EligibleProfile {
@@ -14,6 +14,7 @@ export interface EligibleProfile {
   pricing_from: number | null;
   is_featured: boolean;
   image_urls: string[];
+  bio: string | null;
 }
 
 export async function fetchEligibleProfiles(filters?: {
@@ -25,7 +26,7 @@ export async function fetchEligibleProfiles(filters?: {
 }): Promise<EligibleProfile[]> {
   let query = supabase
     .from("eligible_profiles")
-    .select("id, display_name, age, city, city_slug, category, slug, pricing_from, is_featured")
+    .select("id, display_name, age, city, city_slug, category, slug, pricing_from, is_featured, bio")
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -81,6 +82,7 @@ export async function fetchEligibleProfiles(filters?: {
       city: p.city ?? null, city_slug: p.city_slug ?? null, category: p.category ?? null,
       slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
       is_featured: p.is_featured ?? false, image_urls: imageMap[p.id!] || [],
+      bio: p.bio ?? null,
     };
   });
 }
@@ -102,6 +104,7 @@ export async function fetchServices() {
 
 const ROTATION_INTERVAL = 5000;
 const PAUSE_AFTER_MANUAL = 10000;
+const BIO_MAX_LENGTH = 150;
 
 export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProfile }>(({ profile }, ref) => {
   const urls = profile.image_urls;
@@ -109,6 +112,12 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
   const [activeIdx, setActiveIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
   const pausedUntilRef = useRef(0);
+
+  const truncatedBio = profile.bio
+    ? profile.bio.length > BIO_MAX_LENGTH
+      ? profile.bio.slice(0, BIO_MAX_LENGTH).trimEnd() + "…"
+      : profile.bio
+    : null;
 
   // Auto-rotation
   useEffect(() => {
@@ -157,12 +166,12 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
     <Link
       ref={ref}
       to={`/perfil/${profile.slug}`}
-      className="group relative block overflow-hidden rounded-xl bg-card shadow-sm border border-border/50 transition-shadow duration-300 hover:shadow-lg hover:shadow-primary/5"
+      className="group relative block overflow-hidden rounded-xl bg-white shadow-sm border border-border/40 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/8"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-        {/* Images stack with crossfade */}
+      {/* Image section — taller */}
+      <div className="relative h-[300px] sm:h-[320px] overflow-hidden bg-muted">
         {urls.length > 0 ? (
           urls.map((url, idx) => (
             <img
@@ -182,21 +191,21 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
         )}
 
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-        {/* Navigation arrows — visible on hover */}
+        {/* Navigation arrows */}
         {hasMultiple && (
           <>
             <button
               onClick={goPrev}
-              className="absolute left-1.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/90 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-black/60 active:scale-95"
+              className="absolute left-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white/90 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-black/60 active:scale-95"
               aria-label="Previous"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               onClick={goNext}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white/90 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-black/60 active:scale-95"
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white/90 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-black/60 active:scale-95"
               aria-label="Next"
             >
               <ChevronRight className="h-4 w-4" />
@@ -206,14 +215,14 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
 
         {/* Dot indicators */}
         {hasMultiple && (
-          <div className="absolute bottom-10 left-0 right-0 flex items-center justify-center gap-1.5 z-10">
+          <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-1.5 z-10">
             {urls.map((_, idx) => (
               <button
                 key={idx}
                 onClick={(e) => goTo(idx, e)}
                 className={`rounded-full transition-all duration-300 ${
                   idx === activeIdx
-                    ? "h-2 w-2 bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.6)]"
+                    ? "h-2.5 w-2.5 bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.6)]"
                     : "h-1.5 w-1.5 bg-white/50 hover:bg-white/80"
                 }`}
                 aria-label={`Image ${idx + 1}`}
@@ -224,7 +233,7 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
 
         {/* Featured badge */}
         {profile.is_featured && (
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 rounded-full gold-gradient px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-md">
+          <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full gold-gradient px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-md">
             <Sparkles className="h-2.5 w-2.5" />
             Featured
           </div>
@@ -232,26 +241,48 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
 
         {/* Category badge */}
         {profile.category && (
-          <div className="absolute top-2.5 right-2.5 rounded-full bg-black/50 backdrop-blur-sm px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/90">
+          <div className="absolute top-3 right-3 rounded-full bg-black/50 backdrop-blur-sm px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90">
             {profile.category}
           </div>
         )}
+      </div>
 
-        {/* Info at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-3">
-          <h3 className="font-display text-lg font-bold text-white leading-tight truncate drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+      {/* Info sections */}
+      <div className="px-5 py-4 space-y-3">
+        {/* Section 1 — Name + Age */}
+        <div className="flex items-baseline gap-2">
+          <h3 className="font-display text-xl font-bold text-foreground leading-tight truncate">
             {profile.display_name}
-            {profile.age && (
-              <span className="ml-1.5 text-sm font-medium text-primary/90">{profile.age}</span>
-            )}
           </h3>
-          {profile.city && (
-            <div className="mt-0.5 flex items-center gap-1 text-[11px] text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
-              <MapPin className="h-2.5 w-2.5 text-primary/70" />
-              {profile.city}
-            </div>
+          {profile.age && (
+            <span className="text-lg font-bold text-primary shrink-0">{profile.age}</span>
           )}
         </div>
+
+        {/* Section 2 — Location */}
+        {profile.city && (
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <MapPin className="h-3.5 w-3.5 text-primary/60 shrink-0" />
+            <span>{profile.city}</span>
+          </div>
+        )}
+
+        {/* Section 3 — Bio */}
+        {truncatedBio && (
+          <div className="rounded-lg bg-surface-light px-3 py-2.5">
+            <p className="text-sm leading-relaxed text-foreground/80 line-clamp-3">
+              {truncatedBio}
+            </p>
+          </div>
+        )}
+
+        {/* Section 4 — Pricing */}
+        {profile.pricing_from != null && profile.pricing_from > 0 && (
+          <div className="flex items-center gap-1.5 text-base font-semibold text-primary">
+            <DollarSign className="h-4 w-4" />
+            <span>A partir de R$ {profile.pricing_from}</span>
+          </div>
+        )}
       </div>
     </Link>
   );

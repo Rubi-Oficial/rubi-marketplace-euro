@@ -145,19 +145,19 @@ export default function LandingPage() {
           </div>
 
           {loading ? (
-            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-muted" />
               ))}
             </div>
           ) : profiles.length > 0 ? (
-            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {profiles.map((p) => (
                 <ProfileCard key={p.id} profile={p} />
               ))}
             </div>
           ) : (
-            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="group relative block overflow-hidden rounded-xl bg-card">
                   <div className="relative aspect-[3/4] overflow-hidden bg-muted">

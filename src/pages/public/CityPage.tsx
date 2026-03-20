@@ -77,7 +77,7 @@ export default function CityPage() {
       )}
 
       {loading ? (
-        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-muted" />
           ))}
@@ -93,7 +93,7 @@ export default function CityPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {profiles.map((p) => (
             <ProfileCard key={p.id} profile={p} />
           ))}
