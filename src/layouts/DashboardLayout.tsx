@@ -38,6 +38,7 @@ const escortNav: NavItem[] = [
   { label: "Painel", path: "/app", icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: "Meu Perfil", path: "/app/perfil", icon: <FileText className="h-4 w-4" /> },
   { label: "Fotos & Vídeos", path: "/app/fotos", icon: <Image className="h-4 w-4" /> },
+  { label: "Pré-visualizar", path: "/app/preview", icon: <Eye className="h-4 w-4" /> },
   { label: "Plano", path: "/app/plano", icon: <CreditCard className="h-4 w-4" /> },
   { label: "Métricas", path: "/app/metricas", icon: <LineChart className="h-4 w-4" /> },
   { label: "Afiliados", path: "/app/afiliados", icon: <Link2 className="h-4 w-4" /> },

@@ -126,11 +126,9 @@ export default function EscortPreview() {
             <div className="lg:col-span-2">
               <ProfileInfo
                 profile={{
-                  id: profile.id,
                   display_name: profile.display_name || "Sem nome",
                   age: profile.age,
                   city: profile.city,
-                  city_slug: profile.city_slug,
                   country: profile.country,
                   category: profile.category,
                   bio: profile.bio,
@@ -138,7 +136,6 @@ export default function EscortPreview() {
                   pricing_from: profile.pricing_from,
                   whatsapp: profile.whatsapp,
                   telegram: profile.telegram,
-                  slug: profile.slug,
                   is_featured: profile.is_featured,
                 }}
                 services={services}
