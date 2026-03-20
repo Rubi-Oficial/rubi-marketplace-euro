@@ -45,7 +45,7 @@ export default function CategoryPage() {
     if (!categoryName) return;
     setLoading(true);
     fetchEligibleProfiles({
-      category: categoryName,
+      gender: categoryName,
       service_slug: serviceFilter || undefined,
       city_slug: cityFilter || undefined,
     }).then((data) => {

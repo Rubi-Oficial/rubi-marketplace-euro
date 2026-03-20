@@ -370,6 +370,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           featured_until: string | null
+          gender: string | null
           id: string
           is_featured: boolean
           languages: string[] | null
@@ -392,6 +393,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           featured_until?: string | null
+          gender?: string | null
           id?: string
           is_featured?: boolean
           languages?: string[] | null
@@ -414,6 +416,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           featured_until?: string | null
+          gender?: string | null
           id?: string
           is_featured?: boolean
           languages?: string[] | null
@@ -733,6 +736,7 @@ export type Database = {
           created_at: string | null
           display_name: string | null
           featured_until: string | null
+          gender: string | null
           id: string | null
           is_featured: boolean | null
           languages: string[] | null
@@ -753,6 +757,7 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           featured_until?: string | null
+          gender?: string | null
           id?: string | null
           is_featured?: boolean | null
           languages?: string[] | null
@@ -773,6 +778,7 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           featured_until?: string | null
+          gender?: string | null
           id?: string | null
           is_featured?: boolean | null
           languages?: string[] | null
