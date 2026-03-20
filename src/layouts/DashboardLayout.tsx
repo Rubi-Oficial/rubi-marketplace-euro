@@ -13,6 +13,7 @@ import {
   Shield,
   BarChart3,
   Link2,
+  Heart,
   ClipboardList,
   Wallet,
   LineChart,
@@ -36,6 +37,7 @@ function useNavItems(role: "client" | "escort" | "admin") {
   return useMemo(() => {
     if (role === "client") return [
       { label: t("dash.panel"), path: "/cliente", icon: <LayoutDashboard className="h-4 w-4" /> },
+      { label: "Favoritos", path: "/cliente/favoritos", icon: <Heart className="h-4 w-4" /> },
       { label: t("dash.affiliates"), path: "/cliente/afiliados", icon: <Link2 className="h-4 w-4" /> },
       { label: t("dash.settings"), path: "/cliente/configuracoes", icon: <Settings className="h-4 w-4" /> },
     ];

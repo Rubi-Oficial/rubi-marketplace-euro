@@ -1,6 +1,7 @@
 import { forwardRef, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Sparkles, ChevronLeft, ChevronRight, DollarSign, Heart, ArrowRight } from "lucide-react";
+import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
@@ -114,7 +115,8 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
   const hasMultiple = urls.length > 1;
   const [activeIdx, setActiveIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
-  const [favorited, setFavorited] = useState(false);
+  const { isFavorited, toggleFavorite, isToggling } = useFavorites();
+  const favorited = isFavorited(profile.id);
   const pausedUntilRef = useRef(0);
 
   const truncatedBio = profile.bio
@@ -308,7 +310,8 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
                 ? "bg-primary/10 border-primary/30 text-primary"
                 : "bg-surface-light border-border/60 text-muted-foreground hover:text-primary hover:border-primary/30"
             }`}
-            onClick={() => setFavorited((f) => !f)}
+            disabled={isToggling}
+            onClick={() => toggleFavorite(profile.id)}
             aria-label={favorited ? "Remover dos favoritos" : "Adicionar aos favoritos"}
           >
             <Heart className={`h-4 w-4 ${favorited ? "fill-primary" : ""}`} />

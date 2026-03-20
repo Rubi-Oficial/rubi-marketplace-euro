@@ -32,6 +32,7 @@ const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage"));
 const ClientDashboard = lazy(() => import("@/pages/dashboard/client/ClientDashboard"));
 const ClientAffiliates = lazy(() => import("@/pages/dashboard/client/ClientAffiliates"));
 const ClientSettings = lazy(() => import("@/pages/dashboard/client/ClientSettings"));
+const ClientFavorites = lazy(() => import("@/pages/dashboard/client/ClientFavorites"));
 
 const EscortDashboard = lazy(() => import("@/pages/dashboard/escort/EscortDashboard"));
 const EscortProfile = lazy(() => import("@/pages/dashboard/escort/EscortProfile"));
@@ -106,6 +107,7 @@ const App = () => (
               }
             >
               <Route path="/cliente" element={<ClientDashboard />} />
+              <Route path="/cliente/favoritos" element={<ClientFavorites />} />
               <Route path="/cliente/afiliados" element={<ClientAffiliates />} />
               <Route path="/cliente/configuracoes" element={<ClientSettings />} />
             </Route>
