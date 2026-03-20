@@ -134,7 +134,7 @@ function getFlowSteps(d: DashboardData) {
 }
 
 /* ── Main component ── */
-export default function EscortDashboard() {
+const EscortDashboard = forwardRef<HTMLDivElement>(function EscortDashboard(_props, ref) {
   const d = useDashboardData();
   const { user } = useAuth();
 
