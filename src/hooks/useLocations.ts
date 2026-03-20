@@ -32,17 +32,17 @@ export function useLocations() {
     });
   }, []);
 
-  const getCitiesByCountry = (countrySlug: string) => {
+  const getCitiesByCountry = useCallback((countrySlug: string) => {
     const country = countries.find((c) => c.slug === countrySlug);
     if (!country) return [];
     return cities.filter((c) => c.country_id === country.id);
-  };
+  }, [countries, cities]);
 
-  const getCountryByCity = (citySlug: string) => {
+  const getCountryByCity = useCallback((citySlug: string) => {
     const city = cities.find((c) => c.slug === citySlug);
     if (!city) return null;
     return countries.find((c) => c.id === city.country_id) || null;
-  };
+  }, [countries, cities]);
 
   return { countries, cities, loading, getCitiesByCountry, getCountryByCity };
 }
