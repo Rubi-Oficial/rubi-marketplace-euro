@@ -21,11 +21,11 @@ Deno.serve(async (req) => {
   let event: Stripe.Event;
   try {
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-    if (webhookSecret && sig) {
-      event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-    } else {
-      event = JSON.parse(body) as Stripe.Event;
+    if (!webhookSecret || !sig) {
+      console.error("[stripe-webhook] Missing STRIPE_WEBHOOK_SECRET or stripe-signature header");
+      return new Response("Webhook signature required", { status: 400 });
     }
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err) {
     console.error("[stripe-webhook] Signature verification failed:", err);
     return new Response("Webhook Error", { status: 400 });
