@@ -7,6 +7,7 @@ import { Upload, ImageIcon, Film, AlertCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { SortableMediaGrid } from "@/components/media/SortableMediaGrid";
+import { compressImage } from "@/lib/imageCompression";
 import type { MediaItem } from "@/components/media/SortableMediaItem";
 
 const MAX_IMAGES = 10;
@@ -116,7 +117,8 @@ export default function EscortPhotos() {
       const file = files[i];
       if (!file.type.startsWith("image/")) { toast.error(`${file.name} não é uma imagem.`); continue; }
       if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) { toast.error(`${file.name} excede ${MAX_IMAGE_SIZE_MB}MB.`); continue; }
-      validFiles.push(file);
+      const compressed = await compressImage(file);
+      validFiles.push(compressed);
     }
 
     const toUpload = validFiles.slice(0, remaining);
