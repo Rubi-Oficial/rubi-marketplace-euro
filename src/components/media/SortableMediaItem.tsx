@@ -1,5 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Trash2, Play, GripVertical } from "lucide-react";
@@ -26,28 +27,47 @@ interface SortableMediaItemProps {
 }
 
 export function SortableMediaItem({ item, onDelete }: SortableMediaItemProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+    transition: { duration: 250, easing: "cubic-bezier(0.25, 1, 0.5, 1)" },
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 50 : undefined,
   };
 
   const badge = STATUS_BADGE[item.moderation_status] || STATUS_BADGE.pending;
 
   return (
-    <div ref={setNodeRef} style={style} className="group relative overflow-hidden rounded-lg border border-border bg-card">
+    <motion.div
+      ref={setNodeRef}
+      style={style}
+      layout
+      initial={{ opacity: 0, scale: 0.92 }}
+      animate={{
+        opacity: isDragging ? 0.7 : 1,
+        scale: isDragging ? 1.05 : 1,
+        boxShadow: isDragging
+          ? "0 20px 40px -12px hsl(var(--primary) / 0.25), 0 0 0 2px hsl(var(--primary) / 0.4)"
+          : "0 0 0 0px transparent",
+        zIndex: isDragging ? 50 : 0,
+      }}
+      transition={{ type: "spring", stiffness: 350, damping: 28 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      className="group relative overflow-hidden rounded-lg border border-border bg-card"
+    >
       {/* Drag handle */}
-      <button
+      <motion.button
         {...attributes}
         {...listeners}
+        whileHover={{ scale: 1.15 }}
+        whileTap={{ scale: 0.95 }}
         className="absolute top-2 left-2 z-10 flex h-7 w-7 items-center justify-center rounded-md bg-background/80 text-muted-foreground opacity-0 backdrop-blur-sm transition-opacity hover:text-foreground group-hover:opacity-100 cursor-grab active:cursor-grabbing"
         aria-label="Arrastar para reordenar"
       >
         <GripVertical className="h-4 w-4" />
-      </button>
+      </motion.button>
 
       <div className="aspect-[3/4] w-full relative bg-muted">
         {item.type === "image" ? (
@@ -75,6 +95,6 @@ export function SortableMediaItem({ item, onDelete }: SortableMediaItemProps) {
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 }
