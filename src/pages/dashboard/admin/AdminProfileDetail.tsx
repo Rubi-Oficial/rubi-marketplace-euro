@@ -309,6 +309,24 @@ export default function AdminProfileDetail() {
     loadAll();
   };
 
+  /* ── reorder persist ── */
+  const persistOrder = useCallback(async (table: "profile_images" | "profile_videos", items: MediaItem[]) => {
+    const updates = items.map((item, idx) =>
+      supabase.from(table).update({ sort_order: idx }).eq("id", item.id)
+    );
+    await Promise.all(updates);
+  }, []);
+
+  const handleReorderImages = useCallback((reordered: MediaItem[]) => {
+    setImages(reordered);
+    persistOrder("profile_images", reordered);
+  }, [persistOrder]);
+
+  const handleReorderVideos = useCallback((reordered: MediaItem[]) => {
+    setVideos(reordered);
+    persistOrder("profile_videos", reordered);
+  }, [persistOrder]);
+
   const startEditing = () => { setEditForm({ ...profile } as any); setEditing(true); };
   const updateField = (field: string, value: any) => setEditForm(prev => ({ ...prev, [field]: value }));
 
