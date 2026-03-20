@@ -54,6 +54,7 @@ function useNavItems(role: "client" | "escort" | "admin") {
     return [
       { label: t("dash.panel"), path: "/admin", icon: <LayoutDashboard className="h-4 w-4" /> },
       { label: t("dash.profiles"), path: "/admin/perfis", icon: <Users className="h-4 w-4" /> },
+      { label: "Usuários", path: "/admin/usuarios", icon: <Shield className="h-4 w-4" /> },
       { label: t("dash.pending"), path: "/admin/perfis/pendentes", icon: <Shield className="h-4 w-4" /> },
       { label: t("dash.messages"), path: "/admin/mensagens", icon: <Mail className="h-4 w-4" /> },
       { label: t("dash.plans"), path: "/admin/planos", icon: <ClipboardList className="h-4 w-4" /> },
