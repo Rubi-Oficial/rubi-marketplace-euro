@@ -1,24 +1,31 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { fetchEligibleProfiles, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
+import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
+import { ServiceSlugBar } from "@/components/public/ServiceSlugBar";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export default function CategoryPage() {
   const { slug } = useParams();
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const [serviceFilter, setServiceFilter] = useState("");
 
   const categoryName = slug?.replace(/-/g, " ") || "";
 
   useEffect(() => {
+    fetchServices().then(setServices);
+  }, []);
+
+  useEffect(() => {
     if (!categoryName) return;
     setLoading(true);
-    fetchEligibleProfiles({ category: categoryName }).then((data) => {
+    fetchEligibleProfiles({ category: categoryName, service_slug: serviceFilter || undefined }).then((data) => {
       setProfiles(data);
       setLoading(false);
     });
-  }, [categoryName]);
+  }, [categoryName, serviceFilter]);
 
   useEffect(() => {
     document.title = `${categoryName} — Professionals | AURA`;
