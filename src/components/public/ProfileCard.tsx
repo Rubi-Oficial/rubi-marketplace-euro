@@ -153,47 +153,6 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
 
   if (!profile.slug) return null;
 
-  // Auto-rotation
-  useEffect(() => {
-    if (!hasMultiple) return;
-    const id = setInterval(() => {
-      if (hovered) return;
-      if (Date.now() < pausedUntilRef.current) return;
-      setActiveIdx((i) => (i + 1) % urls.length);
-    }, ROTATION_INTERVAL);
-    return () => clearInterval(id);
-  }, [hasMultiple, hovered, urls.length]);
-
-  const goTo = useCallback(
-    (idx: number, e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setActiveIdx(idx);
-      pausedUntilRef.current = Date.now() + PAUSE_AFTER_MANUAL;
-    },
-    []
-  );
-
-  const goPrev = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setActiveIdx((i) => (i - 1 + urls.length) % urls.length);
-      pausedUntilRef.current = Date.now() + PAUSE_AFTER_MANUAL;
-    },
-    [urls.length]
-  );
-
-  const goNext = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setActiveIdx((i) => (i + 1) % urls.length);
-      pausedUntilRef.current = Date.now() + PAUSE_AFTER_MANUAL;
-    },
-    [urls.length]
-  );
-
   return (
     <Link
       ref={ref}
