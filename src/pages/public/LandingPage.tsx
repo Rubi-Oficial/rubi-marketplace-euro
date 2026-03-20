@@ -196,7 +196,7 @@ export default function LandingPage() {
                     <div className="flex h-full items-center justify-center text-muted-foreground/20">
                       <div className="h-14 w-14 rounded-full bg-muted-foreground/10" />
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-muted/60 via-transparent to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
                       <div className="h-4 w-24 rounded bg-muted-foreground/10 mb-1" />
                       <div className="h-3 w-16 rounded bg-muted-foreground/8" />
@@ -222,7 +222,7 @@ export default function LandingPage() {
       <VideoSection filters={{ activeCity: cityFilter, activeService: serviceFilter }} />
 
       {/* CTA */}
-      <section className="border-t border-border/20 py-10">
+      <section className="border-t border-border/30 py-10 bg-secondary/20">
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-display text-lg font-semibold text-foreground">
             Ready to grow your business?

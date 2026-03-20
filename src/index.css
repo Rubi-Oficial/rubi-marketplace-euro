@@ -9,53 +9,53 @@
     --font-display: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
 
-    /* Rubi Girls — Dark Premium Palette */
-    --background: 240 20% 6%;
-    --foreground: 240 10% 95%;
+    /* Rubi Girls — Light Premium Palette */
+    --background: 0 0% 98%;
+    --foreground: 240 10% 10%;
 
-    --card: 240 15% 10%;
-    --card-foreground: 240 10% 95%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
 
-    --popover: 240 15% 10%;
-    --popover-foreground: 240 10% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
 
     /* Ruby Red Accent */
-    --primary: 350 65% 52%;
+    --primary: 350 65% 48%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 12% 15%;
-    --secondary-foreground: 240 10% 85%;
+    --secondary: 240 6% 93%;
+    --secondary-foreground: 240 10% 20%;
 
-    --muted: 240 10% 13%;
-    --muted-foreground: 240 8% 52%;
+    --muted: 240 5% 93%;
+    --muted-foreground: 240 5% 42%;
 
-    --accent: 240 12% 16%;
-    --accent-foreground: 240 10% 90%;
+    --accent: 240 6% 94%;
+    --accent-foreground: 240 10% 12%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 10% 16%;
-    --input: 240 10% 16%;
-    --ring: 350 65% 52%;
+    --border: 240 6% 88%;
+    --input: 240 6% 88%;
+    --ring: 350 65% 48%;
 
     --radius: 0.5rem;
 
     /* Custom tokens */
-    --gold: 35 60% 55%;
-    --surface-glow: 350 65% 52%;
-    --ruby-gradient: linear-gradient(135deg, hsl(350 65% 52%), hsl(340 70% 40%));
-    --gold-gradient: linear-gradient(135deg, hsl(35 60% 55%), hsl(25 70% 45%));
-    --surface-gradient: linear-gradient(180deg, hsl(240 15% 11%), hsl(240 20% 6%));
+    --gold: 35 60% 50%;
+    --surface-glow: 350 65% 48%;
+    --ruby-gradient: linear-gradient(135deg, hsl(350 65% 48%), hsl(340 70% 38%));
+    --gold-gradient: linear-gradient(135deg, hsl(35 60% 50%), hsl(25 70% 42%));
+    --surface-gradient: linear-gradient(180deg, hsl(0 0% 100%), hsl(240 5% 96%));
 
-    --sidebar-background: 240 18% 8%;
-    --sidebar-foreground: 240 10% 85%;
-    --sidebar-primary: 350 65% 52%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 10% 20%;
+    --sidebar-primary: 350 65% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 12% 14%;
-    --sidebar-accent-foreground: 240 10% 90%;
-    --sidebar-border: 240 10% 14%;
-    --sidebar-ring: 350 65% 52%;
+    --sidebar-accent: 240 6% 95%;
+    --sidebar-accent-foreground: 240 10% 12%;
+    --sidebar-border: 240 6% 90%;
+    --sidebar-ring: 350 65% 48%;
   }
 }
 
@@ -101,12 +101,12 @@
     background: var(--surface-gradient);
   }
   .glass {
-    @apply bg-card/60 backdrop-blur-md border border-border/50;
+    @apply bg-card/80 backdrop-blur-md border border-border/50;
   }
   .glow-ruby {
-    box-shadow: 0 0 20px hsl(350 65% 52% / 0.15), inset 0 1px 0 hsl(350 65% 52% / 0.1);
+    box-shadow: 0 0 20px hsl(350 65% 48% / 0.12), inset 0 1px 0 hsl(350 65% 48% / 0.08);
   }
   .glow-gold {
-    box-shadow: 0 0 20px hsl(35 60% 55% / 0.15), inset 0 1px 0 hsl(35 60% 55% / 0.1);
+    box-shadow: 0 0 20px hsl(35 60% 50% / 0.15), inset 0 1px 0 hsl(35 60% 50% / 0.1);
   }
 }

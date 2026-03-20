@@ -189,7 +189,7 @@ export default function SearchPage() {
           ))}
         </div>
       ) : profiles.length === 0 ? (
-        <div className="rounded-xl border border-border/30 bg-card/50 p-16 text-center">
+        <div className="rounded-xl border border-border/50 bg-card p-16 text-center shadow-sm">
           <p className="text-muted-foreground">
             {hasFilters ? "No profiles match your filters." : "No profiles available at the moment."}
           </p>

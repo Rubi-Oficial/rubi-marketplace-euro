@@ -107,7 +107,7 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
     <Link
       ref={ref}
       to={`/perfil/${profile.slug}`}
-      className="group relative block overflow-hidden rounded-xl bg-card transition-all duration-300 hover:ring-1 hover:ring-primary/30 hover:shadow-lg hover:shadow-primary/5"
+      className="group relative block overflow-hidden rounded-xl bg-card shadow-sm border border-border/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20"
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-muted">
         {profile.thumb_url ? (
@@ -124,7 +124,7 @@ export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProf
         )}
 
         {/* Gradient overlay — strong for text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
         {/* Featured badge */}
         {profile.is_featured && (
