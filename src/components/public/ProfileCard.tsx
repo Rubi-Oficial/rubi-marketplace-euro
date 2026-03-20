@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { MapPin, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -99,7 +100,7 @@ export async function fetchServices() {
   return (data || []) as { id: string; name: string; slug: string }[];
 }
 
-export function ProfileCard({ profile }: { profile: EligibleProfile }) {
+export const ProfileCard = forwardRef<HTMLAnchorElement, { profile: EligibleProfile }>(({ profile }, ref) => {
   return (
     <Link
       to={`/perfil/${profile.slug}`}
@@ -149,4 +150,5 @@ export function ProfileCard({ profile }: { profile: EligibleProfile }) {
       </div>
     </Link>
   );
-}
+});
+ProfileCard.displayName = "ProfileCard";

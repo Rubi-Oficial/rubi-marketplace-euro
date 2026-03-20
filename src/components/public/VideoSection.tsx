@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { MapPin, Play } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -83,7 +84,7 @@ export async function fetchProfileVideos(filters?: {
   });
 }
 
-function VideoCard({ video }: { video: ProfileVideo }) {
+const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }, _ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -154,7 +155,8 @@ function VideoCard({ video }: { video: ProfileVideo }) {
       </div>
     </div>
   );
-}
+});
+VideoCard.displayName = "VideoCard";
 
 export function VideoSection({ filters }: { filters: { activeCity: string; activeService: string } }) {
   const [videos, setVideos] = useState<ProfileVideo[]>([]);
