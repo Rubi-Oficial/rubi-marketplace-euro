@@ -63,6 +63,40 @@ export default function LandingPage() {
       setLoading(false);
     });
   }, [cityFilter, categoryFilter, serviceFilter, countryFilter, countryCitySlugs]);
+
+  const hasFilters = !!countryFilter || !!cityFilter || !!categoryFilter || !!serviceFilter;
+  const hasLocationFilter = !!countryFilter || !!cityFilter;
+  const hasGeneralFilter = !!categoryFilter || !!serviceFilter;
+
+  const clearFilters = () => {
+    setCountryFilter("");
+    setCityFilter("");
+    setCategoryFilter("");
+    setServiceFilter("");
+  };
+
+  const handleApplyFilters = (partial: Partial<{ category: string; service: string }>) => {
+    if (partial.category !== undefined) setCategoryFilter(partial.category);
+    if (partial.service !== undefined) setServiceFilter(partial.service);
+  };
+
+  const handleApplyLocation = (country: string, city: string) => {
+    setCountryFilter(country);
+    setCityFilter(city);
+  };
+
+  const handleRemoveFilter = (key: string) => {
+    if (key === "country") { setCountryFilter(""); setCityFilter(""); }
+    else if (key === "city") setCityFilter("");
+    else if (key === "category") setCategoryFilter("");
+    else if (key === "service") setServiceFilter("");
+  };
+
+  const countryName = countries.find((c) => c.slug === countryFilter)?.name;
+  const cityName = filteredCities.find((c) => c.slug === cityFilter)?.name;
+  const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
+
+  const detectedCountrySlug = "";
   return (
     <div className="min-h-screen">
       <section className="pt-4 pb-8">
