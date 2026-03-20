@@ -77,6 +77,11 @@ export default {
           light: "hsl(350 60% 62%)",
           dark: "hsl(340 70% 38%)",
         },
+        surface: {
+          light: "hsl(270 15% 97%)",
+          hover: "hsl(270 15% 93%)",
+          active: "hsl(270 15% 84%)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
