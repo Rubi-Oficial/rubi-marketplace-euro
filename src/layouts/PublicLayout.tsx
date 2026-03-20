@@ -17,8 +17,9 @@ export default function PublicLayout() {
         <div className="container mx-auto px-4">
           <div className="grid gap-10 md:grid-cols-4">
             <div>
-              <span className="font-display text-lg font-bold text-foreground">
-                <span className="text-primary">Rubi</span> Girls
+              <span className="font-display text-lg tracking-tight text-foreground">
+                <span className="font-bold text-primary">Rubi</span>
+                <span className="font-medium text-foreground/80"> Girls</span>
               </span>
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
                 Premium catalogue for independent professionals across Europe.
