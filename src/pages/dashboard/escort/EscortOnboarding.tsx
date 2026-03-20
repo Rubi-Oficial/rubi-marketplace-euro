@@ -143,7 +143,7 @@ export default function EscortOnboarding() {
       case 0:
         return form.display_name.trim().length >= 2;
       case 1:
-        return form.city.length > 0 && form.category.length > 0;
+        return form.country.length > 0 && form.city.length > 0 && form.category.length > 0;
       case 2:
         return true;
       case 3:
