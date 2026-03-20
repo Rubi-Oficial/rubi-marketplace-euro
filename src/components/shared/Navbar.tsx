@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LogOut, LayoutDashboard, Search, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import { CITIES } from "@/components/onboarding/types";
+import { useLocations } from "@/hooks/useLocations";
 import { fetchServices } from "@/components/public/ProfileCard";
 import { supabase } from "@/lib/supabase";
 
@@ -18,16 +18,19 @@ export default function Navbar() {
 
   const [searchValue, setSearchValue] = useState("");
   const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const [activeCountry, setActiveCountry] = useState("");
   const [activeCity, setActiveCity] = useState("");
   const [activeService, setActiveService] = useState("");
   const [cityCounts, setCityCounts] = useState<Record<string, number>>({});
   const [serviceCounts, setServiceCounts] = useState<Record<string, number>>({});
 
+  const { countries, getCitiesByCountry } = useLocations();
+  const filteredCities = activeCountry ? getCitiesByCountry(activeCountry) : [];
+
   useEffect(() => {
     if (!isHome) return;
     fetchServices().then(setServices);
 
-    // Fetch city counts from eligible profiles
     supabase
       .from("eligible_profiles")
       .select("city_slug")
@@ -40,7 +43,6 @@ export default function Navbar() {
         setCityCounts(counts);
       });
 
-    // Fetch service counts (only for eligible profiles)
     supabase
       .from("profile_services")
       .select("service_id, profile_id")
@@ -64,12 +66,11 @@ export default function Navbar() {
       });
   }, [isHome]);
 
-  // Expose filter state to LandingPage via custom event
   useEffect(() => {
     if (isHome) {
-      window.dispatchEvent(new CustomEvent("rubi-filters", { detail: { activeCity, activeService } }));
+      window.dispatchEvent(new CustomEvent("rubi-filters", { detail: { activeCity, activeService, activeCountry } }));
     }
-  }, [activeCity, activeService, isHome]);
+  }, [activeCity, activeService, activeCountry, isHome]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +78,16 @@ export default function Navbar() {
       navigate(`/buscar?q=${encodeURIComponent(searchValue.trim())}`);
     } else {
       navigate("/buscar");
+    }
+  };
+
+  const handleCountryClick = (slug: string) => {
+    if (activeCountry === slug) {
+      setActiveCountry("");
+      setActiveCity("");
+    } else {
+      setActiveCountry(slug);
+      setActiveCity("");
     }
   };
 
@@ -88,7 +99,6 @@ export default function Navbar() {
           <span className="text-primary">Rubi</span> Girls
         </Link>
 
-        {/* Search bar — always visible */}
         <form onSubmit={handleSearch} className="hidden sm:flex flex-1 max-w-md items-center gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -138,28 +148,50 @@ export default function Navbar() {
       {isHome && (
         <div className="border-t border-border/20 bg-background/90">
           <div className="container mx-auto px-4 flex items-center gap-1 overflow-x-auto scrollbar-hide py-2">
-            {CITIES.map((city) => (
+            {/* Country pills */}
+            {countries.map((country) => (
               <button
-                key={city.slug}
-                onClick={() => setActiveCity(activeCity === city.slug ? "" : city.slug)}
-                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-all shrink-0 inline-flex items-center ${
-                  activeCity === city.slug
+                key={country.slug}
+                onClick={() => handleCountryClick(country.slug)}
+                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-all shrink-0 ${
+                  activeCountry === country.slug
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 }`}
               >
-                {city.name}
-                {cityCounts[city.slug] ? (
-                  <span className={`ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold ${
-                    activeCity === city.slug
-                      ? "bg-primary-foreground/20 text-primary-foreground"
-                      : "bg-primary/10 text-primary"
-                  }`}>
-                    {cityCounts[city.slug]}
-                  </span>
-                ) : null}
+                {country.name}
               </button>
             ))}
+
+            {/* City pills — shown when a country is selected */}
+            {filteredCities.length > 0 && (
+              <>
+                <span className="mx-1 h-4 w-px bg-border/30 shrink-0" />
+                {filteredCities.map((city) => (
+                  <button
+                    key={city.slug}
+                    onClick={() => setActiveCity(activeCity === city.slug ? "" : city.slug)}
+                    className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-all shrink-0 inline-flex items-center ${
+                      activeCity === city.slug
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    }`}
+                  >
+                    {city.name}
+                    {cityCounts[city.slug] ? (
+                      <span className={`ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold ${
+                        activeCity === city.slug
+                          ? "bg-primary-foreground/20 text-primary-foreground"
+                          : "bg-primary/10 text-primary"
+                      }`}>
+                        {cityCounts[city.slug]}
+                      </span>
+                    ) : null}
+                  </button>
+                ))}
+              </>
+            )}
+
             <span className="mx-1 h-4 w-px bg-border/30 shrink-0" />
             {services.map((svc) => (
               <button
@@ -183,9 +215,9 @@ export default function Navbar() {
                 ) : null}
               </button>
             ))}
-            {(activeCity || activeService) && (
+            {(activeCountry || activeCity || activeService) && (
               <button
-                onClick={() => { setActiveCity(""); setActiveService(""); }}
+                onClick={() => { setActiveCountry(""); setActiveCity(""); setActiveService(""); }}
                 className="text-xs text-primary hover:underline ml-1 shrink-0"
               >
                 Clear
@@ -204,7 +236,6 @@ export default function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-border/30 bg-background/95 backdrop-blur-xl px-4 py-4 space-y-1 animate-fade-in">
-          {/* Mobile search */}
           <form onSubmit={(e) => { handleSearch(e); setMobileOpen(false); }} className="flex gap-2 mb-3 sm:hidden">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
