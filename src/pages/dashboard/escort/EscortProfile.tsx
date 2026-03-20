@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Save, Send, Eye } from "lucide-react";
+import { Save, Send, Eye, Pause, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CITIES, CATEGORIES, type ServiceOption } from "@/components/onboarding/types";
@@ -28,11 +28,11 @@ interface ProfileForm {
 }
 
 const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  draft: { label: "Draft", variant: "secondary" },
-  pending_review: { label: "Under review", variant: "outline" },
-  approved: { label: "Approved — awaiting activation", variant: "default" },
-  rejected: { label: "Rejected", variant: "destructive" },
-  paused: { label: "Paused", variant: "secondary" },
+  draft: { label: "Rascunho", variant: "secondary" },
+  pending_review: { label: "Em análise", variant: "outline" },
+  approved: { label: "Aprovado — aguardando ativação", variant: "default" },
+  rejected: { label: "Rejeitado", variant: "destructive" },
+  paused: { label: "Pausado", variant: "secondary" },
 };
 
 export default function EscortProfile() {
@@ -54,16 +54,13 @@ export default function EscortProfile() {
   useEffect(() => {
     if (!user) return;
 
-    // Load services from DB
     supabase.from("services").select("id, name, slug").eq("is_active", true)
       .order("sort_order", { ascending: true })
       .then(({ data }) => { if (data) setServices(data as ServiceOption[]); });
 
-    // Check active subscription
     supabase.from("subscriptions").select("id").eq("user_id", user.id).eq("status", "active").limit(1)
       .then(({ data }) => setHasActiveSub((data?.length ?? 0) > 0));
 
-    // Load profile
     supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle()
       .then(async ({ data }) => {
         if (data) {
@@ -132,7 +129,6 @@ export default function EscortProfile() {
 
     const { error } = await supabase.from("profiles").update(payload).eq("id", profileId);
 
-    // Save services
     if (!error) {
       await supabase.from("profile_services").delete().eq("profile_id", profileId);
       if (selectedServices.length > 0) {
@@ -145,17 +141,37 @@ export default function EscortProfile() {
     setSaving(false);
 
     if (error) {
-      toast.error("Error saving: " + error.message);
+      toast.error("Erro ao guardar: " + error.message);
       return;
     }
 
     if (submitForReview) {
       setStatus("pending_review");
-      toast.success("Profile submitted for review!");
+      toast.success("Perfil enviado para revisão!");
     } else {
       setSlug(newSlug);
-      toast.success("Changes saved!");
+      toast.success("Alterações guardadas!");
     }
+  };
+
+  const handlePause = async () => {
+    if (!profileId) return;
+    setSaving(true);
+    const { error } = await supabase.from("profiles").update({ status: "paused" }).eq("id", profileId);
+    setSaving(false);
+    if (error) { toast.error("Erro ao pausar"); return; }
+    setStatus("paused");
+    toast.success("Perfil despublicado.");
+  };
+
+  const handleReactivate = async () => {
+    if (!profileId) return;
+    setSaving(true);
+    const { error } = await supabase.from("profiles").update({ status: "approved" }).eq("id", profileId);
+    setSaving(false);
+    if (error) { toast.error("Erro ao reativar"); return; }
+    setStatus("approved");
+    toast.success("Perfil reativado!");
   };
 
   if (loading) {
@@ -169,8 +185,8 @@ export default function EscortProfile() {
   if (!profileId) {
     return (
       <div className="animate-fade-in text-center py-20">
-        <p className="text-muted-foreground">No profile found.</p>
-        <Button asChild className="mt-4"><Link to="/app/onboarding">Create profile</Link></Button>
+        <p className="text-muted-foreground">Nenhum perfil encontrado.</p>
+        <Button asChild className="mt-4"><Link to="/app/onboarding">Criar perfil</Link></Button>
       </div>
     );
   }
@@ -184,53 +200,91 @@ export default function EscortProfile() {
     <div className="animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-foreground">My Profile</h1>
-          <p className="mt-1 text-muted-foreground">Edit your listing and information.</p>
+          <h1 className="font-display text-2xl font-bold text-foreground">Meu Perfil</h1>
+          <p className="mt-1 text-muted-foreground">Edite o seu anúncio e informações.</p>
         </div>
         <div className="flex items-center gap-3">
           {isPublished ? (
-            <Badge variant="default" className="bg-green-600">Published</Badge>
+            <Badge variant="default" className="bg-green-600">Publicado</Badge>
           ) : (
             <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
           )}
-          {isPublished && slug && (
-            <Button variant="outline" size="sm" asChild>
-              <Link to={`/perfil/${slug}`} target="_blank">
-                <Eye className="mr-1.5 h-4 w-4" /> View public
-              </Link>
-            </Button>
-          )}
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/app/preview">
+              <Eye className="mr-1.5 h-4 w-4" /> Pré-visualizar
+            </Link>
+          </Button>
         </div>
       </div>
 
+      {/* Status banners */}
       {status === "rejected" && (
         <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
           <p className="text-sm text-destructive">
-            Your profile was rejected. Please correct the information and resubmit.
+            O seu perfil foi rejeitado. Corrija as informações e reenvie para revisão.
           </p>
         </div>
       )}
 
       {status === "approved" && !hasActiveSub && (
-        <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
-          <p className="text-sm text-primary">
-            Your profile is approved! <Link to="/app/plano" className="underline font-medium">Activate your subscription</Link> to go live.
+        <div className="mt-4 rounded-lg border border-green-500/30 bg-green-500/5 p-4">
+          <p className="text-sm text-green-700">
+            ✓ Perfil aprovado! <Link to="/app/plano" className="underline font-medium">Escolha um plano</Link> para publicar o seu perfil.
           </p>
+        </div>
+      )}
+
+      {status === "pending_review" && (
+        <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
+          <p className="text-sm text-yellow-700">
+            O seu perfil está em análise. Não é possível editar durante a revisão.
+          </p>
+        </div>
+      )}
+
+      {isPublished && (
+        <div className="mt-4 rounded-lg border border-green-500/30 bg-green-500/5 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <p className="text-sm text-green-700">
+            ✓ Perfil publicado e visível para os visitantes.
+          </p>
+          <div className="flex items-center gap-2">
+            {slug && (
+              <Button variant="outline" size="sm" asChild>
+                <Link to={`/perfil/${slug}`} target="_blank">
+                  <Eye className="mr-1.5 h-4 w-4" /> Ver público
+                </Link>
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={handlePause} disabled={saving}>
+              <Pause className="mr-1.5 h-4 w-4" /> Despublicar
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {status === "paused" && hasActiveSub && (
+        <div className="mt-4 rounded-lg border border-border bg-card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <p className="text-sm text-muted-foreground">
+            Perfil pausado. Não está visível para os visitantes.
+          </p>
+          <Button size="sm" onClick={handleReactivate} disabled={saving}>
+            <Play className="mr-1.5 h-4 w-4" /> Republicar
+          </Button>
         </div>
       )}
 
       <div className="mt-8 space-y-6">
         {/* Basic info */}
         <div className="rounded-lg border border-border bg-card p-6">
-          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Basic details</h2>
+          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Dados básicos</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="display_name">Display name *</Label>
+              <Label htmlFor="display_name">Nome de exibição *</Label>
               <Input id="display_name" value={form.display_name} disabled={!canEdit}
                 onChange={(e) => update("display_name", e.target.value)} maxLength={60} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="age">Age</Label>
+              <Label htmlFor="age">Idade</Label>
               <Input id="age" type="number" min={18} max={99} value={form.age} disabled={!canEdit}
                 onChange={(e) => update("age", e.target.value)} />
             </div>
@@ -239,10 +293,10 @@ export default function EscortProfile() {
 
         {/* City & Category */}
         <div className="rounded-lg border border-border bg-card p-6">
-          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">City & category</h2>
+          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Cidade & categoria</h2>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>City *</Label>
+              <Label>Cidade *</Label>
               <div className="flex flex-wrap gap-2">
                 {CITIES.map((c) => (
                   <button key={c.slug} type="button" disabled={!canEdit}
@@ -259,7 +313,7 @@ export default function EscortProfile() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Category *</Label>
+              <Label>Categoria *</Label>
               <div className="flex flex-wrap gap-2">
                 {CATEGORIES.map((c) => (
                   <button key={c} type="button" disabled={!canEdit}
@@ -281,7 +335,7 @@ export default function EscortProfile() {
         {/* Services */}
         {services.length > 0 && (
           <div className="rounded-lg border border-border bg-card p-6">
-            <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Services</h2>
+            <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Serviços</h2>
             <div className="grid gap-2 sm:grid-cols-2">
               {services.map((s) => (
                 <label
@@ -308,22 +362,22 @@ export default function EscortProfile() {
 
         {/* Bio */}
         <div className="rounded-lg border border-border bg-card p-6">
-          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">About you</h2>
+          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Sobre</h2>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="bio">Bio</Label>
               <Textarea id="bio" rows={5} maxLength={1000} value={form.bio} disabled={!canEdit}
-                onChange={(e) => update("bio", e.target.value)} placeholder="Describe yourself..." />
+                onChange={(e) => update("bio", e.target.value)} placeholder="Descreva-se..." />
               <p className="text-xs text-muted-foreground">{form.bio.length}/1000</p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="languages">Languages</Label>
+                <Label htmlFor="languages">Idiomas</Label>
                 <Input id="languages" value={form.languages} disabled={!canEdit}
                   onChange={(e) => update("languages", e.target.value)} placeholder="English, Dutch" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="pricing_from">Starting price (€)</Label>
+                <Label htmlFor="pricing_from">Preço inicial (€)</Label>
                 <Input id="pricing_from" type="number" min={0} value={form.pricing_from} disabled={!canEdit}
                   onChange={(e) => update("pricing_from", e.target.value)} placeholder="200" />
               </div>
@@ -333,7 +387,7 @@ export default function EscortProfile() {
 
         {/* Contact */}
         <div className="rounded-lg border border-border bg-card p-6">
-          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Contact</h2>
+          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Contacto</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="whatsapp">WhatsApp</Label>
@@ -350,21 +404,31 @@ export default function EscortProfile() {
 
         {/* Actions */}
         {canEdit && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button onClick={() => handleSave(false)} disabled={saving}>
               <Save className="mr-1.5 h-4 w-4" />
-              {saving ? "Saving..." : "Save changes"}
+              {saving ? "Guardando..." : "Guardar alterações"}
             </Button>
             {(status === "draft" || status === "rejected") && canSubmit && (
               <Button variant="outline" onClick={() => handleSave(true)} disabled={saving}>
-                <Send className="mr-1.5 h-4 w-4" /> Submit for review
+                <Send className="mr-1.5 h-4 w-4" /> Enviar para revisão
+              </Button>
+            )}
+            {isPublished && (
+              <Button variant="ghost" onClick={handlePause} disabled={saving}>
+                <Pause className="mr-1.5 h-4 w-4" /> Despublicar
+              </Button>
+            )}
+            {status === "paused" && hasActiveSub && (
+              <Button variant="ghost" onClick={handleReactivate} disabled={saving}>
+                <Play className="mr-1.5 h-4 w-4" /> Republicar
               </Button>
             )}
           </div>
         )}
         {!canEdit && (
           <p className="text-sm text-muted-foreground">
-            Your profile is under review and cannot be edited at this time.
+            O seu perfil está em análise e não pode ser editado neste momento.
           </p>
         )}
       </div>

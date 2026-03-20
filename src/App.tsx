@@ -40,6 +40,7 @@ import EscortPhotos from "@/pages/dashboard/escort/EscortPhotos";
 import EscortSubscription from "@/pages/dashboard/escort/EscortSubscription";
 import EscortMetrics from "@/pages/dashboard/escort/EscortMetrics";
 import EscortAffiliates from "@/pages/dashboard/escort/EscortAffiliates";
+import EscortPreview from "@/pages/dashboard/escort/EscortPreview";
 import EscortSettings from "@/pages/dashboard/escort/EscortSettings";
 
 // Admin
@@ -111,6 +112,7 @@ const App = () => (
               <Route path="/app/onboarding" element={<EscortOnboarding />} />
               <Route path="/app/perfil" element={<EscortProfile />} />
               <Route path="/app/fotos" element={<EscortPhotos />} />
+              <Route path="/app/preview" element={<EscortPreview />} />
               <Route path="/app/plano" element={<EscortSubscription />} />
               <Route path="/app/metricas" element={<EscortMetrics />} />
               <Route path="/app/afiliados" element={<EscortAffiliates />} />
