@@ -134,7 +134,7 @@ const LocationBody = forwardRef<HTMLDivElement, Omit<LocationModalProps, "open" 
       </div>
     </div>
   );
-}
+});
 
 export function LocationModal(props: LocationModalProps) {
   const isMobile = useIsMobile();
