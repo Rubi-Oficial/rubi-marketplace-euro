@@ -21,6 +21,7 @@ export default function StepReview({ form }: Props) {
       </p>
       <Field label="Name" value={form.display_name} />
       <Field label="Age" value={form.age} />
+      <Field label="Country" value={form.country} />
       <Field label="City" value={form.city} />
       <Field label="Category" value={form.category} />
       <Field label="Languages" value={form.languages} />

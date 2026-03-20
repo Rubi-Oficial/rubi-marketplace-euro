@@ -73,6 +73,44 @@ export type Database = {
           },
         ]
       }
+      cities: {
+        Row: {
+          country_id: string
+          id: string
+          is_active: boolean
+          is_featured: boolean
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          country_id: string
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          country_id?: string
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cities_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -97,6 +135,33 @@ export type Database = {
           is_read?: boolean
           message?: string
           name?: string
+        }
+        Relationships: []
+      }
+      countries: {
+        Row: {
+          id: string
+          is_active: boolean
+          iso_code: string
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          id?: string
+          is_active?: boolean
+          iso_code: string
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          id?: string
+          is_active?: boolean
+          iso_code?: string
+          name?: string
+          slug?: string
+          sort_order?: number
         }
         Relationships: []
       }
@@ -301,6 +366,7 @@ export type Database = {
           city: string | null
           city_slug: string | null
           country: string | null
+          country_slug: string | null
           created_at: string
           display_name: string | null
           featured_until: string | null
@@ -322,6 +388,7 @@ export type Database = {
           city?: string | null
           city_slug?: string | null
           country?: string | null
+          country_slug?: string | null
           created_at?: string
           display_name?: string | null
           featured_until?: string | null
@@ -343,6 +410,7 @@ export type Database = {
           city?: string | null
           city_slug?: string | null
           country?: string | null
+          country_slug?: string | null
           created_at?: string
           display_name?: string | null
           featured_until?: string | null

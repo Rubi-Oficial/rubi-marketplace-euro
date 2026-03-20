@@ -3,27 +3,27 @@ import { useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { fetchEligibleProfiles, fetchFilterOptions, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
+import { useLocations } from "@/hooks/useLocations";
+import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cities, setCities] = useState<string[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
   const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
+  const { countries, getCitiesByCountry } = useLocations();
+
   const searchQuery = searchParams.get("q") || "";
+  const countryFilter = searchParams.get("country") || "";
   const cityFilter = searchParams.get("city") || "";
   const categoryFilter = searchParams.get("category") || "";
   const serviceFilter = searchParams.get("service") || "";
 
+  const filteredCities = countryFilter ? getCitiesByCountry(countryFilter) : [];
+
   useEffect(() => {
-    fetchFilterOptions().then(({ cities, categories }) => {
-      setCities(cities);
-      setCategories(categories);
-    });
     fetchServices().then(setServices);
   }, []);
 
@@ -31,24 +31,32 @@ export default function SearchPage() {
     setLoading(true);
     fetchEligibleProfiles({
       search: searchQuery || undefined,
-      city: cityFilter || undefined,
+      city_slug: cityFilter || undefined,
       category: categoryFilter || undefined,
       service_slug: serviceFilter || undefined,
     }).then((data) => {
-      setProfiles(data);
+      // If country filter is set but no city, filter client-side by country's cities
+      if (countryFilter && !cityFilter) {
+        const countryCitySlugs = new Set(filteredCities.map((c) => c.slug));
+        setProfiles(data.filter((p) => p.city_slug && countryCitySlugs.has(p.city_slug)));
+      } else {
+        setProfiles(data);
+      }
       setLoading(false);
     });
-  }, [searchQuery, cityFilter, categoryFilter, serviceFilter]);
+  }, [searchQuery, cityFilter, categoryFilter, serviceFilter, countryFilter, filteredCities.length]);
 
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value) params.set(key, value);
     else params.delete(key);
+    // Clear city when changing country
+    if (key === "country") params.delete("city");
     setSearchParams(params);
   };
 
   const clearFilters = () => setSearchParams({});
-  const hasFilters = !!searchQuery || !!cityFilter || !!categoryFilter || !!serviceFilter;
+  const hasFilters = !!searchQuery || !!countryFilter || !!cityFilter || !!categoryFilter || !!serviceFilter;
 
   useEffect(() => {
     const parts = ["Explore"];
@@ -80,19 +88,32 @@ export default function SearchPage() {
         </Button>
       </div>
 
-      {/* Inline filter chips */}
+      {/* Inline filter chips — countries then cities */}
       <div className="flex flex-wrap gap-1.5 mb-5">
-        {cities.slice(0, 6).map((c) => (
+        {countries.map((c) => (
           <button
-            key={c}
-            onClick={() => updateParam("city", cityFilter === c ? "" : c)}
+            key={c.slug}
+            onClick={() => updateParam("country", countryFilter === c.slug ? "" : c.slug)}
             className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-              cityFilter === c
+              countryFilter === c.slug
                 ? "bg-primary text-primary-foreground"
                 : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
             }`}
           >
-            {c}
+            {c.name}
+          </button>
+        ))}
+        {filteredCities.length > 0 && filteredCities.map((c) => (
+          <button
+            key={c.slug}
+            onClick={() => updateParam("city", cityFilter === c.slug ? "" : c.slug)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+              cityFilter === c.slug
+                ? "bg-primary text-primary-foreground"
+                : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+            }`}
+          >
+            {c.name}
           </button>
         ))}
         {services.slice(0, 4).map((s) => (
@@ -118,37 +139,37 @@ export default function SearchPage() {
       {/* Expanded filters */}
       {showFilters && (
         <div className="mb-5 rounded-xl border border-border/30 bg-card/50 p-5 space-y-4">
-          {cities.length > 0 && (
+          {countries.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">City</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Country</p>
               <div className="flex flex-wrap gap-2">
-                {cities.map((c) => (
+                {countries.map((c) => (
                   <button
-                    key={c}
-                    onClick={() => updateParam("city", cityFilter === c ? "" : c)}
+                    key={c.slug}
+                    onClick={() => updateParam("country", countryFilter === c.slug ? "" : c.slug)}
                     className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                      cityFilter === c ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+                      countryFilter === c.slug ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {c}
+                    {c.name}
                   </button>
                 ))}
               </div>
             </div>
           )}
-          {categories.length > 0 && (
+          {filteredCities.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Category</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">City</p>
               <div className="flex flex-wrap gap-2">
-                {categories.map((c) => (
+                {filteredCities.map((c) => (
                   <button
-                    key={c}
-                    onClick={() => updateParam("category", categoryFilter === c ? "" : c)}
+                    key={c.slug}
+                    onClick={() => updateParam("city", cityFilter === c.slug ? "" : c.slug)}
                     className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                      categoryFilter === c ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+                      cityFilter === c.slug ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {c}
+                    {c.name}
                   </button>
                 ))}
               </div>

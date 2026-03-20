@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { Save, Send, Eye, Pause, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { CITIES, CATEGORIES, type ServiceOption } from "@/components/onboarding/types";
+import { CATEGORIES, type ServiceOption } from "@/components/onboarding/types";
+import { useLocations } from "@/hooks/useLocations";
 
 interface ProfileForm {
   display_name: string;
@@ -37,6 +38,7 @@ const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secon
 
 export default function EscortProfile() {
   const { user } = useAuth();
+  const { countries, getCitiesByCountry, getCountryByCity, loading: locLoading } = useLocations();
   const [profileId, setProfileId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("draft");
   const [slug, setSlug] = useState<string | null>(null);
@@ -50,6 +52,14 @@ export default function EscortProfile() {
     category: "", bio: "", languages: "English",
     pricing_from: "", whatsapp: "", telegram: "",
   });
+
+  // Auto-detect country from existing city_slug
+  useEffect(() => {
+    if (form.city_slug && !form.country && !locLoading) {
+      const country = getCountryByCity(form.city_slug);
+      if (country) setForm((prev) => ({ ...prev, country: country.slug }));
+    }
+  }, [form.city_slug, form.country, locLoading]);
 
   useEffect(() => {
     if (!user) return;
@@ -91,6 +101,12 @@ export default function EscortProfile() {
   const update = (field: keyof ProfileForm, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
+  const selectCountry = (slug: string) => {
+    update("country", slug);
+    update("city", "");
+    update("city_slug", "");
+  };
+
   const selectCity = (name: string, slug: string) => {
     update("city", name);
     update("city_slug", slug);
@@ -117,6 +133,7 @@ export default function EscortProfile() {
       city: form.city || null,
       city_slug: form.city_slug || null,
       country: form.country || null,
+      country_slug: form.country || null,
       category: form.category || null,
       bio: form.bio.trim() || null,
       languages: form.languages ? form.languages.split(",").map((l) => l.trim()).filter(Boolean) : null,
@@ -291,27 +308,50 @@ export default function EscortProfile() {
           </div>
         </div>
 
-        {/* City & Category */}
+        {/* Country, City & Category */}
         <div className="rounded-lg border border-border bg-card p-6">
-          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Cidade & categoria</h2>
+          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Localização & categoria</h2>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Cidade *</Label>
-              <div className="flex flex-wrap gap-2">
-                {CITIES.map((c) => (
-                  <button key={c.slug} type="button" disabled={!canEdit}
-                    onClick={() => selectCity(c.name, c.slug)}
-                    className={cn(
-                      "rounded-md border px-3 py-1.5 text-sm transition-colors disabled:opacity-50",
-                      form.city_slug === c.slug
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:border-primary/40"
-                    )}>
-                    {c.name}
-                  </button>
-                ))}
-              </div>
+              <Label>País *</Label>
+              {locLoading ? (
+                <div className="h-10 animate-pulse rounded-md bg-muted" />
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {countries.map((c) => (
+                    <button key={c.slug} type="button" disabled={!canEdit}
+                      onClick={() => selectCountry(c.slug)}
+                      className={cn(
+                        "rounded-md border px-3 py-1.5 text-sm transition-colors disabled:opacity-50",
+                        form.country === c.slug
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/40"
+                      )}>
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+            {form.country && (
+              <div className="space-y-2">
+                <Label>Cidade *</Label>
+                <div className="flex flex-wrap gap-2">
+                  {getCitiesByCountry(form.country).map((c) => (
+                    <button key={c.slug} type="button" disabled={!canEdit}
+                      onClick={() => selectCity(c.name, c.slug)}
+                      className={cn(
+                        "rounded-md border px-3 py-1.5 text-sm transition-colors disabled:opacity-50",
+                        form.city_slug === c.slug
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/40"
+                      )}>
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Categoria *</Label>
               <div className="flex flex-wrap gap-2">

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { CITIES } from "@/components/onboarding/types";
+import { useLocations } from "@/hooks/useLocations";
 
 export default function CityPage() {
   const { slug } = useParams();
@@ -12,8 +12,10 @@ export default function CityPage() {
   const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [activeService, setActiveService] = useState<string>("");
 
-  const cityObj = CITIES.find((c) => c.slug === slug);
+  const { cities, countries } = useLocations();
+  const cityObj = cities.find((c) => c.slug === slug);
   const cityName = cityObj?.name || slug?.replace(/-/g, " ") || "";
+  const countryObj = cityObj ? countries.find((c) => c.id === cityObj.country_id) : null;
 
   useEffect(() => { fetchServices().then(setServices); }, []);
 
@@ -40,6 +42,9 @@ export default function CityPage() {
           <ArrowLeft className="h-3 w-3" /> Back
         </Link>
         <h1 className="font-display text-xl font-bold text-foreground capitalize sm:text-2xl">{cityName}</h1>
+        {countryObj && (
+          <p className="text-xs text-muted-foreground mt-0.5">{countryObj.name}</p>
+        )}
         <p className="mt-0.5 text-xs text-muted-foreground">
           {loading ? "Loading..." : `${profiles.length} profile(s)`}
         </p>
