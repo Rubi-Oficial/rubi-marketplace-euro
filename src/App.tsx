@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/i18n/LanguageContext";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
 import AuthRedirectHandler from "@/components/shared/AuthRedirectHandler";
 import PublicLayout from "@/layouts/PublicLayout";
