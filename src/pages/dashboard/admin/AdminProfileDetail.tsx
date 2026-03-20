@@ -422,14 +422,10 @@ export default function AdminProfileDetail() {
             {images.length === 0 ? (
               <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma foto.</p>
             ) : (
-              <div className="grid gap-3 grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
-                {images.map((img, idx) => (
-                  <MediaCard key={img.id} item={img} type="image" index={idx}
-                    onModerate={(s) => handleImageModeration(img.id, s)}
-                    onDelete={() => handleDeleteImage(img)}
-                  />
-                ))}
-              </div>
+              <DndMediaGrid items={images} onReorder={handleReorderImages} type="image"
+                onModerate={(id, s) => handleImageModeration(id, s)}
+                onDelete={(item) => handleDeleteImage(item)}
+              />
             )}
           </TabsContent>
 
@@ -437,14 +433,10 @@ export default function AdminProfileDetail() {
             {videos.length === 0 ? (
               <p className="text-sm text-muted-foreground py-8 text-center">Nenhum vídeo.</p>
             ) : (
-              <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-                {videos.map((vid, idx) => (
-                  <MediaCard key={vid.id} item={vid} type="video" index={idx}
-                    onModerate={(s) => handleVideoModeration(vid.id, s)}
-                    onDelete={() => handleDeleteVideo(vid)}
-                  />
-                ))}
-              </div>
+              <DndMediaGrid items={videos} onReorder={handleReorderVideos} type="video"
+                onModerate={(id, s) => handleVideoModeration(id, s)}
+                onDelete={(item) => handleDeleteVideo(item)}
+              />
             )}
           </TabsContent>
         </Tabs>
