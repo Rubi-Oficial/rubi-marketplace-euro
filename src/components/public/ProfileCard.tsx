@@ -1,6 +1,7 @@
 import { forwardRef, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Sparkles, ChevronLeft, ChevronRight, DollarSign, Heart, ArrowRight } from "lucide-react";
+import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
