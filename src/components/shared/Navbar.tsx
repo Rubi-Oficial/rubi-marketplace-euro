@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogOut, LayoutDashboard, Search, Menu, X, Globe } from "lucide-react";
+import { LogOut, LayoutDashboard, Search, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -66,28 +66,6 @@ export default function Navbar() {
         </form>
 
         <div className="hidden md:flex items-center gap-2 shrink-0">
-          {/* Language selector */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs px-2">
-                <Globe className="h-3.5 w-3.5" />
-                <span>{currentLang.flag} {currentLang.label}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[140px]">
-              {LANGUAGES.map((l) => (
-                <DropdownMenuItem
-                  key={l.code}
-                  onClick={() => setLang(l.code)}
-                  className={`text-sm gap-2 ${lang === l.code ? "bg-accent" : ""}`}
-                >
-                  <span>{l.flag}</span>
-                  <span>{l.name}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           {user ? (
             <>
               <Button variant="ghost" size="sm" asChild className="text-[13px]">
@@ -145,6 +123,27 @@ export default function Navbar() {
                   {cat.label}
                 </Link>
               ))}
+
+              {/* Language selector in category row */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="shrink-0 rounded-full px-3 py-1 text-base leading-none transition-colors hover:bg-accent focus:outline-none" aria-label="Select language">
+                    {currentLang.flag}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[120px]">
+                  {LANGUAGES.map((l) => (
+                    <DropdownMenuItem
+                      key={l.code}
+                      onClick={() => setLang(l.code)}
+                      className={`text-sm gap-2 ${lang === l.code ? "bg-accent font-semibold" : ""}`}
+                    >
+                      <span className="text-base">{l.flag}</span>
+                      <span>{l.label}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <ScrollBar orientation="horizontal" className="h-0" />
           </ScrollArea>
@@ -169,21 +168,21 @@ export default function Navbar() {
             </Button>
           </form>
 
-          {/* Mobile language selector */}
-          <div className="flex items-center gap-1.5 px-2 py-2 mb-1">
-            <Globe className="h-4 w-4 text-muted-foreground" />
-            <div className="flex gap-1">
+          {/* Mobile language selector — flags only */}
+          <div className="flex items-center gap-1 px-2 py-2 mb-1">
+            <div className="flex gap-1.5">
               {LANGUAGES.map((l) => (
                 <button
                   key={l.code}
                   onClick={() => setLang(l.code)}
-                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                  className={`rounded-full px-2 py-1 text-base transition-colors ${
                     lang === l.code
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                      ? "bg-primary/15 ring-1 ring-primary"
+                      : "hover:bg-accent"
                   }`}
+                  aria-label={l.name}
                 >
-                  {l.flag} {l.label}
+                  {l.flag}
                 </button>
               ))}
             </div>
