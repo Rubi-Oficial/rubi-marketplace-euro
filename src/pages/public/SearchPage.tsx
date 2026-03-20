@@ -217,6 +217,7 @@ export default function SearchPage() {
         onClear={handleClearGeneralFilters}
         resultCount={profiles.length}
         services={services}
+        categories={CATEGORIES.map((c) => c.label)}
       />
 
       {/* Location modal — country & city */}
