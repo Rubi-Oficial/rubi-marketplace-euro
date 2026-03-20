@@ -60,18 +60,17 @@ function useAffiliateData(): AffiliateStats & { loading: boolean } {
     if (!user) return;
 
     const load = async () => {
-      const [userRes, clicksRes, referredRes, conversionsRes] = await Promise.all([
+      const [userRes, clicksRes, referralsRes, conversionsRes] = await Promise.all([
         supabase.from("users").select("referral_code").eq("id", user.id).single(),
         supabase.from("referral_clicks").select("id", { count: "exact", head: true }).eq("referrer_user_id", user.id),
-        supabase.from("users").select("id, full_name, email, role, created_at").eq("referred_by_user_id", user.id).order("created_at", { ascending: false }),
+        supabase.rpc("get_my_referrals"),
         supabase.from("referral_conversions").select("*").eq("referrer_user_id", user.id).order("created_at", { ascending: false }),
       ]);
 
       const conversions = conversionsRes.data || [];
-      const referredUsers: ReferredUser[] = (referredRes.data || []).map((u: any) => ({
+      const referredUsers: ReferredUser[] = (referralsRes.data || []).map((u: any) => ({
         id: u.id,
-        full_name: u.full_name,
-        email: u.email,
+        display_name: u.display_name,
         role: u.role,
         created_at: u.created_at,
       }));
