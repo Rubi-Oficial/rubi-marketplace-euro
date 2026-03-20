@@ -307,27 +307,50 @@ export default function EscortProfile() {
           </div>
         </div>
 
-        {/* City & Category */}
+        {/* Country, City & Category */}
         <div className="rounded-lg border border-border bg-card p-6">
-          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Cidade & categoria</h2>
+          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Localização & categoria</h2>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Cidade *</Label>
-              <div className="flex flex-wrap gap-2">
-                {CITIES.map((c) => (
-                  <button key={c.slug} type="button" disabled={!canEdit}
-                    onClick={() => selectCity(c.name, c.slug)}
-                    className={cn(
-                      "rounded-md border px-3 py-1.5 text-sm transition-colors disabled:opacity-50",
-                      form.city_slug === c.slug
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:border-primary/40"
-                    )}>
-                    {c.name}
-                  </button>
-                ))}
-              </div>
+              <Label>País *</Label>
+              {locLoading ? (
+                <div className="h-10 animate-pulse rounded-md bg-muted" />
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {countries.map((c) => (
+                    <button key={c.slug} type="button" disabled={!canEdit}
+                      onClick={() => selectCountry(c.slug)}
+                      className={cn(
+                        "rounded-md border px-3 py-1.5 text-sm transition-colors disabled:opacity-50",
+                        form.country === c.slug
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/40"
+                      )}>
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+            {form.country && (
+              <div className="space-y-2">
+                <Label>Cidade *</Label>
+                <div className="flex flex-wrap gap-2">
+                  {getCitiesByCountry(form.country).map((c) => (
+                    <button key={c.slug} type="button" disabled={!canEdit}
+                      onClick={() => selectCity(c.name, c.slug)}
+                      className={cn(
+                        "rounded-md border px-3 py-1.5 text-sm transition-colors disabled:opacity-50",
+                        form.city_slug === c.slug
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/40"
+                      )}>
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Categoria *</Label>
               <div className="flex flex-wrap gap-2">
