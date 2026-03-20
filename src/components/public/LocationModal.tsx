@@ -51,6 +51,26 @@ function LocationBody({ selectedCountry, selectedCity, onApply, countries, getCi
         <div className="mb-4">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 px-1">Country</p>
           <div className="space-y-0.5">
+            {/* Show suggested country first with label */}
+            {suggestedCountry && (() => {
+              const suggested = countries.find((c) => c.slug === suggestedCountry);
+              if (!suggested || country === suggested.slug) return null;
+              return (
+                <div key="suggested" className="mb-2">
+                  <p className="text-[10px] text-muted-foreground/60 px-3 mb-1">Based on your location</p>
+                  <button
+                    onClick={() => handleCountrySelect(suggested.slug)}
+                    className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors text-foreground hover:bg-accent border border-dashed border-primary/20"
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <MapPin className="h-3.5 w-3.5 text-primary" />
+                      {suggested.name}
+                    </span>
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40" />
+                  </button>
+                </div>
+              );
+            })()}
             {countries.map((c) => (
               <button
                 key={c.slug}
