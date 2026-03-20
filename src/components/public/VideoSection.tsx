@@ -99,7 +99,7 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
   };
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-lg border border-border/30 bg-card transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
+    <div className="group relative flex flex-col overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm transition-all hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5">
       {/* Video container */}
       <div className="relative aspect-[3/4] w-full cursor-pointer overflow-hidden bg-muted" onClick={togglePlay}>
         <video
