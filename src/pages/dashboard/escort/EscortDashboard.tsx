@@ -406,7 +406,9 @@ const EscortDashboard = forwardRef<HTMLDivElement>(function EscortDashboard(_pro
       </div>
     </div>
   );
-}
+});
+
+export default EscortDashboard;
 
 function SmallStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
