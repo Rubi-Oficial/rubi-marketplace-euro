@@ -795,6 +795,7 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
+      get_profile_contact: { Args: { p_profile_id: string }; Returns: Json }
       get_referrer_id_by_code: { Args: { _code: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
