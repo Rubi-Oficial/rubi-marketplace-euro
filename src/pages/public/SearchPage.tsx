@@ -8,6 +8,7 @@ import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile
 import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
+import { ServiceSlugBar } from "@/components/public/ServiceSlugBar";
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
