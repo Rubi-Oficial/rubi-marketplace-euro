@@ -56,9 +56,10 @@ export default function ClientFavorites() {
           return {
             id: p.id!, display_name: p.display_name ?? "", age: p.age ?? null,
             city: p.city ?? null, city_slug: p.city_slug ?? null, category: p.category ?? null,
+            gender: p.gender ?? null,
             slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
             is_featured: p.is_featured ?? false, image_urls: imageMap[p.id!] || [],
-            bio: p.bio ?? null, whatsapp: p.whatsapp ?? null,
+            bio: p.bio ?? null,
           } as EligibleProfile;
         })
         .filter(Boolean) as EligibleProfile[];
