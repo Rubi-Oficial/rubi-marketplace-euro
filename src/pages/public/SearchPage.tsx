@@ -9,8 +9,10 @@ import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function SearchPage() {
+  const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,20 +102,19 @@ export default function SearchPage() {
   const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
 
   useEffect(() => {
-    const parts = ["Explore"];
+    const parts = [t("nav.explore")];
     if (cityName) parts.push(`in ${cityName}`);
     document.title = `${parts.join(" ")} | Rubi Girls`;
     return () => { document.title = "Rubi Girls"; };
-  }, [cityName, categoryFilter]);
+  }, [cityName, categoryFilter, t]);
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">
-      {/* Search + filter buttons — single row */}
       <div className="flex items-center gap-2 mb-4">
         <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by name, city..."
+            placeholder={t("nav.search_placeholder")}
             className="pl-10 h-10 bg-card border-border/40 text-sm rounded-xl"
             value={searchQuery}
             onChange={(e) => updateParam("q", e.target.value)}
@@ -127,7 +128,7 @@ export default function SearchPage() {
           className={`h-10 gap-1.5 rounded-full border-border/40 shrink-0 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
         >
           <SlidersHorizontal className="h-3.5 w-3.5" />
-          <span className="text-xs hidden sm:inline">Filters</span>
+          <span className="text-xs hidden sm:inline">{t("landing.filters")}</span>
           {hasGeneralFilter && (
             <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
               {[categoryFilter, serviceFilter].filter(Boolean).length}
@@ -142,7 +143,7 @@ export default function SearchPage() {
           className={`h-10 gap-1.5 rounded-full border-border/40 shrink-0 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
         >
           <MapPin className="h-3.5 w-3.5" />
-          <span className="text-xs hidden sm:inline">Location</span>
+          <span className="text-xs hidden sm:inline">{t("landing.location")}</span>
           {hasLocationFilter && (
             <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
               {[countryFilter, cityFilter].filter(Boolean).length}
@@ -151,7 +152,6 @@ export default function SearchPage() {
         </Button>
       </div>
 
-      {/* Active filter chips */}
       <ActiveFilterChips
         filters={{ country: countryFilter, city: cityFilter, category: categoryFilter, service: serviceFilter }}
         countryName={countryName}
@@ -161,12 +161,10 @@ export default function SearchPage() {
         onClearAll={clearFilters}
       />
 
-      {/* Count */}
       <p className="mb-4 text-xs text-muted-foreground">
-        {loading ? "Loading..." : `${profiles.length} profile${profiles.length !== 1 ? "s" : ""}`}
+        {loading ? t("search.loading") : `${profiles.length} ${t("search.profiles")}`}
       </p>
 
-      {/* Results */}
       {loading ? (
         <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -176,11 +174,11 @@ export default function SearchPage() {
       ) : profiles.length === 0 ? (
         <div className="rounded-xl border border-border/50 bg-card p-16 text-center shadow-sm">
           <p className="text-muted-foreground">
-            {hasFilters ? "No profiles match your filters." : "No profiles available at the moment."}
+            {hasFilters ? t("search.no_match") : t("search.no_filters")}
           </p>
           {hasFilters && (
             <Button variant="ghost" size="sm" className="mt-4" onClick={clearFilters}>
-              Clear filters
+              {t("search.clear_filters")}
             </Button>
           )}
         </div>
@@ -192,7 +190,6 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Filter modal */}
       <FilterModal
         open={filterOpen}
         onOpenChange={setFilterOpen}
@@ -204,7 +201,6 @@ export default function SearchPage() {
         categories={CATEGORIES.map((c) => c.label)}
       />
 
-      {/* Location modal */}
       <LocationModal
         open={locationOpen}
         onOpenChange={setLocationOpen}

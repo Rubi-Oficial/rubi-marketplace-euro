@@ -1,8 +1,11 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "@/components/shared/Navbar";
 import { Link } from "react-router-dom";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function PublicLayout() {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -20,35 +23,35 @@ export default function PublicLayout() {
                 <span className="font-medium text-foreground/80"> Girls</span>
               </span>
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                Premium catalogue for independent professionals across Europe.
+                {t("footer.desc")}
               </p>
             </div>
             <div>
-              <h4 className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground">Platform</h4>
+              <h4 className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("footer.platform")}</h4>
               <nav className="mt-4 flex flex-col gap-2.5 text-sm text-muted-foreground">
-                <Link to="/buscar" className="hover:text-foreground transition-colors">Explore</Link>
-                <Link to="/planos" className="hover:text-foreground transition-colors">Plans</Link>
-                <Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link>
+                <Link to="/buscar" className="hover:text-foreground transition-colors">{t("footer.explore")}</Link>
+                <Link to="/planos" className="hover:text-foreground transition-colors">{t("footer.plans")}</Link>
+                <Link to="/blog" className="hover:text-foreground transition-colors">{t("footer.blog")}</Link>
               </nav>
             </div>
             <div>
-              <h4 className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground">Company</h4>
+              <h4 className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("footer.company")}</h4>
               <nav className="mt-4 flex flex-col gap-2.5 text-sm text-muted-foreground">
-                <Link to="/sobre" className="hover:text-foreground transition-colors">About</Link>
-                <Link to="/contato" className="hover:text-foreground transition-colors">Contact</Link>
+                <Link to="/sobre" className="hover:text-foreground transition-colors">{t("footer.about")}</Link>
+                <Link to="/contato" className="hover:text-foreground transition-colors">{t("footer.contact")}</Link>
               </nav>
             </div>
             <div>
-              <h4 className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground">Legal</h4>
+              <h4 className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("footer.legal")}</h4>
               <nav className="mt-4 flex flex-col gap-2.5 text-sm text-muted-foreground">
-                <Link to="/termos" className="hover:text-foreground transition-colors">Terms</Link>
-                <Link to="/privacidade" className="hover:text-foreground transition-colors">Privacy</Link>
-                <Link to="/cookies" className="hover:text-foreground transition-colors">Cookies</Link>
+                <Link to="/termos" className="hover:text-foreground transition-colors">{t("footer.terms")}</Link>
+                <Link to="/privacidade" className="hover:text-foreground transition-colors">{t("footer.privacy")}</Link>
+                <Link to="/cookies" className="hover:text-foreground transition-colors">{t("footer.cookies")}</Link>
               </nav>
             </div>
           </div>
           <div className="mt-8 border-t border-border/20 pt-5 text-center text-xs text-muted-foreground/50">
-            © {new Date().getFullYear()} Rubi Girls. All rights reserved.
+            © {new Date().getFullYear()} Rubi Girls. {t("footer.rights")}
           </div>
         </div>
       </footer>

@@ -10,9 +10,11 @@ import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
 import { useLocations } from "@/hooks/useLocations";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function LandingPage() {
   useReferralCapture();
+  const { t } = useLanguage();
 
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,7 +96,6 @@ export default function LandingPage() {
       <section className="pt-4 pb-8">
         <div className="container mx-auto px-4">
 
-          {/* Single filter row: buttons + active chips */}
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <Button
               variant="outline"
@@ -103,7 +104,7 @@ export default function LandingPage() {
               className={`h-9 gap-2 rounded-full border-border/40 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
             >
               <SlidersHorizontal className="h-3.5 w-3.5" />
-              <span className="text-xs">Filters</span>
+              <span className="text-xs">{t("landing.filters")}</span>
               {hasGeneralFilter && (
                 <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
                   {[categoryFilter, serviceFilter].filter(Boolean).length}
@@ -118,7 +119,7 @@ export default function LandingPage() {
               className={`h-9 gap-2 rounded-full border-border/40 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
             >
               <MapPin className="h-3.5 w-3.5" />
-              <span className="text-xs">Location</span>
+              <span className="text-xs">{t("landing.location")}</span>
               {hasLocationFilter && (
                 <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
                   {[countryFilter, cityFilter].filter(Boolean).length}
@@ -126,7 +127,6 @@ export default function LandingPage() {
               )}
             </Button>
 
-            {/* Inline active chips */}
             <ActiveFilterChips
               filters={{ country: countryFilter, city: cityFilter, category: categoryFilter, service: serviceFilter }}
               countryName={countryName}
@@ -139,12 +139,11 @@ export default function LandingPage() {
 
             {hasFilters && (
               <button onClick={clearFilters} className="text-xs text-muted-foreground hover:text-foreground ml-auto transition-colors">
-                Clear all
+                {t("landing.clear_all")}
               </button>
             )}
           </div>
 
-          {/* Profile grid */}
           {loading ? (
             <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -180,7 +179,7 @@ export default function LandingPage() {
             <div className="mt-8 text-center">
               <Button variant="outline" asChild>
                 <Link to="/buscar">
-                  View all profiles <ArrowRight className="ml-1.5 h-4 w-4" />
+                  {t("landing.view_all")} <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Link>
               </Button>
             </div>
@@ -190,24 +189,22 @@ export default function LandingPage() {
 
       <VideoSection filters={{ activeCity: cityFilter, activeService: serviceFilter }} />
 
-      {/* CTA */}
       <section className="border-t border-border/30 py-10 bg-secondary/20">
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-display text-lg font-semibold text-foreground">
-            Ready to grow your business?
+            {t("landing.cta_title")}
           </h2>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            Create your verified profile in minutes.
+            {t("landing.cta_desc")}
           </p>
           <Button variant="premium" className="mt-5" asChild>
             <Link to="/cadastro?role=professional">
-              Create Your Profile <ArrowRight className="ml-2 h-4 w-4" />
+              {t("landing.cta_button")} <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>
       </section>
 
-      {/* Modals */}
       <FilterModal
         open={filterOpen}
         onOpenChange={setFilterOpen}

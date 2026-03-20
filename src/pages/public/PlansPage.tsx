@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Check, ArrowRight, Shield, Zap, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface Plan {
   id: string;
@@ -13,6 +14,7 @@ interface Plan {
 }
 
 export default function PlansPage() {
+  const { t } = useLanguage();
   const [plans, setPlans] = useState<Plan[]>([]);
 
   useEffect(() => {
@@ -20,18 +22,18 @@ export default function PlansPage() {
       setPlans((data as Plan[]) ?? []);
     });
 
-    document.title = "Plans & Pricing | AURA";
-    return () => { document.title = "AURA"; };
-  }, []);
+    document.title = `${t("plans.title")} | Rubi Girls`;
+    return () => { document.title = "Rubi Girls"; };
+  }, [t]);
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fade-in">
       <div className="text-center mb-12">
         <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-          Plans & Pricing
+          {t("plans.title")}
         </h1>
         <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
-          Choose the right plan and start receiving clients today. All plans include a verified profile, dedicated support and full GDPR compliance.
+          {t("plans.desc")}
         </p>
       </div>
 
@@ -49,7 +51,7 @@ export default function PlansPage() {
             >
               {isFeatured && (
                 <span className="mb-3 inline-flex self-start rounded-full gold-gradient px-3 py-0.5 text-xs font-semibold text-primary-foreground">
-                  Most Popular
+                  {t("plans.most_popular")}
                 </span>
               )}
               <h3 className="font-display text-xl font-bold text-foreground">{plan.name}</h3>
@@ -77,7 +79,7 @@ export default function PlansPage() {
                 asChild
               >
                 <Link to="/cadastro?role=professional">
-                  Get Started
+                  {t("plans.get_started")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -92,31 +94,29 @@ export default function PlansPage() {
         </div>
       )}
 
-      {/* Trust signals */}
       <div className="mt-16 grid gap-6 sm:grid-cols-3 max-w-3xl mx-auto">
         {[
-          { icon: <Shield className="h-5 w-5" />, title: "Cancel Anytime", desc: "No long-term commitment. Cancel your subscription whenever you want." },
-          { icon: <Zap className="h-5 w-5" />, title: "Live in 24h", desc: "Your profile goes live within 24 hours after verification." },
-          { icon: <Users className="h-5 w-5" />, title: "Earn with Referrals", desc: "Invite professionals and earn 15% commission on their first payment." },
-        ].map((t) => (
-          <div key={t.title} className="text-center">
+          { icon: <Shield className="h-5 w-5" />, title: t("plans.cancel_title"), desc: t("plans.cancel_desc") },
+          { icon: <Zap className="h-5 w-5" />, title: t("plans.live_title"), desc: t("plans.live_desc") },
+          { icon: <Users className="h-5 w-5" />, title: t("plans.referral_title"), desc: t("plans.referral_desc") },
+        ].map((item) => (
+          <div key={item.title} className="text-center">
             <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-              {t.icon}
+              {item.icon}
             </div>
-            <p className="text-sm font-semibold text-foreground">{t.title}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{t.desc}</p>
+            <p className="text-sm font-semibold text-foreground">{item.title}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{item.desc}</p>
           </div>
         ))}
       </div>
 
-      {/* CTA */}
       <div className="mt-16 text-center">
         <p className="text-muted-foreground">
-          Already have an account?{" "}
+          {t("plans.already_account")}{" "}
           <Link to="/login" className="text-primary hover:underline">
-            Sign in
+            {t("nav.sign_in")}
           </Link>{" "}
-          and subscribe from your dashboard.
+          {t("plans.sign_in_subscribe")}
         </p>
       </div>
     </div>

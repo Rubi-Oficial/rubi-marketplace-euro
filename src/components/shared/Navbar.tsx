@@ -2,13 +2,22 @@ import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogOut, LayoutDashboard, Search, Menu, X } from "lucide-react";
+import { LogOut, LayoutDashboard, Search, Menu, X, Globe } from "lucide-react";
 import { useState } from "react";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { LANGUAGES } from "@/i18n/translations";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Navbar() {
   const { user, userRole, signOut } = useAuth();
+  const { lang, setLang, t } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
   const dashboardPath = getRoleDashboard(userRole as any);
   const navigate = useNavigate();
@@ -20,6 +29,8 @@ export default function Navbar() {
   const isCategory = location.pathname.startsWith("/categoria/");
   const activeSlug = isCategory ? slug : "";
   const isAllActive = !isCategory && (location.pathname === "/" || location.pathname === "/buscar");
+
+  const currentLang = LANGUAGES.find((l) => l.code === lang)!;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +54,7 @@ export default function Navbar() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search by name, city..."
+              placeholder={t("nav.search_placeholder")}
               className="pl-9 h-9 bg-card border-border/40 text-sm"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
@@ -55,12 +66,34 @@ export default function Navbar() {
         </form>
 
         <div className="hidden md:flex items-center gap-2 shrink-0">
+          {/* Language selector */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs px-2">
+                <Globe className="h-3.5 w-3.5" />
+                <span>{currentLang.flag} {currentLang.label}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[140px]">
+              {LANGUAGES.map((l) => (
+                <DropdownMenuItem
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  className={`text-sm gap-2 ${lang === l.code ? "bg-accent" : ""}`}
+                >
+                  <span>{l.flag}</span>
+                  <span>{l.name}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {user ? (
             <>
               <Button variant="ghost" size="sm" asChild className="text-[13px]">
                 <Link to={dashboardPath}>
                   <LayoutDashboard className="mr-1.5 h-3.5 w-3.5" />
-                  Dashboard
+                  {t("nav.dashboard")}
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" onClick={signOut} className="h-8 w-8">
@@ -70,10 +103,10 @@ export default function Navbar() {
           ) : (
             <>
               <Button variant="ghost" size="sm" asChild className="text-[13px]">
-                <Link to="/login">Sign In</Link>
+                <Link to="/login">{t("nav.sign_in")}</Link>
               </Button>
               <Button variant="premium" size="sm" asChild className="text-[13px] h-8 px-4">
-                <Link to="/cadastro">Get Started</Link>
+                <Link to="/cadastro">{t("nav.get_started")}</Link>
               </Button>
             </>
           )}
@@ -97,7 +130,7 @@ export default function Navbar() {
                     : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 }`}
               >
-                All
+                {t("nav.all")}
               </Link>
               {CATEGORIES.map((cat) => (
                 <Link
@@ -125,7 +158,7 @@ export default function Navbar() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search..."
+                placeholder={t("nav.search_placeholder")}
                 className="pl-9 h-9 bg-card border-border/40 text-sm"
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
@@ -135,26 +168,47 @@ export default function Navbar() {
               <Search className="h-3.5 w-3.5" />
             </Button>
           </form>
+
+          {/* Mobile language selector */}
+          <div className="flex items-center gap-1.5 px-2 py-2 mb-1">
+            <Globe className="h-4 w-4 text-muted-foreground" />
+            <div className="flex gap-1">
+              {LANGUAGES.map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                    lang === l.code
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  }`}
+                >
+                  {l.flag} {l.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <Link to="/buscar" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">
-            <Search className="h-4 w-4 text-muted-foreground" /> Explore
+            <Search className="h-4 w-4 text-muted-foreground" /> {t("nav.explore")}
           </Link>
           {CATEGORIES.map((cat) => (
             <Link key={cat.slug} to={`/categoria/${cat.slug}`} onClick={() => setMobileOpen(false)} className="block text-sm text-muted-foreground py-2 px-4 rounded-md hover:bg-accent transition-colors">
               {cat.label}
             </Link>
           ))}
-          <Link to="/planos" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">Plans</Link>
-          <Link to="/sobre" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">About</Link>
+          <Link to="/planos" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">{t("nav.plans")}</Link>
+          <Link to="/sobre" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">{t("nav.about")}</Link>
           <div className="border-t border-border/30 pt-3 mt-2">
             {user ? (
               <>
-                <Link to={dashboardPath} onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">Dashboard</Link>
-                <button onClick={() => { signOut(); setMobileOpen(false); }} className="block w-full text-left text-sm text-muted-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">Sign Out</button>
+                <Link to={dashboardPath} onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">{t("nav.dashboard")}</Link>
+                <button onClick={() => { signOut(); setMobileOpen(false); }} className="block w-full text-left text-sm text-muted-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">{t("nav.sign_out")}</button>
               </>
             ) : (
               <>
-                <Link to="/login" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">Sign In</Link>
-                <Link to="/cadastro" onClick={() => setMobileOpen(false)} className="block text-sm text-primary font-medium py-2.5 px-2 rounded-md hover:bg-accent transition-colors">Get Started</Link>
+                <Link to="/login" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">{t("nav.sign_in")}</Link>
+                <Link to="/cadastro" onClick={() => setMobileOpen(false)} className="block text-sm text-primary font-medium py-2.5 px-2 rounded-md hover:bg-accent transition-colors">{t("nav.get_started")}</Link>
               </>
             )}
           </div>

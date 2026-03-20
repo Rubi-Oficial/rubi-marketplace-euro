@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
 import { ProfileGallery } from "@/components/profile/ProfileGallery";
 import { ProfileInfo } from "@/components/profile/ProfileInfo";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface PublicProfile {
   id: string;
@@ -32,6 +33,7 @@ interface MediaItem {
 }
 
 export default function ProfilePage() {
+  const { t } = useLanguage();
   const { slug } = useParams();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [images, setImages] = useState<MediaItem[]>([]);
@@ -52,7 +54,6 @@ export default function ProfilePage() {
       if (!eligible) { setLoading(false); return; }
       setProfile(eligible as PublicProfile);
 
-      // Fetch images
       const { data: imgData } = await supabase
         .from("profile_images")
         .select("id, storage_path, sort_order")
@@ -67,7 +68,6 @@ export default function ProfilePage() {
         })));
       }
 
-      // Fetch videos
       const { data: vidData } = await supabase
         .from("profile_videos")
         .select("id, storage_path, sort_order")
@@ -82,7 +82,6 @@ export default function ProfilePage() {
         })));
       }
 
-      // Fetch services
       const { data: psData } = await supabase
         .from("profile_services")
         .select("service_id")
@@ -121,10 +120,10 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="container mx-auto px-4 py-20 text-center animate-fade-in">
-        <h1 className="font-display text-2xl font-bold text-foreground">Profile unavailable</h1>
-        <p className="mt-2 text-muted-foreground">This profile is not available at the moment.</p>
+        <h1 className="font-display text-2xl font-bold text-foreground">{t("profile.unavailable")}</h1>
+        <p className="mt-2 text-muted-foreground">{t("profile.unavailable_desc")}</p>
         <Button variant="ghost" className="mt-6" asChild>
-          <Link to="/buscar"><ArrowLeft className="mr-1.5 h-4 w-4" /> Browse profiles</Link>
+          <Link to="/buscar"><ArrowLeft className="mr-1.5 h-4 w-4" /> {t("profile.browse")}</Link>
         </Button>
       </div>
     );
@@ -136,10 +135,9 @@ export default function ProfilePage() {
         to="/buscar"
         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-3 transition-colors group"
       >
-        <ArrowLeft className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" /> Back to explore
+        <ArrowLeft className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" /> {t("profile.back")}
       </Link>
 
-      {/* Breadcrumb chips: category, city, services */}
       <div className="flex items-center gap-1.5 flex-wrap mb-5">
         {profile.category && (
           <Link

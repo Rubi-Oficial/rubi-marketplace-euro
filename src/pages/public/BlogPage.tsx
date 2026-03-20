@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 import { useEffect } from "react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const posts = [
   {
@@ -25,16 +26,20 @@ const posts = [
 ];
 
 export default function BlogPage() {
+  const { t, lang } = useLanguage();
+
   useEffect(() => {
-    document.title = "Blog — Dicas e Novidades | AURA";
-    return () => { document.title = "AURA"; };
-  }, []);
+    document.title = `${t("blog.title")} | Rubi Girls`;
+    return () => { document.title = "Rubi Girls"; };
+  }, [t]);
+
+  const dateLocale = lang === "pt" ? "pt-BR" : lang === "es" ? "es-ES" : lang === "fr" ? "fr-FR" : lang === "de" ? "de-DE" : "en-GB";
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fade-in">
       <div className="mb-10">
-        <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl">Blog</h1>
-        <p className="mt-2 text-muted-foreground">Dicas, novidades e guias para profissionais.</p>
+        <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl">{t("blog.title")}</h1>
+        <p className="mt-2 text-muted-foreground">{t("blog.desc")}</p>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -51,20 +56,17 @@ export default function BlogPage() {
             </p>
             <div className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
               <Calendar className="h-3 w-3" />
-              {new Date(post.date).toLocaleDateString("pt-BR")}
+              {new Date(post.date).toLocaleDateString(dateLocale)}
             </div>
           </article>
         ))}
       </div>
 
-      {/* CTA */}
       <div className="mt-16 mx-auto max-w-xl text-center rounded-lg border border-primary/20 bg-primary/5 p-8">
-        <h2 className="font-display text-xl font-bold text-foreground">Quer anunciar na AURA?</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Crie seu perfil verificado e comece a receber clientes hoje.
-        </p>
+        <h2 className="font-display text-xl font-bold text-foreground">{t("blog.cta_title")}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{t("blog.cta_desc")}</p>
         <Button variant="premium" className="mt-4" asChild>
-          <Link to="/cadastro?role=professional">Começar Agora</Link>
+          <Link to="/cadastro?role=professional">{t("blog.cta_button")}</Link>
         </Button>
       </div>
     </div>

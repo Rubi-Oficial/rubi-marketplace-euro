@@ -8,8 +8,10 @@ import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
 import { SlidersHorizontal, MapPin, ArrowRight } from "lucide-react";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLocations } from "@/hooks/useLocations";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function CategoryPage() {
+  const { t } = useLanguage();
   const { slug } = useParams();
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,17 +94,15 @@ export default function CategoryPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">
-      {/* Header */}
       <div className="mb-4">
         <h1 className="font-display text-xl font-bold text-foreground capitalize sm:text-2xl">
           {categoryName}
         </h1>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          {loading ? "Loading..." : `${profiles.length} profile(s)`}
+          {loading ? t("search.loading") : `${profiles.length} ${t("category.profiles")}`}
         </p>
       </div>
 
-      {/* Filter row */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <Button
           variant="outline"
@@ -111,7 +111,7 @@ export default function CategoryPage() {
           className={`h-9 gap-2 rounded-full border-border/40 ${hasServiceFilter ? "border-primary/40 text-primary" : ""}`}
         >
           <SlidersHorizontal className="h-3.5 w-3.5" />
-          <span className="text-xs">Filters</span>
+          <span className="text-xs">{t("landing.filters")}</span>
           {hasServiceFilter && (
             <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">1</span>
           )}
@@ -124,7 +124,7 @@ export default function CategoryPage() {
           className={`h-9 gap-2 rounded-full border-border/40 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
         >
           <MapPin className="h-3.5 w-3.5" />
-          <span className="text-xs">Location</span>
+          <span className="text-xs">{t("landing.location")}</span>
           {hasLocationFilter && (
             <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
               {[countryFilter, cityFilter].filter(Boolean).length}
@@ -144,12 +144,11 @@ export default function CategoryPage() {
 
         {hasFilters && (
           <button onClick={clearFilters} className="text-xs text-muted-foreground hover:text-foreground ml-auto transition-colors">
-            Clear all
+            {t("landing.clear_all")}
           </button>
         )}
       </div>
 
-      {/* Results */}
       {loading ? (
         <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {[1, 2, 3, 4, 5].map((i) => (
@@ -158,9 +157,9 @@ export default function CategoryPage() {
         </div>
       ) : profiles.length === 0 ? (
         <div className="rounded-xl border border-border/40 bg-card/50 p-16 text-center">
-          <p className="text-muted-foreground">No profiles found in this category.</p>
+          <p className="text-muted-foreground">{t("category.no_profiles")}</p>
           <Button variant="ghost" size="sm" className="mt-4" asChild>
-            <Link to="/buscar">Browse all profiles</Link>
+            <Link to="/buscar">{t("category.browse_all")}</Link>
           </Button>
         </div>
       ) : (
@@ -171,18 +170,16 @@ export default function CategoryPage() {
         </div>
       )}
 
-      {/* CTA */}
       <div className="mt-16 mx-auto max-w-lg text-center">
-        <h2 className="font-display text-lg font-semibold text-foreground">Are you a professional?</h2>
-        <p className="mt-1.5 text-sm text-muted-foreground">Create your profile and reach clients across Europe.</p>
+        <h2 className="font-display text-lg font-semibold text-foreground">{t("category.cta_title")}</h2>
+        <p className="mt-1.5 text-sm text-muted-foreground">{t("category.cta_desc")}</p>
         <Button variant="premium" className="mt-4" asChild>
           <Link to="/cadastro?role=professional">
-            Get Started <ArrowRight className="ml-1.5 h-4 w-4" />
+            {t("nav.get_started")} <ArrowRight className="ml-1.5 h-4 w-4" />
           </Link>
         </Button>
       </div>
 
-      {/* Modals */}
       <FilterModal
         open={filterOpen}
         onOpenChange={setFilterOpen}
