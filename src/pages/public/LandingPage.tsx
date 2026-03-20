@@ -8,6 +8,7 @@ import { VideoSection } from "@/components/public/VideoSection";
 import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
+import { ServiceSlugBar } from "@/components/public/ServiceSlugBar";
 import { useLocations } from "@/hooks/useLocations";
 import { useGeoCountry } from "@/hooks/useGeoCountry";
 
