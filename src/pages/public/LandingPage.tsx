@@ -190,8 +190,21 @@ export default function LandingPage() {
               ))}
             </div>
           ) : (
-            <div className="py-20 text-center text-muted-foreground text-sm">
-              No profiles available at the moment.
+            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="group relative block overflow-hidden rounded-xl bg-card">
+                  <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+                    <div className="flex h-full items-center justify-center text-muted-foreground/20">
+                      <div className="h-14 w-14 rounded-full bg-muted-foreground/10" />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/10 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <div className="h-4 w-24 rounded bg-muted-foreground/10 mb-1" />
+                      <div className="h-3 w-16 rounded bg-muted-foreground/8" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
