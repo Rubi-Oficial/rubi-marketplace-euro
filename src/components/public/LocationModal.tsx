@@ -134,7 +134,7 @@ function LocationBody({ selectedCountry, selectedCity, onApply, countries, getCi
       </div>
     </div>
   );
-});
+}
 
 export function LocationModal(props: LocationModalProps) {
   const isMobile = useIsMobile();

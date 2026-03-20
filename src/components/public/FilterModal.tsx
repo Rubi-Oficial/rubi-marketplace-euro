@@ -152,7 +152,7 @@ export function FilterModal(props: FilterModalProps) {
           <SheetHeader className="pb-2">
             <SheetTitle className="font-display text-base">Filters</SheetTitle>
           </SheetHeader>
-          <FilterBody {...bodyProps} />
+          <FilterBody {...bodyProps} onClose={() => onOpenChange(false)} />
         </SheetContent>
       </Sheet>
     );
@@ -164,7 +164,7 @@ export function FilterModal(props: FilterModalProps) {
         <DialogHeader className="pb-2">
           <DialogTitle className="font-display text-base">Filters</DialogTitle>
         </DialogHeader>
-        <FilterBody {...bodyProps} />
+        <FilterBody {...bodyProps} onClose={() => onOpenChange(false)} />
       </DialogContent>
     </Dialog>
   );
