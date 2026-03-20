@@ -107,6 +107,7 @@ const App = () => (
               }
             >
               <Route path="/cliente" element={<ClientDashboard />} />
+              <Route path="/cliente/favoritos" element={<ClientFavorites />} />
               <Route path="/cliente/afiliados" element={<ClientAffiliates />} />
               <Route path="/cliente/configuracoes" element={<ClientSettings />} />
             </Route>

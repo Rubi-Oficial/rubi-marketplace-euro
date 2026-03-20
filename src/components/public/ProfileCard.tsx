@@ -310,7 +310,8 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
                 ? "bg-primary/10 border-primary/30 text-primary"
                 : "bg-surface-light border-border/60 text-muted-foreground hover:text-primary hover:border-primary/30"
             }`}
-            onClick={() => setFavorited((f) => !f)}
+            disabled={isToggling}
+            onClick={() => toggleFavorite(profile.id)}
             aria-label={favorited ? "Remover dos favoritos" : "Adicionar aos favoritos"}
           >
             <Heart className={`h-4 w-4 ${favorited ? "fill-primary" : ""}`} />
