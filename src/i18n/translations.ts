@@ -1792,6 +1792,33 @@ const de: TranslationMap = {
   "sanity.self_referrals": "Selbstempfehlung(en) erkannt",
   "sanity.pending_old": "Abonnement(e) seit über 7 Tagen ausstehend",
   "sanity.no_profile": "Professionelle ohne erstelltes Profil",
+
+  // Client Dashboard
+  "client.welcome": "Willkommen, {name}",
+  "client.member_since": "Konto seit {date}",
+  "client.referral_link": "Ihr Empfehlungslink",
+  "client.no_link": "Kein Link verfügbar.",
+  "client.copy_link": "Link kopieren",
+  "client.copied": "Link kopiert!",
+  "client.clicks": "Link-Klicks",
+  "client.signups": "Generierte Anmeldungen",
+  "client.payments": "Konvertierte Zahlungen",
+  "client.total_commissions": "Gesamtprovisionen",
+  "client.commissions": "Provisionen",
+  "client.estimated": "Geschätzt (ausstehend)",
+  "client.approved": "Genehmigt",
+  "client.paid": "Bezahlt",
+  "client.history": "Empfehlungshistorie",
+  "client.no_conversions": "Noch keine Konversionen. Teilen Sie Ihren Link!",
+  "client.date": "Datum",
+  "client.type": "Typ",
+  "client.commission": "Provision",
+  "client.status": "Status",
+  "client.status_pending": "Ausstehend",
+  "client.status_approved": "Genehmigt",
+  "client.status_paid": "Bezahlt",
+  "client.status_rejected": "Abgelehnt",
+  "client.default_name": "Kunde",
 };
 
 export const translations: Record<LangCode, TranslationMap> = { pt, en, es, fr, de };
