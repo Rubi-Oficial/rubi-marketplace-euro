@@ -145,8 +145,8 @@ export default function LandingPage() {
           </div>
 
           {loading ? (
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                 <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-muted" />
               ))}
             </div>
@@ -157,8 +157,8 @@ export default function LandingPage() {
               ))}
             </div>
           ) : (
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="group relative block overflow-hidden rounded-xl bg-card">
                   <div className="relative aspect-[3/4] overflow-hidden bg-muted">
                     <div className="flex h-full items-center justify-center text-muted-foreground/20">
