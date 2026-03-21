@@ -32,12 +32,21 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
     return <Navigate to={getRoleDashboard(userRole)} replace />;
   }
 
+  const isValidEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isValidEmail(email)) {
+      toast.error(t("auth.invalid_email") || "Please enter a valid email address");
+      return;
+    }
+
     setLoading(true);
 
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: email.trim(),
       password,
       options: {
         emailRedirectTo: window.location.origin,
