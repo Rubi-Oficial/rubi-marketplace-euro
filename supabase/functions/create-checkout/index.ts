@@ -87,6 +87,16 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Validate email before sending to Stripe
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!user.email || !emailRegex.test(user.email)) {
+      console.warn(`[create-checkout] Invalid email: ${user.email}`);
+      return new Response(
+        JSON.stringify({ error: "Email inválido. Use um email real para assinar." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-04-30.basil" });
 
     // Reuse existing Stripe customer if available
