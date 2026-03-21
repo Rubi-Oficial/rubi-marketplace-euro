@@ -1,11 +1,12 @@
 import { forwardRef, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, Sparkles, ChevronLeft, ChevronRight, DollarSign, Heart, ArrowRight, MessageCircle } from "lucide-react";
+import { MapPin, Sparkles, ChevronLeft, ChevronRight, Euro, Heart, ArrowRight, MessageCircle } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export interface EligibleProfile {
   id: string;
@@ -116,6 +117,7 @@ const BIO_MAX_LENGTH = 150;
 
 export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile }>(({ profile }, ref) => {
   const navigate = useNavigate();
+  const { t, lang } = useLanguage();
   const urls = profile.image_urls;
   const hasMultiple = urls.length > 1;
   const [activeIdx, setActiveIdx] = useState(0);
@@ -312,8 +314,8 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
         <div className="flex min-h-[1.5rem] items-center gap-1.5 text-base font-semibold text-primary">
           {profile.pricing_from != null && profile.pricing_from > 0 && (
             <>
-              <DollarSign className="h-4 w-4" />
-              <span>A partir de R$ {profile.pricing_from}</span>
+              <Euro className="h-4 w-4" />
+              <span>{t("common.from_price", { price: Number(profile.pricing_from).toLocaleString(lang) })}</span>
             </>
           )}
         </div>
@@ -324,9 +326,9 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
             size="sm"
             className="flex-1 gap-1.5 rounded-lg text-sm font-semibold"
             onClick={() => navigate(`/perfil/${profile.slug}`)}
-            aria-label={`Ver perfil de ${profile.display_name}`}
+            aria-label={`${t("common.view_profile")} - ${profile.display_name}`}
           >
-            Ver Perfil
+            {t("common.view_profile")}
             <ArrowRight className="h-3.5 w-3.5" />
           </Button>
 
