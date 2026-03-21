@@ -31,7 +31,9 @@ export default function SearchPage() {
   const filteredCities = countryFilter ? getCitiesByCountry(countryFilter) : [];
 
   useEffect(() => {
-    fetchServices().then(setServices);
+    fetchServices().then(setServices).catch((err: unknown) => {
+      console.error("[search] Failed to fetch services:", err);
+    });
   }, []);
 
   useEffect(() => {
@@ -48,6 +50,9 @@ export default function SearchPage() {
       } else {
         setProfiles(data);
       }
+      setLoading(false);
+    }).catch((err: unknown) => {
+      console.error("[search] Failed to fetch profiles:", err);
       setLoading(false);
     });
   }, [searchQuery, cityFilter, categoryFilter, serviceFilter, countryFilter, filteredCities.length]);

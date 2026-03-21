@@ -23,11 +23,15 @@ export function useReferralCapture() {
 
     // Look up referrer via secure RPC (no direct user table access needed)
     (async () => {
-      const { data: referrerId } = await supabase.rpc("get_referrer_id_by_code", { _code: ref });
+      const { data: referrerId, error: rpcError } = await supabase.rpc("get_referrer_id_by_code", { _code: ref });
 
+      if (rpcError) {
+        console.error("[referral] RPC error:", rpcError.message);
+        return;
+      }
       if (!referrerId) return;
 
-      await supabase.from("referral_clicks").insert({
+      const { error: insertError } = await supabase.from("referral_clicks").insert({
         referrer_user_id: referrerId,
         referral_code: ref,
         visitor_id: crypto.randomUUID(),
@@ -36,7 +40,13 @@ export function useReferralCapture() {
         utm_campaign: searchParams.get("utm_campaign") || null,
         user_agent: navigator.userAgent,
       });
-    })();
+
+      if (insertError) {
+        console.error("[referral] Insert error:", insertError.message);
+      }
+    })().catch((err: unknown) => {
+      console.error("[referral] Unexpected error:", err);
+    });
   }, [searchParams]);
 }
 

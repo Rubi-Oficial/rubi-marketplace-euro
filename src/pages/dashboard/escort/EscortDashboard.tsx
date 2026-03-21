@@ -14,8 +14,24 @@ import {
 } from "lucide-react";
 
 /* ── Data hook ── */
+interface ProfileData {
+  id: string;
+  slug?: string | null;
+  display_name?: string | null;
+  status?: string | null;
+  city?: string | null;
+  category?: string | null;
+  [key: string]: unknown;
+}
+
+interface SubscriptionRow {
+  status: string;
+  expires_at: string | null;
+  plans: { name: string } | null;
+}
+
 interface DashboardData {
-  profile: any;
+  profile: ProfileData | null;
   photoStats: { approved: number; pending: number; total: number };
   subStatus: string | null;
   subPlanName: string | null;
@@ -42,49 +58,55 @@ function useDashboardData() {
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const [userRes, profileRes, subRes, clicksRes, signupsRes, conversionsRes] = await Promise.all([
-        supabase.from("users").select("referral_code").eq("id", user.id).single(),
-        supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
-        supabase.from("subscriptions").select("status, expires_at, plan_id, plans(name)")
-          .eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-        supabase.from("referral_clicks").select("id", { count: "exact", head: true }).eq("referrer_user_id", user.id),
-        supabase.from("users").select("id", { count: "exact", head: true }).eq("referred_by_user_id", user.id),
-        supabase.from("referral_conversions").select("commission_amount, status").eq("referrer_user_id", user.id),
-      ]);
-
-      const profile = profileRes.data;
-      let photoStats = { approved: 0, pending: 0, total: 0 };
-      let leadsCount = 0;
-
-      if (profile) {
-        const [imgsRes, leadsRes] = await Promise.all([
-          supabase.from("profile_images").select("moderation_status").eq("profile_id", profile.id),
-          supabase.from("leads").select("id", { count: "exact", head: true }).eq("profile_id", profile.id),
+      try {
+        const [userRes, profileRes, subRes, clicksRes, signupsRes, conversionsRes] = await Promise.all([
+          supabase.from("users").select("referral_code").eq("id", user.id).single(),
+          supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
+          supabase.from("subscriptions").select("status, expires_at, plan_id, plans(name)")
+            .eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+          supabase.from("referral_clicks").select("id", { count: "exact", head: true }).eq("referrer_user_id", user.id),
+          supabase.from("users").select("id", { count: "exact", head: true }).eq("referred_by_user_id", user.id),
+          supabase.from("referral_conversions").select("commission_amount, status").eq("referrer_user_id", user.id),
         ]);
-        const imgs = imgsRes.data || [];
-        photoStats = {
-          total: imgs.length,
-          approved: imgs.filter((i: any) => i.moderation_status === "approved").length,
-          pending: imgs.filter((i: any) => i.moderation_status === "pending").length,
-        };
-        leadsCount = leadsRes.count ?? 0;
-      }
 
-      const conversions = conversionsRes.data || [];
-      setData({
-        profile,
-        photoStats,
-        subStatus: (subRes.data as any)?.status || null,
-        subPlanName: (subRes.data as any)?.plans?.name || null,
-        subExpiresAt: (subRes.data as any)?.expires_at || null,
-        leads: leadsCount,
-        referralCode: userRes.data?.referral_code ?? null,
-        clicks: clicksRes.count ?? 0,
-        signups: signupsRes.count ?? 0,
-        commissionPending: conversions.filter((c) => c.status === "pending").reduce((s, c) => s + Number(c.commission_amount), 0),
-        commissionApproved: conversions.filter((c) => c.status === "approved").reduce((s, c) => s + Number(c.commission_amount), 0),
-      });
-      setLoading(false);
+        const profile = profileRes.data;
+        let photoStats = { approved: 0, pending: 0, total: 0 };
+        let leadsCount = 0;
+
+        if (profile) {
+          const [imgsRes, leadsRes] = await Promise.all([
+            supabase.from("profile_images").select("moderation_status").eq("profile_id", profile.id),
+            supabase.from("leads").select("id", { count: "exact", head: true }).eq("profile_id", profile.id),
+          ]);
+          const imgs = (imgsRes.data || []) as { moderation_status: string | null }[];
+          photoStats = {
+            total: imgs.length,
+            approved: imgs.filter((i) => i.moderation_status === "approved").length,
+            pending: imgs.filter((i) => i.moderation_status === "pending").length,
+          };
+          leadsCount = leadsRes.count ?? 0;
+        }
+
+        const subRow = subRes.data as SubscriptionRow | null;
+        const conversions = (conversionsRes.data || []) as { commission_amount: number | string; status: string }[];
+        setData({
+          profile: profile as ProfileData | null,
+          photoStats,
+          subStatus: subRow?.status || null,
+          subPlanName: subRow?.plans?.name || null,
+          subExpiresAt: subRow?.expires_at || null,
+          leads: leadsCount,
+          referralCode: userRes.data?.referral_code ?? null,
+          clicks: clicksRes.count ?? 0,
+          signups: signupsRes.count ?? 0,
+          commissionPending: conversions.filter((c) => c.status === "pending").reduce((s, c) => s + Number(c.commission_amount), 0),
+          commissionApproved: conversions.filter((c) => c.status === "approved").reduce((s, c) => s + Number(c.commission_amount), 0),
+        });
+      } catch (err) {
+        console.error("[escort-dashboard] Failed to load data:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, [user]);
