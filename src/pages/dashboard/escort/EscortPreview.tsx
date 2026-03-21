@@ -126,6 +126,7 @@ export default function EscortPreview() {
             <div className="lg:col-span-2">
               <ProfileInfo
                 profile={{
+                  id: profile.id,
                   display_name: profile.display_name || "Sem nome",
                   age: profile.age,
                   city: profile.city,
