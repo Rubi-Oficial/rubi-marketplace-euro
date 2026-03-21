@@ -3,9 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Send, MapPin, Globe, Sparkles } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { supabase } from "@/lib/supabase";
 
 interface ProfileInfoProps {
   profile: {
+    id: string;
     display_name: string;
     age: number | null;
     city: string | null;
@@ -23,6 +25,10 @@ interface ProfileInfoProps {
 
 export function ProfileInfo({ profile, services }: ProfileInfoProps) {
   const { t } = useLanguage();
+
+  const trackClick = (source: string) => {
+    supabase.from("leads").insert({ profile_id: profile.id, source });
+  };
 
   return (
     <div className="space-y-5 animate-fade-in" style={{ animationDelay: "0.1s" }}>
@@ -106,11 +112,12 @@ export function ProfileInfo({ profile, services }: ProfileInfoProps) {
       {/* Contact */}
       <div className="space-y-2.5 pt-2">
         {profile.whatsapp && (
-          <Button className="w-full h-12 text-base font-semibold" asChild>
+          <Button className="w-full h-12 text-base font-semibold bg-green-600 hover:bg-green-700" asChild>
             <a
               href={`https://wa.me/${profile.whatsapp.replace(/\D/g, "")}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackClick("whatsapp_profile")}
             >
               <MessageCircle className="mr-2 h-5 w-5" /> WhatsApp
             </a>
@@ -122,6 +129,7 @@ export function ProfileInfo({ profile, services }: ProfileInfoProps) {
               href={`https://t.me/${profile.telegram.replace("@", "")}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackClick("telegram_profile")}
             >
               <Send className="mr-2 h-5 w-5" /> Telegram
             </a>

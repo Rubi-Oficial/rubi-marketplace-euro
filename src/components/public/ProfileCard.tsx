@@ -1,7 +1,7 @@
 import { forwardRef, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, Sparkles, ChevronLeft, ChevronRight, DollarSign, Heart, ArrowRight } from "lucide-react";
+import { MapPin, Sparkles, ChevronLeft, ChevronRight, DollarSign, Heart, ArrowRight, MessageCircle } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
@@ -19,6 +19,7 @@ export interface EligibleProfile {
   is_featured: boolean;
   image_urls: string[];
   bio: string | null;
+  has_whatsapp: boolean;
 }
 
 export async function fetchEligibleProfiles(filters?: {
@@ -31,7 +32,7 @@ export async function fetchEligibleProfiles(filters?: {
 }): Promise<EligibleProfile[]> {
   let query = supabase
     .from("eligible_profiles")
-    .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio")
+    .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, has_whatsapp")
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -88,7 +89,7 @@ export async function fetchEligibleProfiles(filters?: {
       city: p.city ?? null, city_slug: p.city_slug ?? null, category: p.category ?? null,
       slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
       is_featured: p.is_featured ?? false, image_urls: imageMap[p.id!] || [],
-      bio: p.bio ?? null,
+      bio: p.bio ?? null, has_whatsapp: p.has_whatsapp ?? false,
     };
   });
 }
@@ -121,6 +122,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
   const { isFavorited, toggleFavorite, isToggling } = useFavorites();
   const favorited = isFavorited(profile.id);
   const pausedUntilRef = useRef(0);
+  const [whatsappLoading, setWhatsappLoading] = useState(false);
 
   const truncatedBio = profile.bio
     ? profile.bio.length > BIO_MAX_LENGTH
@@ -166,6 +168,30 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
       pausedUntilRef.current = Date.now() + PAUSE_AFTER_MANUAL;
     },
     [urls.length]
+  );
+
+  const handleWhatsApp = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (whatsappLoading) return;
+      setWhatsappLoading(true);
+      try {
+        const { data: contactData } = await supabase.rpc("get_profile_contact", { p_profile_id: profile.id });
+        const contact = contactData as { whatsapp: string | null; telegram: string | null } | null;
+        if (contact?.whatsapp) {
+          supabase.from("leads").insert({ profile_id: profile.id, source: "whatsapp_card" });
+          window.open(`https://wa.me/${contact.whatsapp.replace(/\D/g, "")}`, "_blank", "noopener,noreferrer");
+        } else {
+          navigate(`/perfil/${profile.slug}`);
+        }
+      } catch {
+        navigate(`/perfil/${profile.slug}`);
+      } finally {
+        setWhatsappLoading(false);
+      }
+    },
+    [profile.id, profile.slug, whatsappLoading, navigate]
   );
 
 
@@ -298,6 +324,22 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
             Ver Perfil
             <ArrowRight className="h-3.5 w-3.5" />
           </Button>
+
+          {profile.has_whatsapp && (
+            <Button
+              size="sm"
+              className="shrink-0 rounded-lg px-3 bg-green-600 hover:bg-green-700 text-white border-0"
+              disabled={whatsappLoading}
+              onClick={handleWhatsApp}
+              aria-label={`WhatsApp de ${profile.display_name}`}
+            >
+              {whatsappLoading ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              ) : (
+                <MessageCircle className="h-4 w-4" />
+              )}
+            </Button>
+          )}
 
           <Button
             size="sm"
