@@ -34,7 +34,7 @@ export async function fetchEligibleProfiles(filters?: {
 }): Promise<EligibleProfile[]> {
   let query = supabase
     .from("eligible_profiles")
-    .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, has_whatsapp")
+    .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio")
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -91,7 +91,7 @@ export async function fetchEligibleProfiles(filters?: {
       city: p.city ?? null, city_slug: p.city_slug ?? null, category: p.category ?? null,
       slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
       is_featured: p.is_featured ?? false, image_urls: imageMap[p.id!] || [],
-      bio: p.bio ?? null, has_whatsapp: p.has_whatsapp ?? false,
+      bio: p.bio ?? null, has_whatsapp: false,
     };
   });
 }
