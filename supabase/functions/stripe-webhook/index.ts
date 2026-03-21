@@ -1,5 +1,5 @@
-import Stripe from "npm:stripe@17.7.0";
-import { createClient } from "npm:@supabase/supabase-js@2";
+import Stripe from "https://esm.sh/stripe@17.7.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const COMMISSION_RATE = 0.15;
 
