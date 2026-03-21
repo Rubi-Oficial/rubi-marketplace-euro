@@ -721,6 +721,33 @@ const en: TranslationMap = {
   "sanity.self_referrals": "self-referral(s) detected",
   "sanity.pending_old": "subscription(s) pending for over 7 days",
   "sanity.no_profile": "professional(s) without created profile",
+
+  // Client Dashboard
+  "client.welcome": "Welcome, {name}",
+  "client.member_since": "Member since {date}",
+  "client.referral_link": "Your referral link",
+  "client.no_link": "No link available.",
+  "client.copy_link": "Copy link",
+  "client.copied": "Link copied!",
+  "client.clicks": "Link clicks",
+  "client.signups": "Signups generated",
+  "client.payments": "Converted payments",
+  "client.total_commissions": "Total commissions",
+  "client.commissions": "Commissions",
+  "client.estimated": "Estimated (pending)",
+  "client.approved": "Approved",
+  "client.paid": "Paid",
+  "client.history": "Referral history",
+  "client.no_conversions": "No conversions yet. Share your link!",
+  "client.date": "Date",
+  "client.type": "Type",
+  "client.commission": "Commission",
+  "client.status": "Status",
+  "client.status_pending": "Pending",
+  "client.status_approved": "Approved",
+  "client.status_paid": "Paid",
+  "client.status_rejected": "Rejected",
+  "client.default_name": "Client",
 };
 
 const es: TranslationMap = {
