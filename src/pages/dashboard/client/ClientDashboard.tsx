@@ -2,6 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useLanguage } from "@/i18n/LanguageContext";
 import {
   Copy,
   Link2,
@@ -86,6 +87,7 @@ const fmt = (v: number) =>
 
 export default function ClientDashboard() {
   const data = useClientData();
+  const { t } = useLanguage();
 
   const referralLink = data.referralCode
     ? `${window.location.origin}/cadastro?ref=${data.referralCode}`
@@ -94,7 +96,7 @@ export default function ClientDashboard() {
   const copyLink = () => {
     if (!referralLink) return;
     navigator.clipboard.writeText(referralLink);
-    toast.success("Link copiado!");
+    toast.success(t("client.copied"));
   };
 
   if (data.loading) {
@@ -105,26 +107,25 @@ export default function ClientDashboard() {
     );
   }
 
+  const memberDate = data.createdAt
+    ? new Date(data.createdAt).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
+    : "—";
+
   return (
     <div className="animate-fade-in space-y-8">
-      {/* Header */}
       <div>
         <h1 className="font-display text-2xl font-bold text-foreground">
-          Bem-vindo, {data.fullName || "Cliente"}
+          {t("client.welcome", { name: data.fullName || t("client.default_name") })}
         </h1>
         <p className="mt-1 text-muted-foreground">
-          Conta desde{" "}
-          {data.createdAt
-            ? new Date(data.createdAt).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
-            : "—"}
+          {t("client.member_since", { date: memberDate })}
         </p>
       </div>
 
-      {/* Referral link card */}
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-5">
         <div className="flex items-center gap-2 mb-3">
           <Link2 className="h-4 w-4 text-primary" />
-          <p className="text-sm font-medium text-foreground">Seu link de indicação</p>
+          <p className="text-sm font-medium text-foreground">{t("client.referral_link")}</p>
         </div>
         {referralLink ? (
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -133,48 +134,45 @@ export default function ClientDashboard() {
             </code>
             <Button size="sm" onClick={copyLink} className="shrink-0">
               <Copy className="mr-1.5 h-3.5 w-3.5" />
-              Copiar link
+              {t("client.copy_link")}
             </Button>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">Nenhum link disponível.</p>
+          <p className="text-sm text-muted-foreground">{t("client.no_link")}</p>
         )}
       </div>
 
-      {/* Performance stats */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={<MousePointerClick className="h-4 w-4" />} label="Cliques no link" value={data.clicks.toString()} />
-        <StatCard icon={<UserPlus className="h-4 w-4" />} label="Cadastros gerados" value={data.signups.toString()} />
-        <StatCard icon={<CreditCard className="h-4 w-4" />} label="Pagamentos convertidos" value={data.conversions.length.toString()} />
-        <StatCard icon={<DollarSign className="h-4 w-4" />} label="Total em comissões" value={fmt(data.commissionPending + data.commissionApproved + data.commissionPaid)} />
+        <StatCard icon={<MousePointerClick className="h-4 w-4" />} label={t("client.clicks")} value={data.clicks.toString()} />
+        <StatCard icon={<UserPlus className="h-4 w-4" />} label={t("client.signups")} value={data.signups.toString()} />
+        <StatCard icon={<CreditCard className="h-4 w-4" />} label={t("client.payments")} value={data.conversions.length.toString()} />
+        <StatCard icon={<DollarSign className="h-4 w-4" />} label={t("client.total_commissions")} value={fmt(data.commissionPending + data.commissionApproved + data.commissionPaid)} />
       </div>
 
-      {/* Commission breakdown */}
       <div>
-        <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Comissões</h2>
+        <h2 className="mb-4 font-display text-lg font-semibold text-foreground">{t("client.commissions")}</h2>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-          <CommissionCard icon={<Clock className="h-4 w-4" />} label="Estimada (pendente)" value={fmt(data.commissionPending)} colorClass="text-yellow-500" />
-          <CommissionCard icon={<CheckCircle2 className="h-4 w-4" />} label="Aprovada" value={fmt(data.commissionApproved)} colorClass="text-primary" />
-          <CommissionCard icon={<Wallet className="h-4 w-4" />} label="Paga" value={fmt(data.commissionPaid)} colorClass="text-green-500" />
+          <CommissionCard icon={<Clock className="h-4 w-4" />} label={t("client.estimated")} value={fmt(data.commissionPending)} colorClass="text-yellow-500" />
+          <CommissionCard icon={<CheckCircle2 className="h-4 w-4" />} label={t("client.approved")} value={fmt(data.commissionApproved)} colorClass="text-primary" />
+          <CommissionCard icon={<Wallet className="h-4 w-4" />} label={t("client.paid")} value={fmt(data.commissionPaid)} colorClass="text-green-500" />
         </div>
       </div>
 
-      {/* Conversion history */}
       <div>
-        <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Histórico de indicações</h2>
+        <h2 className="mb-4 font-display text-lg font-semibold text-foreground">{t("client.history")}</h2>
         {data.conversions.length === 0 ? (
           <div className="rounded-lg border border-border bg-card p-8 text-center">
-            <p className="text-muted-foreground">Nenhuma conversão registrada ainda. Compartilhe seu link!</p>
+            <p className="text-muted-foreground">{t("client.no_conversions")}</p>
           </div>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-border">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Data</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Tipo</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">Comissão</th>
-                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">Status</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t("client.date")}</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">{t("client.type")}</th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t("client.commission")}</th>
+                  <th className="px-4 py-3 text-center font-medium text-muted-foreground">{t("client.status")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -220,21 +218,22 @@ function CommissionCard({ icon, label, value, colorClass }: { icon: React.ReactN
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const { t } = useLanguage();
   const styles: Record<string, string> = {
     pending: "bg-yellow-500/10 text-yellow-600",
     approved: "bg-primary/10 text-primary",
     paid: "bg-green-500/10 text-green-600",
     rejected: "bg-destructive/10 text-destructive",
   };
-  const labels: Record<string, string> = {
-    pending: "Pendente",
-    approved: "Aprovada",
-    paid: "Paga",
-    rejected: "Rejeitada",
+  const labelKey: Record<string, string> = {
+    pending: "client.status_pending",
+    approved: "client.status_approved",
+    paid: "client.status_paid",
+    rejected: "client.status_rejected",
   };
   return (
     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status] || ""}`}>
-      {labels[status] || status}
+      {t(labelKey[status] || status)}
     </span>
   );
 }
