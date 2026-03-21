@@ -38,7 +38,7 @@ export function useFavorites() {
       return { prev };
     },
     onError: (_err, _profileId, context) => {
-      queryClient.setQueryData(["favorites", userId], context?.prev);
+      queryClient.setQueryData(["favorites", userId], context?.prev ?? []);
       toast.error("Erro ao adicionar favorito");
     },
     onSettled: () => {
@@ -63,7 +63,7 @@ export function useFavorites() {
       return { prev };
     },
     onError: (_err, _profileId, context) => {
-      queryClient.setQueryData(["favorites", userId], context?.prev);
+      queryClient.setQueryData(["favorites", userId], context?.prev ?? []);
       toast.error("Erro ao remover favorito");
     },
     onSettled: () => {

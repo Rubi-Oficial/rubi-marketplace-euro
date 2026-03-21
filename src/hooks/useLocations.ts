@@ -26,8 +26,15 @@ export function useLocations() {
       supabase.from("countries").select("id, name, slug, iso_code").eq("is_active", true).order("sort_order"),
       supabase.from("cities").select("id, country_id, name, slug, is_featured").eq("is_active", true).order("sort_order"),
     ]).then(([cRes, ciRes]) => {
-      if (cRes.data) setCountries(cRes.data as Country[]);
-      if (ciRes.data) setCities(ciRes.data as City[]);
+      if (cRes.error) console.error("[locations] countries error:", cRes.error.message);
+      else if (cRes.data) setCountries(cRes.data as Country[]);
+
+      if (ciRes.error) console.error("[locations] cities error:", ciRes.error.message);
+      else if (ciRes.data) setCities(ciRes.data as City[]);
+
+      setLoading(false);
+    }).catch((err: unknown) => {
+      console.error("[locations] Unexpected error:", err);
       setLoading(false);
     });
   }, []);

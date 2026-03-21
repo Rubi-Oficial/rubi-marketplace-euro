@@ -75,11 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return;
           }
           roleFetchedForUser.current = newSession.user.id;
-          setTimeout(async () => {
-            const role = await fetchUserRole(newSession.user.id);
+          fetchUserRole(newSession.user.id).then((role) => {
             setUserRole(role);
             setLoading(false);
-          }, 0);
+          });
         } else {
           roleFetchedForUser.current = null;
           setUserRole(null);

@@ -35,7 +35,9 @@ export default function LandingPage() {
   );
 
   useEffect(() => {
-    fetchServices().then(setServices);
+    fetchServices().then(setServices).catch((err: unknown) => {
+      console.error("[landing] Failed to fetch services:", err);
+    });
   }, []);
 
   const countryCitySlugs = useMemo(
@@ -55,6 +57,9 @@ export default function LandingPage() {
       } else {
         setProfiles(data.slice(0, 20));
       }
+      setLoading(false);
+    }).catch((err: unknown) => {
+      console.error("[landing] Failed to fetch profiles:", err);
       setLoading(false);
     });
   }, [cityFilter, categoryFilter, serviceFilter, countryFilter, countryCitySlugs]);
