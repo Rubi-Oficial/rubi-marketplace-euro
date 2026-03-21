@@ -194,6 +194,7 @@ const pt: TranslationMap = {
   "common.waiting": "Aguardando...",
   "common.copy": "Copiar",
   "common.copied": "Link copiado!",
+  "common.view_profile": "Ver Perfil",
 
   // Video Section
   "video.latest": "Últimos Vídeos",
@@ -561,6 +562,7 @@ const en: TranslationMap = {
   "common.waiting": "Waiting...",
   "common.copy": "Copy",
   "common.copied": "Link copied!",
+  "common.view_profile": "View Profile",
 
   "video.latest": "Latest Videos",
   "video.exclusive": "Exclusive content from verified profiles.",
@@ -919,6 +921,7 @@ const es: TranslationMap = {
   "common.waiting": "Esperando...",
   "common.copy": "Copiar",
   "common.copied": "¡Enlace copiado!",
+  "common.view_profile": "Ver Perfil",
 
   "video.latest": "Últimos Vídeos",
   "video.exclusive": "Contenido exclusivo de perfiles verificados.",
@@ -1277,6 +1280,7 @@ const fr: TranslationMap = {
   "common.waiting": "En attente...",
   "common.copy": "Copier",
   "common.copied": "Lien copié !",
+  "common.view_profile": "Voir le Profil",
 
   "video.latest": "Dernières Vidéos",
   "video.exclusive": "Contenu exclusif de profils vérifiés.",
@@ -1635,6 +1639,7 @@ const de: TranslationMap = {
   "common.waiting": "Warten...",
   "common.copy": "Kopieren",
   "common.copied": "Link kopiert!",
+  "common.view_profile": "Profil ansehen",
 
   "video.latest": "Neueste Videos",
   "video.exclusive": "Exklusive Inhalte von verifizierten Profilen.",
