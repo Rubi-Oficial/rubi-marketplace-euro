@@ -5,6 +5,7 @@ import { MapPin, Sparkles, ChevronLeft, ChevronRight, DollarSign, Heart, ArrowRi
 import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 
 export interface EligibleProfile {
   id: string;
@@ -291,27 +292,31 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
           )}
         </div>
 
-        {profile.city && (
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <MapPin className="h-3.5 w-3.5 text-primary/60 shrink-0" />
-            <span>{profile.city}</span>
-          </div>
-        )}
+        <div className="flex min-h-[1.25rem] items-center gap-1.5 text-sm text-muted-foreground">
+          {profile.city && (
+            <>
+              <MapPin className="h-3.5 w-3.5 text-primary/60 shrink-0" />
+              <span className="truncate">{profile.city}</span>
+            </>
+          )}
+        </div>
 
-        {truncatedBio && (
-          <div className="rounded-lg bg-surface-light px-3 py-2.5">
+        <div className={cn("min-h-[5.5rem]", truncatedBio && "rounded-lg bg-surface-light px-3 py-2.5")}>
+          {truncatedBio && (
             <p className="text-sm leading-relaxed text-foreground/80 line-clamp-3">
               {truncatedBio}
             </p>
-          </div>
-        )}
+          )}
+        </div>
 
-        {profile.pricing_from != null && profile.pricing_from > 0 && (
-          <div className="flex items-center gap-1.5 text-base font-semibold text-primary">
-            <DollarSign className="h-4 w-4" />
-            <span>A partir de R$ {profile.pricing_from}</span>
-          </div>
-        )}
+        <div className="flex min-h-[1.5rem] items-center gap-1.5 text-base font-semibold text-primary">
+          {profile.pricing_from != null && profile.pricing_from > 0 && (
+            <>
+              <DollarSign className="h-4 w-4" />
+              <span>A partir de R$ {profile.pricing_from}</span>
+            </>
+          )}
+        </div>
 
         {/* Action buttons */}
         <div className="flex items-center gap-2 pt-1 mt-auto" onClick={(e) => e.stopPropagation()}>
