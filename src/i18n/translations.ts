@@ -1435,6 +1435,33 @@ const fr: TranslationMap = {
   "sanity.self_referrals": "auto-parrainage(s) détecté(s)",
   "sanity.pending_old": "abonnement(s) en attente depuis plus de 7 jours",
   "sanity.no_profile": "professionnel(s) sans profil créé",
+
+  // Client Dashboard
+  "client.welcome": "Bienvenue, {name}",
+  "client.member_since": "Membre depuis {date}",
+  "client.referral_link": "Votre lien de parrainage",
+  "client.no_link": "Aucun lien disponible.",
+  "client.copy_link": "Copier le lien",
+  "client.copied": "Lien copié !",
+  "client.clicks": "Clics sur le lien",
+  "client.signups": "Inscriptions générées",
+  "client.payments": "Paiements convertis",
+  "client.total_commissions": "Total des commissions",
+  "client.commissions": "Commissions",
+  "client.estimated": "Estimée (en attente)",
+  "client.approved": "Approuvée",
+  "client.paid": "Payée",
+  "client.history": "Historique des parrainages",
+  "client.no_conversions": "Aucune conversion enregistrée. Partagez votre lien !",
+  "client.date": "Date",
+  "client.type": "Type",
+  "client.commission": "Commission",
+  "client.status": "Statut",
+  "client.status_pending": "En attente",
+  "client.status_approved": "Approuvée",
+  "client.status_paid": "Payée",
+  "client.status_rejected": "Rejetée",
+  "client.default_name": "Client",
 };
 
 const de: TranslationMap = {
