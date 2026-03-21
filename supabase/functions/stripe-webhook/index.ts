@@ -1,4 +1,4 @@
-import Stripe from "https://esm.sh/stripe@17.7.0";
+import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const COMMISSION_RATE = 0.15;
@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
-  const stripe = new Stripe(stripeKey, { apiVersion: "2025-04-30.basil" });
+  const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");

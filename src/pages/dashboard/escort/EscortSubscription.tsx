@@ -114,7 +114,19 @@ export default function EscortSubscription() {
         body: { plan_id: planId },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Parse the error body for server-side messages
+        let serverMsg = "";
+        try {
+          const ctx = (error as any).context;
+          if (ctx && typeof ctx.json === "function") {
+            const body = await ctx.json();
+            serverMsg = body?.error || "";
+          }
+        } catch { /* ignore parse errors */ }
+        throw new Error(serverMsg || error.message || "Erro ao iniciar checkout.");
+      }
+
       if (data?.url) {
         window.location.href = data.url;
       } else {
@@ -122,11 +134,7 @@ export default function EscortSubscription() {
       }
     } catch (err: any) {
       const msg = err?.message || "Erro ao iniciar checkout. Tente novamente.";
-      if (msg.includes("already have an active")) {
-        toast.error("Já possui uma assinatura ativa.");
-      } else {
-        toast.error(msg);
-      }
+      toast.error(msg);
     } finally {
       setCheckoutLoading(null);
     }

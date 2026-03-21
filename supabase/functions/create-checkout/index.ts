@@ -1,4 +1,4 @@
-import Stripe from "https://esm.sh/stripe@17.7.0";
+import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
     }
 
     // Validate email before sending to Stripe
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!user.email || !emailRegex.test(user.email)) {
       console.warn(`[create-checkout] Invalid email: ${user.email}`);
       return new Response(
@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-04-30.basil" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     // Reuse existing Stripe customer if available
     let customerId: string | undefined;
