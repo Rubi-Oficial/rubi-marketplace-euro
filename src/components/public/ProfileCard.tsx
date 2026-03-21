@@ -1,5 +1,6 @@
 import { forwardRef, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { MapPin, Sparkles, ChevronLeft, ChevronRight, DollarSign, Heart, ArrowRight } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
@@ -171,8 +172,11 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
   if (!profile.slug) return null;
 
   return (
-    <div
+    <motion.div
       ref={ref}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
       className="group relative flex flex-col overflow-hidden rounded-xl bg-white shadow-sm border border-border/40 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/8 cursor-pointer"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -312,7 +316,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
 
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 });
 ProfileCard.displayName = "ProfileCard";
