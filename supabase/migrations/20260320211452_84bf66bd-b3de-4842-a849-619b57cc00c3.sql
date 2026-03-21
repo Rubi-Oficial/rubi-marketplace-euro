@@ -30,3 +30,5 @@ WHERE p.status = 'approved'::profile_status
     WHERE s.user_id = p.user_id
       AND s.status = 'active'::subscription_status
   );
+
+GRANT SELECT ON public.eligible_profiles TO anon, authenticated;
