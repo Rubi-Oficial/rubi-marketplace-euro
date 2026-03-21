@@ -314,7 +314,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
             <Heart className={`h-4 w-4 ${favorited ? "fill-primary" : ""}`} />
           </Button>
 
-        </div>
+    </motion.div>
       </div>
     </div>
   );
