@@ -91,39 +91,8 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
     <>
       <div className="flex h-16 items-center justify-between px-6">
         <Link to="/" className="font-display text-xl font-bold tracking-tight text-primary">
-          AURA
-        </Link>
-        <button className="md:hidden text-muted-foreground" onClick={() => setSidebarOpen(false)}>
-          <X className="h-5 w-5" />
-        </button>
-      </div>
+          <span className="font-bold">Rubi</span> <span className="font-medium text-foreground/80">Girls</span>
 
-      <div className="px-4 pb-2">
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {roleLabel}
-        </span>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-3">
-        <SidebarNav items={navItems} onNavigate={() => setSidebarOpen(false)} />
-      </div>
-
-      <div className="border-t border-border p-4">
-        <div className="mb-3 truncate text-sm text-muted-foreground">
-          {user?.email}
-        </div>
-        <Button variant="ghost" size="sm" className="w-full justify-start" onClick={signOut}>
-          <LogOut className="mr-2 h-4 w-4" />
-          {t("dash.sign_out")}
-        </Button>
-      </div>
-    </>
-  );
-
-  return (
-    <div className="flex min-h-screen bg-background">
-      <div className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-border bg-card px-4 md:hidden">
-        <Link to="/" className="font-display text-lg font-bold text-primary">AURA</Link>
         <button onClick={() => setSidebarOpen(true)} className="text-foreground">
           <Menu className="h-5 w-5" />
         </button>
