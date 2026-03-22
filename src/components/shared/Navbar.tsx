@@ -46,9 +46,8 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border/50 shadow-sm">
       {/* Top row: logo, search, auth */}
       <div className="container mx-auto flex h-14 items-center justify-between gap-4 px-4">
-        <Link to="/" className="font-display text-lg tracking-tight text-foreground shrink-0">
-          <span className="font-bold text-primary">Rubi</span>
-          <span className="font-medium text-foreground/80"> Girls</span>
+        <Link to="/" className="shrink-0">
+          <img src={logoRubiGirls} alt="Rubi Girls" className="h-7" />
         </Link>
 
         <form onSubmit={handleSearch} className="hidden sm:flex flex-1 max-w-md items-center gap-2">
