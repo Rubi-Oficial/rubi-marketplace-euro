@@ -9,6 +9,7 @@ import { SlidersHorizontal, MapPin, ArrowRight } from "lucide-react";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLocations } from "@/hooks/useLocations";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function CategoryPage() {
   const { t } = useLanguage();
@@ -58,10 +59,18 @@ export default function CategoryPage() {
     });
   }, [categoryName, serviceFilter, cityFilter, countryFilter, countryCitySlugs]);
 
-  useEffect(() => {
-    document.title = `${categoryName} — Profiles | Rubi Girls`;
-    return () => { document.title = "Rubi Girls"; };
-  }, [categoryName]);
+  usePageMeta({
+    title: `${categoryName} — Profiles`,
+    description: `Browse verified ${categoryName.toLowerCase()} profiles on Rubi Girls. Photos, reviews and direct contact across Europe.`,
+    path: `/categoria/${slug}`,
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: `${categoryName} Profiles`,
+      description: `Verified ${categoryName.toLowerCase()} profiles across Europe`,
+      url: `https://rubi-marketplace-euro.lovable.app/categoria/${slug}`,
+    },
+  });
 
   const hasLocationFilter = !!countryFilter || !!cityFilter;
   const hasServiceFilter = !!serviceFilter;

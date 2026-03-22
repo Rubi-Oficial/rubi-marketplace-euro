@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
 import { ProfileGallery } from "@/components/profile/ProfileGallery";
 import { ProfileInfo } from "@/components/profile/ProfileInfo";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 interface PublicProfile {
   id: string;
@@ -114,15 +115,27 @@ export default function ProfilePage() {
     load();
   }, [slug]);
 
-  useEffect(() => {
-    if (profile) {
-      document.title = `${profile.display_name} — ${profile.city || "Europe"} | Rubi Girls`;
-      const desc = document.querySelector('meta[name="description"]');
-      const text = `${profile.display_name}${profile.category ? `, ${profile.category}` : ""} in ${profile.city || "Europe"}. ${profile.bio?.slice(0, 120) || ""}`;
-      if (desc) desc.setAttribute("content", text);
-    }
-    return () => { document.title = "Rubi Girls"; };
-  }, [profile]);
+  const profileJsonLd = useMemo(() => {
+    if (!profile) return undefined;
+    return {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      name: profile.display_name,
+      address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "NL" } : undefined,
+      image: images[0]?.url,
+    };
+  }, [profile, images]);
+
+  usePageMeta({
+    title: profile ? `${profile.display_name} — ${profile.city || "Europe"}` : "Profile",
+    description: profile
+      ? `${profile.display_name}${profile.category ? `, ${profile.category}` : ""} in ${profile.city || "Europe"}. ${profile.bio?.slice(0, 120) || ""}`
+      : "Profile on Rubi Girls",
+    path: `/perfil/${slug}`,
+    image: images[0]?.url,
+    type: "profile",
+    jsonLd: profileJsonLd,
+  });
 
   if (loading) return <ProfileSkeleton />;
 
@@ -183,19 +196,6 @@ export default function ProfilePage() {
           <ProfileInfo profile={profile} services={services} />
         </div>
       </div>
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Person",
-            name: profile.display_name,
-            address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "NL" } : undefined,
-            image: images[0]?.url,
-          }),
-        }}
-      />
     </div>
   );
 }

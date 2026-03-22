@@ -1,7 +1,20 @@
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function AboutPage() {
   const { t } = useLanguage();
+
+  usePageMeta({
+    title: t("about.title"),
+    description: "Learn about Rubi Girls — a premium platform for independent professionals across Europe. Our mission, values and commitment to privacy.",
+    path: "/sobre",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      name: "About Rubi Girls",
+      url: "https://rubi-marketplace-euro.lovable.app/sobre",
+    },
+  });
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-12 animate-fade-in">

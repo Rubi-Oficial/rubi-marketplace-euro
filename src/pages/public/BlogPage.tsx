@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
-import { useEffect } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const posts = [
   {
@@ -28,10 +28,11 @@ const posts = [
 export default function BlogPage() {
   const { t, lang } = useLanguage();
 
-  useEffect(() => {
-    document.title = `${t("blog.title")} | Rubi Girls`;
-    return () => { document.title = "Rubi Girls"; };
-  }, [t]);
+  usePageMeta({
+    title: t("blog.title"),
+    description: "Tips, news and guides for independent professionals. Read the Rubi Girls blog.",
+    path: "/blog",
+  });
 
   const dateLocale = lang === "pt" ? "pt-BR" : lang === "es" ? "es-ES" : lang === "fr" ? "fr-FR" : lang === "de" ? "de-DE" : "en-GB";
 

@@ -1,7 +1,14 @@
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function TermsPage() {
   const { t } = useLanguage();
+
+  usePageMeta({
+    title: t("terms.title"),
+    description: "Rubi Girls Terms of Use. Read our terms and conditions for using the platform.",
+    path: "/termos",
+  });
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-12 animate-fade-in">
