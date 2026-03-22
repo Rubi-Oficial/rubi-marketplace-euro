@@ -5,6 +5,7 @@ import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLocations } from "@/hooks/useLocations";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function CityPage() {
   const { t } = useLanguage();
