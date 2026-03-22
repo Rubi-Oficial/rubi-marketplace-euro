@@ -573,6 +573,60 @@ export type Database = {
         }
         Relationships: []
       }
+      site_visits: {
+        Row: {
+          city_name: string | null
+          country_code: string | null
+          created_at: string
+          device_type: string | null
+          id: string
+          ip_hash: string | null
+          is_bot: boolean
+          page_path: string
+          referrer_url: string | null
+          session_id: string
+          user_agent: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          city_name?: string | null
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip_hash?: string | null
+          is_bot?: boolean
+          page_path: string
+          referrer_url?: string | null
+          session_id: string
+          user_agent?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          city_name?: string | null
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip_hash?: string | null
+          is_bot?: boolean
+          page_path?: string
+          referrer_url?: string | null
+          session_id?: string
+          user_agent?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string
@@ -784,6 +838,7 @@ export type Database = {
       }
     }
     Functions: {
+      get_access_analytics: { Args: never; Returns: Json }
       get_admin_dashboard_stats: { Args: never; Returns: Json }
       get_admin_sanity_checks: { Args: never; Returns: Json }
       get_my_referrals: {

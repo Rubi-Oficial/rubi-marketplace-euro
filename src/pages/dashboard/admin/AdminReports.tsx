@@ -5,13 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line, CartesianGrid,
+  PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend,
 } from "recharts";
-import { Users, FileText, DollarSign, Link2 } from "lucide-react";
+import { Users, FileText, DollarSign, Globe, ShieldAlert, Monitor, Smartphone, Tablet, Eye } from "lucide-react";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--muted-foreground))", "hsl(var(--destructive))", "hsl(var(--primary) / 0.4)"];
+const DEVICE_COLORS: Record<string, string> = {
+  desktop: "hsl(var(--primary))",
+  mobile: "hsl(var(--primary) / 0.6)",
+  tablet: "hsl(var(--primary) / 0.3)",
+  unknown: "hsl(var(--muted-foreground))",
+};
 
 interface ReportStats {
   totalUsers: number;
@@ -33,9 +39,32 @@ interface ReportStats {
   recentUsers: { id: string; full_name: string | null; email: string; role: string; created_at: string }[];
 }
 
+interface AccessAnalytics {
+  visits_24h: number;
+  visits_7d: number;
+  visits_30d: number;
+  unique_sessions_24h: number;
+  unique_sessions_7d: number;
+  unique_sessions_30d: number;
+  bot_count_24h: number;
+  bot_count_7d: number;
+  daily_visits: { day: string; visits: number; unique_sessions: number }[];
+  top_pages: { page_path: string; hits: number }[];
+  device_distribution: { device: string; visits: number }[];
+  top_referrers: { referrer: string; visits: number }[];
+  top_utm_sources: { utm_source: string; visits: number }[];
+  top_countries: { country: string; visits: number }[];
+  top_cities: { city: string; visits: number }[];
+  suspicious_ips: { ip_hash: string; hits: number; last_seen: string; unique_pages: number; is_known_bot: boolean }[];
+  suspicious_sessions: { session_id: string; pageviews: number; started: string; last_seen: string; unique_pages: number }[];
+  recent_bots: { ip_hash: string; user_agent: string; page_path: string; created_at: string }[];
+}
+
 export default function AdminReports() {
   const [stats, setStats] = useState<ReportStats | null>(null);
+  const [accessData, setAccessData] = useState<AccessAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [accessLoading, setAccessLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -43,9 +72,7 @@ export default function AdminReports() {
         usersRes, clientsRes, prosRes, adminsRes,
         profilesRes, approvedRes, pendingRes, rejectedRes,
         leadsRes, subsRes, activeSubsRes, canceledSubsRes,
-        allActiveSubsRes,
-        convsRes,
-        recentUsersRes,
+        allActiveSubsRes, convsRes, recentUsersRes,
       ] = await Promise.all([
         supabase.from("users").select("id", { count: "exact", head: true }),
         supabase.from("users").select("id", { count: "exact", head: true }).eq("role", "client"),
@@ -93,6 +120,20 @@ export default function AdminReports() {
     load();
   }, []);
 
+  const loadAccessAnalytics = async () => {
+    if (accessData) return;
+    setAccessLoading(true);
+    try {
+      const { data, error } = await supabase.rpc("get_access_analytics");
+      if (!error && data) {
+        setAccessData(data as unknown as AccessAnalytics);
+      }
+    } catch {
+      // silently fail
+    }
+    setAccessLoading(false);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -105,7 +146,6 @@ export default function AdminReports() {
 
   const roleLabels: Record<string, string> = { client: "Cliente", professional: "Profissional", admin: "Admin" };
 
-  // Chart data
   const userDistribution = [
     { name: "Clientes", value: stats.clientCount },
     { name: "Profissionais", value: stats.professionalCount },
@@ -131,11 +171,12 @@ export default function AdminReports() {
         <p className="mt-0.5 text-sm text-muted-foreground">Visão consolidada da plataforma.</p>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+      <Tabs defaultValue="overview" className="space-y-4" onValueChange={(v) => { if (v === "access") loadAccessAnalytics(); }}>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="overview" className="gap-1.5"><Users className="h-3.5 w-3.5" /> Visão Geral</TabsTrigger>
           <TabsTrigger value="financial" className="gap-1.5"><DollarSign className="h-3.5 w-3.5" /> Financeiro</TabsTrigger>
           <TabsTrigger value="users" className="gap-1.5"><FileText className="h-3.5 w-3.5" /> Cadastros</TabsTrigger>
+          <TabsTrigger value="access" className="gap-1.5"><Globe className="h-3.5 w-3.5" /> Acessos</TabsTrigger>
         </TabsList>
 
         {/* ── Overview Tab ── */}
@@ -290,7 +331,315 @@ export default function AdminReports() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* ── Access Analytics Tab ── */}
+        <TabsContent value="access" className="space-y-4">
+          {accessLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            </div>
+          ) : accessData ? (
+            <AccessAnalyticsPanel data={accessData} />
+          ) : (
+            <Card>
+              <CardContent className="py-10 text-center text-muted-foreground">
+                Nenhum dado de acesso disponível ainda.
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
+  const botRate24h = data.visits_24h > 0 ? ((data.bot_count_24h / data.visits_24h) * 100).toFixed(1) : "0";
+  const hasSuspicious = data.suspicious_ips.length > 0 || data.suspicious_sessions.length > 0;
+
+  const dailyChartData = data.daily_visits.map(d => ({
+    day: new Date(d.day).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+    Visitas: d.visits,
+    Únicos: d.unique_sessions,
+  }));
+
+  const DeviceIcon = ({ type }: { type: string }) => {
+    if (type === "mobile") return <Smartphone className="h-3.5 w-3.5" />;
+    if (type === "tablet") return <Tablet className="h-3.5 w-3.5" />;
+    return <Monitor className="h-3.5 w-3.5" />;
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* KPIs */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Visitas (24h)" value={data.visits_24h.toLocaleString()} />
+        <StatCard label="Visitas (7d)" value={data.visits_7d.toLocaleString()} />
+        <StatCard label="Únicos (7d)" value={data.unique_sessions_7d.toLocaleString()} />
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground">Bots (24h)</p>
+            <div className="mt-1 flex items-center gap-2">
+              <p className="font-display text-2xl font-bold tabular-nums text-foreground">{data.bot_count_24h}</p>
+              <Badge variant={Number(botRate24h) > 20 ? "destructive" : "outline"} className="text-xs">{botRate24h}%</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Security alert */}
+      {hasSuspicious && (
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-destructive">
+              <ShieldAlert className="h-4 w-4" /> Alertas de Segurança
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {data.suspicious_ips.length > 0 && (
+              <div>
+                <p className="font-medium text-foreground mb-1">IPs com volume anormal (&gt;100 hits/hora)</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="px-2 py-1.5 text-left text-muted-foreground">IP Hash</th>
+                        <th className="px-2 py-1.5 text-right text-muted-foreground">Hits</th>
+                        <th className="px-2 py-1.5 text-right text-muted-foreground">Páginas</th>
+                        <th className="px-2 py-1.5 text-center text-muted-foreground">Bot?</th>
+                        <th className="px-2 py-1.5 text-right text-muted-foreground">Último</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.suspicious_ips.map((ip, i) => (
+                        <tr key={i} className="border-b border-border/50 last:border-0">
+                          <td className="px-2 py-1.5 font-mono text-foreground">{ip.ip_hash.substring(0, 12)}…</td>
+                          <td className="px-2 py-1.5 text-right tabular-nums text-destructive font-medium">{ip.hits}</td>
+                          <td className="px-2 py-1.5 text-right tabular-nums">{ip.unique_pages}</td>
+                          <td className="px-2 py-1.5 text-center">{ip.is_known_bot ? "✓" : "—"}</td>
+                          <td className="px-2 py-1.5 text-right tabular-nums">{new Date(ip.last_seen).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            {data.suspicious_sessions.length > 0 && (
+              <div>
+                <p className="font-medium text-foreground mb-1">Sessões com &gt;50 pageviews</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="px-2 py-1.5 text-left text-muted-foreground">Session</th>
+                        <th className="px-2 py-1.5 text-right text-muted-foreground">Views</th>
+                        <th className="px-2 py-1.5 text-right text-muted-foreground">Páginas</th>
+                        <th className="px-2 py-1.5 text-right text-muted-foreground">Duração</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.suspicious_sessions.map((s, i) => (
+                        <tr key={i} className="border-b border-border/50 last:border-0">
+                          <td className="px-2 py-1.5 font-mono text-foreground">{s.session_id.substring(0, 8)}…</td>
+                          <td className="px-2 py-1.5 text-right tabular-nums text-destructive font-medium">{s.pageviews}</td>
+                          <td className="px-2 py-1.5 text-right tabular-nums">{s.unique_pages}</td>
+                          <td className="px-2 py-1.5 text-right tabular-nums">
+                            {Math.round((new Date(s.last_seen).getTime() - new Date(s.started).getTime()) / 60000)}min
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Daily visits chart */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Visitas por Dia (30 dias)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {dailyChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={dailyChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
+                <Legend iconSize={10} wrapperStyle={{ fontSize: 12 }} />
+                <Line type="monotone" dataKey="Visitas" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="Únicos" stroke="hsl(var(--primary) / 0.4)" strokeWidth={2} dot={false} strokeDasharray="5 5" />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="py-8 text-center text-sm text-muted-foreground">Sem dados ainda</p>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Top pages */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Top 10 Páginas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data.top_pages.length > 0 ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={data.top_pages} layout="vertical" barSize={16}>
+                  <XAxis type="number" hide />
+                  <YAxis type="category" dataKey="page_path" axisLine={false} tickLine={false} width={120}
+                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                    tickFormatter={(v: string) => v.length > 20 ? v.substring(0, 20) + "…" : v}
+                  />
+                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
+                  <Bar dataKey="hits" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="py-8 text-center text-sm text-muted-foreground">Sem dados</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Device distribution */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Dispositivos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data.device_distribution.length > 0 ? (
+              <div className="flex items-center gap-6">
+                <ResponsiveContainer width="50%" height={180}>
+                  <PieChart>
+                    <Pie data={data.device_distribution} dataKey="visits" nameKey="device" cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={3}>
+                      {data.device_distribution.map((d) => (
+                        <Cell key={d.device} fill={DEVICE_COLORS[d.device] || DEVICE_COLORS.unknown} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="space-y-3 text-sm">
+                  {data.device_distribution.map((d) => (
+                    <div key={d.device} className="flex items-center gap-2">
+                      <DeviceIcon type={d.device} />
+                      <span className="text-muted-foreground capitalize">{d.device}</span>
+                      <span className="ml-auto font-medium tabular-nums text-foreground">{d.visits}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="py-8 text-center text-sm text-muted-foreground">Sem dados</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Referrers */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Origens do Tráfego</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-y border-border bg-muted/30">
+                    <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Origem</th>
+                    <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Visitas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.top_referrers.map((r, i) => (
+                    <tr key={i} className="border-b border-border last:border-0">
+                      <td className="px-4 py-2 text-foreground truncate max-w-[200px]">{r.referrer}</td>
+                      <td className="px-4 py-2 text-right tabular-nums font-medium">{r.visits}</td>
+                    </tr>
+                  ))}
+                  {data.top_referrers.length === 0 && (
+                    <tr><td colSpan={2} className="px-4 py-4 text-center text-muted-foreground">Sem dados</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Geolocation */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Geolocalização</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-y border-border bg-muted/30">
+                    <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">País</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Cidade</th>
+                    <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Visitas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.top_countries.map((c, i) => (
+                    <tr key={i} className="border-b border-border last:border-0">
+                      <td className="px-4 py-2 text-foreground">{c.country}</td>
+                      <td className="px-4 py-2 text-muted-foreground">{data.top_cities[i]?.city || "—"}</td>
+                      <td className="px-4 py-2 text-right tabular-nums font-medium">{c.visits}</td>
+                    </tr>
+                  ))}
+                  {data.top_countries.length === 0 && (
+                    <tr><td colSpan={3} className="px-4 py-4 text-center text-muted-foreground">Sem dados</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent bots */}
+      {data.recent_bots.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Eye className="h-4 w-4" /> Bots Recentes (24h)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-y border-border bg-muted/30">
+                    <th className="px-3 py-2 text-left text-muted-foreground">IP Hash</th>
+                    <th className="px-3 py-2 text-left text-muted-foreground">User Agent</th>
+                    <th className="px-3 py-2 text-left text-muted-foreground">Página</th>
+                    <th className="px-3 py-2 text-right text-muted-foreground">Hora</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.recent_bots.slice(0, 10).map((b, i) => (
+                    <tr key={i} className="border-b border-border/50 last:border-0">
+                      <td className="px-3 py-1.5 font-mono">{b.ip_hash?.substring(0, 12) || "—"}…</td>
+                      <td className="px-3 py-1.5 max-w-[200px] truncate text-muted-foreground">{b.user_agent}</td>
+                      <td className="px-3 py-1.5 text-foreground">{b.page_path}</td>
+                      <td className="px-3 py-1.5 text-right tabular-nums">{new Date(b.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
