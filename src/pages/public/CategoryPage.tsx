@@ -9,6 +9,7 @@ import { SlidersHorizontal, MapPin, ArrowRight } from "lucide-react";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLocations } from "@/hooks/useLocations";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function CategoryPage() {
   const { t } = useLanguage();
