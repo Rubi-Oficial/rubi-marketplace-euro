@@ -272,7 +272,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
         {profile.is_featured && (
           <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full gold-gradient px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-md">
             <Sparkles className="h-2.5 w-2.5" />
-            Featured
+            {t("common.featured")}
           </div>
         )}
 

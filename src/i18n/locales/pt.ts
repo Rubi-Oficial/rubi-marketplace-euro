@@ -28,6 +28,8 @@ const pt: TranslationMap = {
   "search.no_filters": "Nenhum perfil disponível no momento.",
   "search.no_match": "Nenhum perfil corresponde aos filtros.",
   "search.clear_filters": "Limpar filtros",
+  "search.in_city": "em {city}",
+  "search.for_service": "{service}",
 
   // Profile
   "profile.unavailable": "Perfil indisponível",

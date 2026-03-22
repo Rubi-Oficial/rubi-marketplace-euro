@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Country, City } from "@/hooks/useLocations";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface LocationModalProps {
   open: boolean;
@@ -26,6 +27,7 @@ function LocationBody({
   onClose,
   suggestedCountry,
 }: Omit<LocationModalProps, "open" | "onOpenChange"> & { onClose: () => void }) {
+  const { t } = useLanguage();
   const [expandedCountry, setExpandedCountry] = useState(selectedCountry);
 
   const handleCountryClick = (slug: string) => {
@@ -60,7 +62,7 @@ function LocationBody({
             if (!suggested) return null;
             return (
               <div className="mb-2">
-                <p className="text-[10px] text-muted-foreground/60 px-3 mb-1">Based on your location</p>
+                <p className="text-[10px] text-muted-foreground/60 px-3 mb-1">{t("location.based_on")}</p>
                 <button
                   onClick={() => handleCountryClick(suggested.slug)}
                   className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors text-foreground hover:bg-accent border border-dashed border-primary/20"
@@ -113,7 +115,7 @@ function LocationBody({
                           : "text-muted-foreground hover:bg-accent hover:text-foreground"
                       }`}
                     >
-                      <span>All cities</span>
+                      <span>{t("location.all_cities")}</span>
                       {selectedCountry === c.slug && !selectedCity && (
                         <Check className="h-3.5 w-3.5 text-primary" />
                       )}
@@ -153,7 +155,7 @@ function LocationBody({
             }}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            Clear location filter
+            {t("location.clear")}
           </button>
         </div>
       )}
@@ -163,6 +165,7 @@ function LocationBody({
 
 export function LocationModal(props: LocationModalProps) {
   const isMobile = useIsMobile();
+  const { t } = useLanguage();
   const { open, onOpenChange, ...bodyProps } = props;
 
   if (isMobile) {
@@ -172,7 +175,7 @@ export function LocationModal(props: LocationModalProps) {
           <SheetHeader className="pb-2">
             <SheetTitle className="font-display text-base flex items-center gap-2">
               <MapPin className="h-4 w-4 text-primary" />
-              Location
+              {t("location.title")}
             </SheetTitle>
           </SheetHeader>
           <LocationBody {...bodyProps} onClose={() => onOpenChange(false)} />
@@ -187,7 +190,7 @@ export function LocationModal(props: LocationModalProps) {
         <DialogHeader className="pb-2">
           <DialogTitle className="font-display text-base flex items-center gap-2">
             <MapPin className="h-4 w-4 text-primary" />
-            Location
+            {t("location.title")}
           </DialogTitle>
         </DialogHeader>
         <LocationBody {...bodyProps} onClose={() => onOpenChange(false)} />
