@@ -20,7 +20,7 @@ const posts = [
   {
     slug: "programa-afiliados-como-funciona",
     title: "Programa de Afiliados: como funciona?",
-    excerpt: "Entenda como indicar profissionais e ganhar comissões recorrentes na AURA.",
+    excerpt: "Entenda como indicar profissionais e ganhar comissões recorrentes na Rubi Girls.",
     date: "2026-03-05",
   },
 ];

@@ -10,8 +10,8 @@ const NotFound = () => {
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
-    document.title = `${t("notfound.title")} | AURA`;
-    return () => { document.title = "AURA"; };
+    document.title = `${t("notfound.title")} | Rubi Girls`;
+    return () => { document.title = "Rubi Girls"; };
   }, [location.pathname, t]);
 
   return (

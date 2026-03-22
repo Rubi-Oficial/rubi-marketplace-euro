@@ -1553,7 +1553,7 @@ const de: TranslationMap = {
 
   "blog.title": "Blog",
   "blog.desc": "Tipps, Neuigkeiten und Leitfäden für Profis.",
-  "blog.cta_title": "Möchten Sie auf AURA werben?",
+  "blog.cta_title": "Möchten Sie auf Rubi Girls werben?",
   "blog.cta_desc": "Erstellen Sie Ihr verifiziertes Profil und empfangen Sie noch heute Kunden.",
   "blog.cta_button": "Jetzt Starten",
 
