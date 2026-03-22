@@ -1,44 +1,37 @@
 
 
-## Plano: Contador de Cliques WhatsApp nos Dashboards
+## Plan: WhatsApp Click Counters in Dashboards
 
-### Contexto atual
-O sistema **já rastreia** cliques WhatsApp na tabela `leads` com `source = "whatsapp_card"` (card) e `source = "whatsapp_profile"` (página do perfil). A página EscortMetrics já exibe esses dados separados. Porém:
-- O **EscortDashboard** mostra apenas "Leads" total, sem breakdown por fonte
-- O **AdminDashboard** mostra apenas `totalLeads` sem distinção
-- O **AdminReports** idem — apenas total de leads
+### Overview
+Add WhatsApp/Telegram click breakdown metrics to the professional and admin dashboards using data already tracked in the `leads` table.
 
-### Alterações
+### Changes
 
-**1. EscortDashboard** (`src/pages/dashboard/escort/EscortDashboard.tsx`)
-- Adicionar ao hook `useDashboardData` queries separadas para contar leads por source: `whatsapp_card`, `whatsapp_profile`, `telegram_profile`, `profile_view`
-- No grid de stats, substituir o card genérico "Leads" por cards específicos:
-  - WhatsApp (card + perfil combinados) com ícone verde
-  - Total Leads (mantém)
-- Resultado: profissional vê de relance quantos contatos WhatsApp recebeu
+**1. Migration SQL — Update `get_admin_dashboard_stats` RPC**
+Add three new fields to the returned JSON:
+- `total_whatsapp_clicks`: count of leads with source LIKE 'whatsapp%'
+- `total_telegram_clicks`: count of leads with source = 'telegram_profile'  
+- `total_profile_views`: count of leads with source = 'profile_view'
 
-**2. Admin RPC `get_admin_dashboard_stats`** (migração SQL)
-- Adicionar ao JSON retornado:
-  - `total_whatsapp_clicks`: count de leads com source LIKE 'whatsapp%'
-  - `total_telegram_clicks`: count de leads com source = 'telegram_profile'
-  - `total_profile_views`: count de leads com source = 'profile_view'
-- Sem criar novas tabelas — usa dados já existentes
+**2. EscortDashboard** (`src/pages/dashboard/escort/EscortDashboard.tsx`)
+- Add `whatsappClicks` and `telegramClicks` fields to `DashboardData` interface
+- Add two filtered count queries in the data hook (when profile exists):
+  - `leads` where `source` starts with `whatsapp` 
+  - `leads` where `source` = `telegram_profile`
+- Add a WhatsApp KPI card (green icon) and Telegram KPI card in the stats grid, expanding from 4 to 5 columns on large screens
 
 **3. AdminDashboard** (`src/pages/dashboard/admin/AdminDashboard.tsx`)
-- Exibir novo KPI "WhatsApp Clicks" ao lado de "Total Leads" no painel de métricas
+- Add `whatsappClicks` to `AdminStats` interface
+- Read `total_whatsapp_clicks` from the RPC response
+- Add a new KPI card "WhatsApp Clicks" with a green messaging icon in the existing KPI grid
 
 **4. AdminReports** (`src/pages/dashboard/admin/AdminReports.tsx`)
-- Na aba Overview, adicionar breakdown de leads por fonte (whatsapp_card, whatsapp_profile, telegram, profile_view)
-- Adicionar query direta ou usar dados do stats para mostrar distribuição
+- Add WhatsApp/Telegram/Profile View lead counts to the data fetch (3 extra count queries)
+- Add a "Leads by Source" breakdown card in the Overview tab with a horizontal bar chart showing WhatsApp, Telegram, and Profile View counts
 
-### Arquivos modificados
-- `src/pages/dashboard/escort/EscortDashboard.tsx` — queries + cards WhatsApp
-- `src/pages/dashboard/admin/AdminDashboard.tsx` — KPI WhatsApp
-- `src/pages/dashboard/admin/AdminReports.tsx` — breakdown leads
-- Nova migração SQL — atualiza RPC `get_admin_dashboard_stats`
-
-### Sem impacto
-- Não altera tabelas nem RLS
-- Não modifica fluxo de tracking existente
-- Apenas leitura de dados já coletados
+### Technical Details
+- No new tables or RLS changes needed
+- All data comes from existing `leads` table with `source` column filtering
+- Migration only updates the RPC function
+- Uses `ilike` pattern for WhatsApp sources (`whatsapp_card` + `whatsapp_profile`)
 
