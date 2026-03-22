@@ -50,7 +50,7 @@ export default function PublicLayout() {
               </nav>
             </div>
           </div>
-          <div className="mt-8 border-t border-border/20 pt-5 text-center text-xs text-muted-foreground/50">
+          <div className="mt-8 border-t border-border/20 pt-5 text-center text-xs text-muted-foreground">
             © {new Date().getFullYear()} Rubi Girls. {t("footer.rights")}
           </div>
         </div>
