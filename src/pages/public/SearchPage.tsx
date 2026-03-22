@@ -10,6 +10,7 @@ import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function SearchPage() {
   const { t } = useLanguage();
