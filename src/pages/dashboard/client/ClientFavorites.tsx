@@ -59,7 +59,7 @@ export default function ClientFavorites() {
             gender: p.gender ?? null,
             slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
             is_featured: p.is_featured ?? false, image_urls: imageMap[p.id!] || [],
-            bio: p.bio ?? null,
+            bio: p.bio ?? null, has_whatsapp: p.has_whatsapp ?? false,
           } as EligibleProfile;
         })
         .filter(Boolean) as EligibleProfile[];
