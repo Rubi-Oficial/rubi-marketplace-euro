@@ -107,12 +107,12 @@ export default function SearchPage() {
   const cityName = filteredCities.find((c) => c.slug === cityFilter)?.name;
   const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
 
-  useEffect(() => {
-    const parts = [t("nav.explore")];
-    if (cityName) parts.push(`in ${cityName}`);
-    document.title = `${parts.join(" ")} | Rubi Girls`;
-    return () => { document.title = "Rubi Girls"; };
-  }, [cityName, categoryFilter, t]);
+  const searchTitle = cityName ? `${t("nav.explore")} in ${cityName}` : t("nav.explore");
+  usePageMeta({
+    title: searchTitle,
+    description: `Search and browse verified professional profiles on Rubi Girls${cityName ? ` in ${cityName}` : ""}. Filter by category, service and location.`,
+    path: "/buscar",
+  });
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">
