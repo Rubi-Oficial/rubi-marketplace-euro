@@ -22,10 +22,13 @@ export default function PlansPage() {
     supabase.from("plans").select("*").eq("is_active", true).order("price").then(({ data }) => {
       setPlans((data as Plan[]) ?? []);
     });
+  }, []);
 
-    document.title = `${t("plans.title")} | Rubi Girls`;
-    return () => { document.title = "Rubi Girls"; };
-  }, [t]);
+  usePageMeta({
+    title: t("plans.title"),
+    description: "Choose a Rubi Girls plan. Verified profile, dedicated support and full GDPR compliance. Cancel anytime.",
+    path: "/planos",
+  });
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fade-in">
