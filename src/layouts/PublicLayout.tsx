@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import Navbar from "@/components/shared/Navbar";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
+import logoRubiGirls from "@/assets/logo-rubi-girls.png";
 
 export default function PublicLayout() {
   const { t } = useLanguage();
