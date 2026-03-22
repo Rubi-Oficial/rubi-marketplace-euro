@@ -1,7 +1,14 @@
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function PrivacyPage() {
   const { t } = useLanguage();
+
+  usePageMeta({
+    title: t("privacy.title"),
+    description: "Rubi Girls Privacy Policy. Learn how we protect your personal data in compliance with GDPR.",
+    path: "/privacidade",
+  });
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-12 animate-fade-in">
