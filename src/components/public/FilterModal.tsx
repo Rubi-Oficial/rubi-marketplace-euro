@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface Filters {
   category: string;
@@ -58,6 +59,7 @@ function FilterSection({ title, defaultOpen = false, children }: { title: string
 }
 
 function FilterBody({ filters, onApply, onClear, resultCount, services, categories = [], onClose }: Omit<FilterModalProps, "open" | "onOpenChange"> & { onClose: () => void }) {
+  const { t } = useLanguage();
   const [searchInModal, setSearchInModal] = useState("");
 
   const filteredServices = useMemo(() => {
@@ -81,7 +83,7 @@ function FilterBody({ filters, onApply, onClear, resultCount, services, categori
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search filters..."
+            placeholder={t("filter.search_placeholder")}
             className="pl-9 h-9 bg-muted/50 border-border/30 text-sm"
             value={searchInModal}
             onChange={(e) => setSearchInModal(e.target.value)}
@@ -92,7 +94,7 @@ function FilterBody({ filters, onApply, onClear, resultCount, services, categori
       {/* Filter sections */}
       <ScrollArea className="flex-1 -mx-1 px-1">
         {filteredServices.length > 0 && (
-          <FilterSection title="Services" defaultOpen={!!filters.service || true}>
+          <FilterSection title={t("filter.services")} defaultOpen={!!filters.service || true}>
             <div className="space-y-0.5">
               {filteredServices.map((s) => (
                 <FilterItem
@@ -107,7 +109,7 @@ function FilterBody({ filters, onApply, onClear, resultCount, services, categori
         )}
 
         {filteredCategories.length > 0 && (
-          <FilterSection title="Category" defaultOpen={!!filters.category}>
+          <FilterSection title={t("filter.category")} defaultOpen={!!filters.category}>
             <div className="space-y-0.5">
               {filteredCategories.map((cat) => (
                 <FilterItem
@@ -128,13 +130,13 @@ function FilterBody({ filters, onApply, onClear, resultCount, services, categori
       <div className="flex items-center justify-between gap-3 border-t border-border/20 pt-4 mt-2">
         {activeCount > 0 ? (
           <button onClick={onClear} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            Clear all
+            {t("filter.clear_all")}
           </button>
         ) : (
           <span />
         )}
         <Button variant="premium" size="sm" className="px-6" onClick={onClose}>
-          Show {resultCount} result{resultCount !== 1 ? "s" : ""}
+          {t("filter.show_results", { count: String(resultCount) })}
         </Button>
       </div>
     </div>
@@ -143,6 +145,7 @@ function FilterBody({ filters, onApply, onClear, resultCount, services, categori
 
 export function FilterModal(props: FilterModalProps) {
   const isMobile = useIsMobile();
+  const { t } = useLanguage();
   const { open, onOpenChange, ...bodyProps } = props;
 
   if (isMobile) {
@@ -150,7 +153,7 @@ export function FilterModal(props: FilterModalProps) {
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="right" className="w-full sm:w-[400px] p-5 flex flex-col">
           <SheetHeader className="pb-2">
-            <SheetTitle className="font-display text-base">Filters</SheetTitle>
+            <SheetTitle className="font-display text-base">{t("filter.title")}</SheetTitle>
           </SheetHeader>
           <FilterBody {...bodyProps} onClose={() => onOpenChange(false)} />
         </SheetContent>
@@ -162,7 +165,7 @@ export function FilterModal(props: FilterModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-h-[70vh] flex flex-col p-5" aria-describedby={undefined}>
         <DialogHeader className="pb-2">
-          <DialogTitle className="font-display text-base">Filters</DialogTitle>
+          <DialogTitle className="font-display text-base">{t("filter.title")}</DialogTitle>
         </DialogHeader>
         <FilterBody {...bodyProps} onClose={() => onOpenChange(false)} />
       </DialogContent>

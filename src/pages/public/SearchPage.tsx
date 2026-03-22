@@ -168,7 +168,11 @@ export default function SearchPage() {
       />
 
       <p className="mb-4 text-xs text-muted-foreground">
-        {loading ? t("search.loading") : `${profiles.length} ${t("search.profiles")}`}
+        {loading ? t("search.loading") : [
+          `${profiles.length} ${t("search.profiles")}`,
+          cityName && t("search.in_city", { city: cityName }),
+          serviceName && t("search.for_service", { service: serviceName }),
+        ].filter(Boolean).join(" · ")}
       </p>
 
       {loading ? (

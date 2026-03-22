@@ -25,6 +25,8 @@ const fr: TranslationMap = {
   "search.no_filters": "Aucun profil disponible pour le moment.",
   "search.no_match": "Aucun profil ne correspond aux filtres.",
   "search.clear_filters": "Effacer les filtres",
+  "search.in_city": "à {city}",
+  "search.for_service": "{service}",
 
   "profile.unavailable": "Profil indisponible",
   "profile.unavailable_desc": "Ce profil n'est pas disponible pour le moment.",
