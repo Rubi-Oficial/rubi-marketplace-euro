@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
-import { useEffect } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const posts = [
   {
