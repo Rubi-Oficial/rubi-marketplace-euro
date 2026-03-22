@@ -476,7 +476,7 @@ const en: TranslationMap = {
 
   "blog.title": "Blog",
   "blog.desc": "Tips, news and guides for professionals.",
-  "blog.cta_title": "Want to advertise on AURA?",
+  "blog.cta_title": "Want to advertise on Rubi Girls?",
   "blog.cta_desc": "Create your verified profile and start receiving clients today.",
   "blog.cta_button": "Get Started",
 
