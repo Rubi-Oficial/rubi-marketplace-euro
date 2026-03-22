@@ -25,10 +25,10 @@ export default function LandingPage() {
       "@context": "https://schema.org",
       "@type": "WebSite",
       name: "Rubi Girls",
-      url: "https://rubi-marketplace-euro.lovable.app",
+      url: "https://rubigirls.fun",
       potentialAction: {
         "@type": "SearchAction",
-        target: "https://rubi-marketplace-euro.lovable.app/buscar?q={search_term_string}",
+        target: "https://rubigirls.fun/buscar?q={search_term_string}",
         "query-input": "required name=search_term_string",
       },
     },
