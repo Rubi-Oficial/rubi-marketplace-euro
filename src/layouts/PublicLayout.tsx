@@ -19,10 +19,9 @@ export default function PublicLayout() {
         <div className="container mx-auto px-4">
           <div className="grid gap-10 md:grid-cols-4">
             <div>
-              <span className="font-display text-lg tracking-tight text-foreground">
-                <span className="font-bold text-primary">Rubi</span>
-                <span className="font-medium text-foreground/80"> Girls</span>
-              </span>
+              <Link to="/" className="inline-block">
+                <img src={logoRubiGirls} alt="Rubi Girls" className="h-6" />
+              </Link>
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
                 {t("footer.desc")}
               </p>
