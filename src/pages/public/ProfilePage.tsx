@@ -196,19 +196,6 @@ export default function ProfilePage() {
           <ProfileInfo profile={profile} services={services} />
         </div>
       </div>
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Person",
-            name: profile.display_name,
-            address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "NL" } : undefined,
-            image: images[0]?.url,
-          }),
-        }}
-      />
     </div>
   );
 }
