@@ -6,6 +6,7 @@ Allow: /cidade/
 Allow: /categoria/
 Allow: /planos
 Allow: /sobre
+Allow: /contato
 Allow: /blog
 Allow: /termos
 Allow: /privacidade
@@ -23,4 +24,4 @@ Allow: /
 User-agent: Bingbot
 Allow: /
 
-Sitemap: https://rubi-marketplace-euro.lovable.app/sitemap.xml
+Sitemap: https://rubi-marketplace-euro.lovable.app/functions/v1/sitemap
