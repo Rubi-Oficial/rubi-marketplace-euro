@@ -1,27 +1,44 @@
 
 
-## Plano: Ativar botão WhatsApp nos cards
+## Plano: Contador de Cliques WhatsApp nos Dashboards
 
-### Problema
-O botão WhatsApp já está implementado no `ProfileCard` e a view `eligible_profiles` já expõe `has_whatsapp`. Porém, a função `fetchEligibleProfiles` **não seleciona** `has_whatsapp` da view e sempre define `has_whatsapp: false` no retorno. O botão nunca aparece.
+### Contexto atual
+O sistema **já rastreia** cliques WhatsApp na tabela `leads` com `source = "whatsapp_card"` (card) e `source = "whatsapp_profile"` (página do perfil). A página EscortMetrics já exibe esses dados separados. Porém:
+- O **EscortDashboard** mostra apenas "Leads" total, sem breakdown por fonte
+- O **AdminDashboard** mostra apenas `totalLeads` sem distinção
+- O **AdminReports** idem — apenas total de leads
 
-### Correção (2 linhas)
+### Alterações
 
-**Arquivo: `src/components/public/ProfileCard.tsx`**
+**1. EscortDashboard** (`src/pages/dashboard/escort/EscortDashboard.tsx`)
+- Adicionar ao hook `useDashboardData` queries separadas para contar leads por source: `whatsapp_card`, `whatsapp_profile`, `telegram_profile`, `profile_view`
+- No grid de stats, substituir o card genérico "Leads" por cards específicos:
+  - WhatsApp (card + perfil combinados) com ícone verde
+  - Total Leads (mantém)
+- Resultado: profissional vê de relance quantos contatos WhatsApp recebeu
 
-1. **Linha 37** — Adicionar `has_whatsapp` ao `.select()`:
-   ```
-   .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, has_whatsapp")
-   ```
+**2. Admin RPC `get_admin_dashboard_stats`** (migração SQL)
+- Adicionar ao JSON retornado:
+  - `total_whatsapp_clicks`: count de leads com source LIKE 'whatsapp%'
+  - `total_telegram_clicks`: count de leads com source = 'telegram_profile'
+  - `total_profile_views`: count de leads com source = 'profile_view'
+- Sem criar novas tabelas — usa dados já existentes
 
-2. **Linha 94** — Usar o valor real em vez de `false`:
-   ```
-   has_whatsapp: p.has_whatsapp ?? false,
-   ```
+**3. AdminDashboard** (`src/pages/dashboard/admin/AdminDashboard.tsx`)
+- Exibir novo KPI "WhatsApp Clicks" ao lado de "Total Leads" no painel de métricas
 
-### Também corrigir em `ClientFavorites.tsx`
-A query de favoritos também não seleciona `has_whatsapp`. Adicionar ao select e ao mapeamento para que o botão apareça também na página de favoritos.
+**4. AdminReports** (`src/pages/dashboard/admin/AdminReports.tsx`)
+- Na aba Overview, adicionar breakdown de leads por fonte (whatsapp_card, whatsapp_profile, telegram, profile_view)
+- Adicionar query direta ou usar dados do stats para mostrar distribuição
 
-### Resultado
-O botão verde do WhatsApp aparecerá nos cards de perfis que têm número cadastrado. Ao clicar, usa a RPC `get_profile_contact` (já implementada) para obter o número de forma segura e abrir `wa.me/`.
+### Arquivos modificados
+- `src/pages/dashboard/escort/EscortDashboard.tsx` — queries + cards WhatsApp
+- `src/pages/dashboard/admin/AdminDashboard.tsx` — KPI WhatsApp
+- `src/pages/dashboard/admin/AdminReports.tsx` — breakdown leads
+- Nova migração SQL — atualiza RPC `get_admin_dashboard_stats`
+
+### Sem impacto
+- Não altera tabelas nem RLS
+- Não modifica fluxo de tracking existente
+- Apenas leitura de dados já coletados
 
