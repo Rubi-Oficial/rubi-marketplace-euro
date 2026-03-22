@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
+import logoRubiGirls from "@/assets/logo-rubi-girls.png";
 
 interface NavItem {
   label: string;
