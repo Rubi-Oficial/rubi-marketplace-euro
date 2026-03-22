@@ -12,7 +12,7 @@ export default function AboutPage() {
       "@context": "https://schema.org",
       "@type": "AboutPage",
       name: "About Rubi Girls",
-      url: "https://rubi-marketplace-euro.lovable.app/sobre",
+      url: "https://rubigirls.fun/sobre",
     },
   });
 

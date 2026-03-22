@@ -29,7 +29,7 @@ export default function ContactPage() {
       "@context": "https://schema.org",
       "@type": "ContactPage",
       name: "Contact Rubi Girls",
-      url: "https://rubi-marketplace-euro.lovable.app/contato",
+      url: "https://rubigirls.fun/contato",
     },
   });
   const [name, setName] = useState("");

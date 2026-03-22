@@ -68,7 +68,7 @@ export default function CategoryPage() {
       "@type": "CollectionPage",
       name: `${categoryName} Profiles`,
       description: `Verified ${categoryName.toLowerCase()} profiles across Europe`,
-      url: `https://rubi-marketplace-euro.lovable.app/categoria/${slug}`,
+      url: `https://rubigirls.fun/categoria/${slug}`,
     },
   });
 

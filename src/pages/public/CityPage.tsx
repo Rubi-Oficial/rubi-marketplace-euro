@@ -40,7 +40,7 @@ export default function CityPage() {
       "@type": "CollectionPage",
       name: `Professionals in ${cityName}`,
       description: `Verified profiles in ${cityName}`,
-      url: `https://rubi-marketplace-euro.lovable.app/cidade/${slug}`,
+      url: `https://rubigirls.fun/cidade/${slug}`,
     },
   });
 
