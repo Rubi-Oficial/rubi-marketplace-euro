@@ -8,6 +8,7 @@ import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { LANGUAGES } from "@/i18n/translations";
+import logoRubiGirls from "@/assets/logo-rubi-girls.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
