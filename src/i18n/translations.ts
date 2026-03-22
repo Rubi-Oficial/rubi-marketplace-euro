@@ -1194,7 +1194,7 @@ const fr: TranslationMap = {
 
   "blog.title": "Blog",
   "blog.desc": "Conseils, actualités et guides pour les professionnels.",
-  "blog.cta_title": "Vous souhaitez faire de la publicité sur AURA ?",
+  "blog.cta_title": "Vous souhaitez faire de la publicité sur Rubi Girls ?",
   "blog.cta_desc": "Créez votre profil vérifié et commencez à recevoir des clients dès aujourd'hui.",
   "blog.cta_button": "Commencer",
 
