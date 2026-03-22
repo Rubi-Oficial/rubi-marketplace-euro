@@ -91,8 +91,8 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
   const sidebarContent = (
     <>
       <div className="flex h-16 items-center justify-between px-6">
-        <Link to="/" className="font-display text-xl font-bold tracking-tight text-primary">
-          <span className="font-bold">Rubi</span> <span className="font-medium text-foreground/80">Girls</span>
+        <Link to="/" className="shrink-0">
+          <img src={logoRubiGirls} alt="Rubi Girls" className="h-6" />
         </Link>
         <button className="md:hidden text-muted-foreground" onClick={() => setSidebarOpen(false)}>
           <X className="h-5 w-5" />
