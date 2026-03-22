@@ -4,13 +4,14 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
 import AuthRedirectHandler from "@/components/shared/AuthRedirectHandler";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import PublicLayout from "@/layouts/PublicLayout";
 import DashboardLayout from "@/layouts/DashboardLayout";
+import { usePageTracking } from "@/hooks/usePageTracking";
 
 // Lazy-loaded route components
 const LandingPage = lazy(() => import("@/pages/public/LandingPage"));
