@@ -31,12 +31,18 @@ export default function CityPage() {
     }).then((data) => { setProfiles(data); setLoading(false); });
   }, [slug, activeService]);
 
-  useEffect(() => {
-    document.title = `${cityName} | Rubi Girls`;
-    const desc = document.querySelector('meta[name="description"]');
-    if (desc) desc.setAttribute("content", `Find verified professionals in ${cityName}. Browse profiles with photos and direct contact.`);
-    return () => { document.title = "Rubi Girls"; };
-  }, [cityName]);
+  usePageMeta({
+    title: `Professionals in ${cityName}`,
+    description: `Find verified professionals in ${cityName}${countryObj ? `, ${countryObj.name}` : ""}. Browse profiles with photos and direct contact.`,
+    path: `/cidade/${slug}`,
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: `Professionals in ${cityName}`,
+      description: `Verified profiles in ${cityName}`,
+      url: `https://rubi-marketplace-euro.lovable.app/cidade/${slug}`,
+    },
+  });
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">

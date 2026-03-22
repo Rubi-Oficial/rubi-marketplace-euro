@@ -11,10 +11,28 @@ import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
 import { useLocations } from "@/hooks/useLocations";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 export default function LandingPage() {
   useReferralCapture();
   const { t } = useLanguage();
+
+  usePageMeta({
+    title: "Premium European Catalogue",
+    description: "Rubi Girls — Premium catalogue for independent professionals across Europe. Browse verified profiles with photos and direct contact.",
+    path: "/",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Rubi Girls",
+      url: "https://rubi-marketplace-euro.lovable.app",
+      potentialAction: {
+        "@type": "SearchAction",
+        target: "https://rubi-marketplace-euro.lovable.app/buscar?q={search_term_string}",
+        "query-input": "required name=search_term_string",
+      },
+    },
+  });
 
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
   const [loading, setLoading] = useState(true);
