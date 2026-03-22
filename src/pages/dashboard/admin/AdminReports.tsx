@@ -7,7 +7,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend,
 } from "recharts";
-import { Users, FileText, DollarSign, Globe, ShieldAlert, Monitor, Smartphone, Tablet, Eye } from "lucide-react";
+import { Users, FileText, DollarSign, Globe, ShieldAlert, Monitor, Smartphone, Tablet, Eye, Bot, AlertTriangle, Info, ChevronDown, ChevronUp } from "lucide-react";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
 
@@ -57,7 +57,8 @@ interface AccessAnalytics {
   top_cities: { city: string; visits: number }[];
   suspicious_ips: { ip_hash: string; hits: number; last_seen: string; unique_pages: number; is_known_bot: boolean }[];
   suspicious_sessions: { session_id: string; pageviews: number; started: string; last_seen: string; unique_pages: number }[];
-  recent_bots: { ip_hash: string; user_agent: string; page_path: string; created_at: string }[];
+  recent_bots: { ip_hash: string; user_agent: string; page_path: string; created_at: string; country_code: string; city_name: string }[];
+  bot_by_agent: { user_agent: string; hits: number; unique_ips: number; unique_pages: number; first_seen: string; last_seen: string; pages_visited: string[] }[];
 }
 
 export default function AdminReports() {
@@ -353,9 +354,112 @@ export default function AdminReports() {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Bot classification helpers
+// ---------------------------------------------------------------------------
+
+type BotSeverity = "safe" | "seo" | "warning" | "danger";
+
+interface BotClassification {
+  name: string;
+  type: string;
+  intent: string;
+  severity: BotSeverity;
+  recommendation: string;
+}
+
+function classifyBot(userAgent: string): BotClassification {
+  const ua = (userAgent || "").toLowerCase();
+
+  // Search engine crawlers (safe, expected)
+  if (ua.includes("googlebot"))
+    return { name: "Googlebot", type: "Rastreador de busca", intent: "Indexação SEO (Google)", severity: "safe", recommendation: "Nenhuma ação necessária. Garanta um sitemap.xml atualizado para melhor indexação." };
+  if (ua.includes("bingbot") || ua.includes("bingpreview"))
+    return { name: "Bingbot", type: "Rastreador de busca", intent: "Indexação SEO (Bing)", severity: "safe", recommendation: "Nenhuma ação necessária. Considere cadastrar o site no Bing Webmaster Tools." };
+  if (ua.includes("yandexbot") || ua.includes("yandex"))
+    return { name: "YandexBot", type: "Rastreador de busca", intent: "Indexação SEO (Yandex)", severity: "safe", recommendation: "Nenhuma ação necessária." };
+  if (ua.includes("duckduckbot"))
+    return { name: "DuckDuckBot", type: "Rastreador de busca", intent: "Indexação SEO (DuckDuckGo)", severity: "safe", recommendation: "Nenhuma ação necessária." };
+  if (ua.includes("baiduspider"))
+    return { name: "Baiduspider", type: "Rastreador de busca", intent: "Indexação SEO (Baidu, China)", severity: "safe", recommendation: "Nenhuma ação necessária, tráfego esperado de mercado chinês." };
+  if (ua.includes("slurp"))
+    return { name: "Yahoo Slurp", type: "Rastreador de busca", intent: "Indexação SEO (Yahoo)", severity: "safe", recommendation: "Nenhuma ação necessária." };
+  if (ua.includes("applebot"))
+    return { name: "Applebot", type: "Rastreador de busca", intent: "Indexação para Spotlight/Siri", severity: "safe", recommendation: "Nenhuma ação necessária." };
+
+  // Social media preview bots (safe)
+  if (ua.includes("facebookexternalhit") || ua.includes("facebot"))
+    return { name: "Facebook Bot", type: "Pré-visualização social", intent: "Geração de preview ao compartilhar links no Facebook/Instagram", severity: "safe", recommendation: "Adicione meta tags Open Graph para melhorar previews." };
+  if (ua.includes("twitterbot"))
+    return { name: "TwitterBot", type: "Pré-visualização social", intent: "Geração de preview ao compartilhar no X/Twitter", severity: "safe", recommendation: "Adicione meta tags Twitter Card ao site." };
+  if (ua.includes("linkedinbot"))
+    return { name: "LinkedInBot", type: "Pré-visualização social", intent: "Geração de preview no LinkedIn", severity: "safe", recommendation: "Adicione meta tags Open Graph para melhorar previews." };
+  if (ua.includes("whatsapp"))
+    return { name: "WhatsApp Bot", type: "Pré-visualização social", intent: "Geração de preview ao compartilhar links no WhatsApp", severity: "safe", recommendation: "Adicione meta tags Open Graph para melhorar previews." };
+  if (ua.includes("telegrambot"))
+    return { name: "TelegramBot", type: "Pré-visualização social", intent: "Geração de preview ao compartilhar no Telegram", severity: "safe", recommendation: "Adicione meta tags Open Graph para melhorar previews." };
+
+  // Monitoring / uptime (safe)
+  if (ua.includes("uptimerobot"))
+    return { name: "UptimeRobot", type: "Monitoramento", intent: "Verificação de disponibilidade do site", severity: "safe", recommendation: "Esperado se você usa UptimeRobot. Configure-o para não inflar métricas de visitas." };
+  if (ua.includes("pingdom"))
+    return { name: "Pingdom", type: "Monitoramento", intent: "Monitoramento de disponibilidade e performance", severity: "safe", recommendation: "Esperado se você usa Pingdom." };
+  if (ua.includes("gtmetrix"))
+    return { name: "GTmetrix", type: "Análise de performance", intent: "Análise de velocidade do site", severity: "safe", recommendation: "Esperado se você usa GTmetrix para análises." };
+  if (ua.includes("pagespeed") || ua.includes("lighthouse"))
+    return { name: "PageSpeed/Lighthouse", type: "Análise de performance", intent: "Auditoria de velocidade (Google)", severity: "safe", recommendation: "Esperado, tráfego legítimo." };
+
+  // SEO tools (informational - benign but monitoring recommended)
+  if (ua.includes("ahrefsbot"))
+    return { name: "AhrefsBot", type: "Ferramenta SEO", intent: "Análise de backlinks e conteúdo (Ahrefs)", severity: "seo", recommendation: "Pode ser bloqueado via robots.txt se não desejar que a Ahrefs rastreie o site." };
+  if (ua.includes("semrushbot"))
+    return { name: "SemrushBot", type: "Ferramenta SEO", intent: "Análise de palavras-chave e competidores (SEMrush)", severity: "seo", recommendation: "Pode ser bloqueado via robots.txt: 'User-agent: SemrushBot\\nDisallow: /'" };
+  if (ua.includes("mj12bot"))
+    return { name: "MJ12Bot", type: "Ferramenta SEO", intent: "Análise de links (Majestic SEO)", severity: "seo", recommendation: "Pode ser bloqueado via robots.txt se não quiser rastreamento da Majestic." };
+  if (ua.includes("dotbot"))
+    return { name: "DotBot", type: "Ferramenta SEO", intent: "Análise de links (Moz)", severity: "seo", recommendation: "Pode ser bloqueado via robots.txt." };
+  if (ua.includes("rogerbot"))
+    return { name: "Rogerbot", type: "Ferramenta SEO", intent: "Rastreador da Moz", severity: "seo", recommendation: "Pode ser bloqueado via robots.txt." };
+  if (ua.includes("petalbot"))
+    return { name: "PetalBot", type: "Rastreador de busca", intent: "Indexação para Huawei/Petal Search", severity: "seo", recommendation: "Nenhuma ação necessária, tráfego esperado." };
+
+  // Generic HTTP clients / scripting (suspicious)
+  if (ua.includes("go-http-client"))
+    return { name: "Go HTTP Client", type: "Script automatizado (Go)", intent: "Scraping ou automação via linguagem Go", severity: "warning", recommendation: "Verifique o IP de origem. Se repetitivo, considere adicionar rate-limiting ou bloquear o IP no firewall/CDN." };
+  if (ua.includes("python-requests") || ua.includes("python-urllib"))
+    return { name: "Python Script", type: "Script automatizado (Python)", intent: "Scraping ou automação via Python", severity: "warning", recommendation: "Verifique o IP de origem. Se repetitivo, implemente CAPTCHA ou rate-limiting." };
+  if (ua.includes("java/") || ua.includes("apache-httpclient") || ua.includes("okhttp"))
+    return { name: "Java HTTP Client", type: "Script automatizado (Java)", intent: "Scraping ou automação via Java", severity: "warning", recommendation: "Verifique o IP de origem. Se repetitivo, aplique rate-limiting." };
+  if (ua.startsWith("curl"))
+    return { name: "cURL", type: "Ferramenta CLI", intent: "Teste manual ou script de automação", severity: "warning", recommendation: "Geralmente inofensivo se volume baixo. Se repetitivo de um mesmo IP, monitore." };
+  if (ua.startsWith("wget"))
+    return { name: "wget", type: "Ferramenta CLI", intent: "Download ou scraping via wget", severity: "warning", recommendation: "Se repetitivo de um mesmo IP, considere bloquear no firewall." };
+  if (ua.includes("scrapy"))
+    return { name: "Scrapy", type: "Framework de scraping", intent: "Extração massiva de dados via Scrapy", severity: "danger", recommendation: "Alto risco de extração de dados. Implemente CAPTCHA, rate-limiting e analise o IP para possível bloqueio." };
+  if (ua.includes("puppeteer") || ua.includes("playwright") || ua.includes("headlesschrome") || ua.includes("headless"))
+    return { name: "Navegador headless", type: "Automação de browser", intent: "Scraping ou automação com browser headless", severity: "danger", recommendation: "Possível tentativa de bypass de proteções. Considere implementar CAPTCHA ou Cloudflare Bot Management." };
+  if (ua.includes("selenium"))
+    return { name: "Selenium", type: "Automação de browser", intent: "Testes automatizados ou scraping via Selenium", severity: "warning", recommendation: "Pode ser scraping ou testes. Monitore o IP de origem." };
+
+  // Empty or suspicious UAs
+  if (!ua || ua.trim() === "")
+    return { name: "Sem User Agent", type: "Acesso suspeito", intent: "Acesso sem identificação (possível scanner ou bot primitivo)", severity: "danger", recommendation: "Bloquear requisições sem User-Agent no servidor ou CDN é uma boa prática de segurança." };
+
+  return { name: "Bot desconhecido", type: "Desconhecido", intent: "Origem não identificada", severity: "warning", recommendation: "Monitore a frequência de acessos deste agente e o IP de origem." };
+}
+
+const BOT_SEVERITY_STYLES: Record<BotSeverity, { badge: string; row: string; icon: React.ReactNode }> = {
+  safe: { badge: "bg-green-100 text-green-800 border-green-200", row: "", icon: <Info className="h-3 w-3 text-green-600" /> },
+  seo: { badge: "bg-blue-100 text-blue-800 border-blue-200", row: "", icon: <Globe className="h-3 w-3 text-blue-600" /> },
+  warning: { badge: "bg-yellow-100 text-yellow-800 border-yellow-200", row: "bg-yellow-50/30", icon: <AlertTriangle className="h-3 w-3 text-yellow-600" /> },
+  danger: { badge: "bg-red-100 text-red-800 border-red-200", row: "bg-red-50/30", icon: <ShieldAlert className="h-3 w-3 text-red-600" /> },
+};
+
 function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
   const botRate24h = data.visits_24h > 0 ? ((data.bot_count_24h / data.visits_24h) * 100).toFixed(1) : "0";
   const hasSuspicious = data.suspicious_ips.length > 0 || data.suspicious_sessions.length > 0;
+  const [expandedBotRow, setExpandedBotRow] = useState<number | null>(null);
+  const [showAllBots, setShowAllBots] = useState(false);
 
   const dailyChartData = data.daily_visits.map(d => ({
     day: new Date(d.day).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
@@ -606,12 +710,12 @@ function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
         </Card>
       </div>
 
-      {/* Recent bots */}
+      {/* Recent bots - improved */}
       {data.recent_bots.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Eye className="h-4 w-4" /> Bots Recentes (24h)
+              <Bot className="h-4 w-4" /> Bots Recentes (24h) — {data.recent_bots.length} registros
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -619,21 +723,136 @@ function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-y border-border bg-muted/30">
+                    <th className="px-3 py-2 text-left text-muted-foreground">Bot / Tipo</th>
+                    <th className="px-3 py-2 text-left text-muted-foreground">Intenção</th>
                     <th className="px-3 py-2 text-left text-muted-foreground">IP Hash</th>
-                    <th className="px-3 py-2 text-left text-muted-foreground">User Agent</th>
+                    <th className="px-3 py-2 text-left text-muted-foreground">País</th>
                     <th className="px-3 py-2 text-left text-muted-foreground">Página</th>
                     <th className="px-3 py-2 text-right text-muted-foreground">Hora</th>
+                    <th className="px-3 py-2 text-right text-muted-foreground"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.recent_bots.slice(0, 10).map((b, i) => (
-                    <tr key={i} className="border-b border-border/50 last:border-0">
-                      <td className="px-3 py-1.5 font-mono">{b.ip_hash?.substring(0, 12) || "—"}…</td>
-                      <td className="px-3 py-1.5 max-w-[200px] truncate text-muted-foreground">{b.user_agent}</td>
-                      <td className="px-3 py-1.5 text-foreground">{b.page_path}</td>
-                      <td className="px-3 py-1.5 text-right tabular-nums">{new Date(b.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</td>
-                    </tr>
-                  ))}
+                  {(showAllBots ? data.recent_bots : data.recent_bots.slice(0, 15)).map((b, i) => {
+                    const cls = classifyBot(b.user_agent);
+                    const style = BOT_SEVERITY_STYLES[cls.severity];
+                    const isExpanded = expandedBotRow === i;
+                    return (
+                      <>
+                        <tr
+                          key={i}
+                          className={`border-b border-border/50 last:border-0 cursor-pointer hover:bg-muted/20 ${style.row}`}
+                          onClick={() => setExpandedBotRow(isExpanded ? null : i)}
+                        >
+                          <td className="px-3 py-1.5">
+                            <div className="flex items-center gap-1.5">
+                              {style.icon}
+                              <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium ${style.badge}`}>{cls.name}</span>
+                            </div>
+                            <div className="text-[10px] text-muted-foreground mt-0.5">{cls.type}</div>
+                          </td>
+                          <td className="px-3 py-1.5 max-w-[160px]">
+                            <span className="text-foreground/80">{cls.intent}</span>
+                          </td>
+                          <td className="px-3 py-1.5 font-mono text-foreground">{b.ip_hash?.substring(0, 12) || "—"}…</td>
+                          <td className="px-3 py-1.5 text-muted-foreground">{b.country_code || "—"}{b.city_name ? ` / ${b.city_name}` : ""}</td>
+                          <td className="px-3 py-1.5 text-foreground">{b.page_path}</td>
+                          <td className="px-3 py-1.5 text-right tabular-nums">{new Date(b.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</td>
+                          <td className="px-3 py-1.5 text-right">
+                            {isExpanded ? <ChevronUp className="h-3 w-3 text-muted-foreground inline" /> : <ChevronDown className="h-3 w-3 text-muted-foreground inline" />}
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr key={`exp-${i}`} className="border-b border-border/50 bg-muted/10">
+                            <td colSpan={7} className="px-4 py-3 space-y-2">
+                              <div>
+                                <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">User Agent completo</span>
+                                <p className="mt-0.5 break-all font-mono text-[11px] text-foreground/80">{b.user_agent || "—"}</p>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-amber-500" />
+                                <div>
+                                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Sugestão / Ação recomendada</span>
+                                  <p className="mt-0.5 text-[11px] text-foreground/80">{cls.recommendation}</p>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {data.recent_bots.length > 15 && (
+              <div className="px-3 py-2 border-t border-border">
+                <button
+                  onClick={() => setShowAllBots(v => !v)}
+                  className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                >
+                  {showAllBots ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                  {showAllBots ? "Ver menos" : `Ver todos (${data.recent_bots.length})`}
+                </button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Bot summary by agent */}
+      {(data.bot_by_agent ?? []).length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Bot className="h-4 w-4" /> Resumo de Bots por Agente (24h)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-y border-border bg-muted/30">
+                    <th className="px-3 py-2 text-left text-muted-foreground">Bot / Tipo</th>
+                    <th className="px-3 py-2 text-left text-muted-foreground">Intenção</th>
+                    <th className="px-3 py-2 text-right text-muted-foreground">Hits</th>
+                    <th className="px-3 py-2 text-right text-muted-foreground">IPs únicos</th>
+                    <th className="px-3 py-2 text-right text-muted-foreground">Páginas</th>
+                    <th className="px-3 py-2 text-left text-muted-foreground">Páginas visitadas</th>
+                    <th className="px-3 py-2 text-left text-muted-foreground">Ação recomendada</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(data.bot_by_agent ?? []).map((b, i) => {
+                    const cls = classifyBot(b.user_agent);
+                    const style = BOT_SEVERITY_STYLES[cls.severity];
+                    return (
+                      <tr key={i} className={`border-b border-border/50 last:border-0 ${style.row}`}>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-1.5">
+                            {style.icon}
+                            <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium ${style.badge}`}>{cls.name}</span>
+                          </div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5 max-w-[200px] break-all">{b.user_agent}</div>
+                        </td>
+                        <td className="px-3 py-2 text-foreground/80">{cls.intent}</td>
+                        <td className="px-3 py-2 text-right tabular-nums font-medium">{b.hits}</td>
+                        <td className="px-3 py-2 text-right tabular-nums">{b.unique_ips}</td>
+                        <td className="px-3 py-2 text-right tabular-nums">{b.unique_pages}</td>
+                        <td className="px-3 py-2 max-w-[200px]">
+                          <div className="flex flex-wrap gap-1">
+                            {(b.pages_visited ?? []).slice(0, 4).map((p, j) => (
+                              <span key={j} className="rounded bg-muted px-1 py-0.5 text-[10px] font-mono">{p}</span>
+                            ))}
+                            {(b.pages_visited ?? []).length > 4 && (
+                              <span className="text-[10px] text-muted-foreground">+{(b.pages_visited ?? []).length - 4} mais</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-foreground/70 max-w-[240px]">{cls.recommendation}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
