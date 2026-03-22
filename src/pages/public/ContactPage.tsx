@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/lib/supabase";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -19,6 +20,18 @@ type FieldErrors = Partial<Record<keyof z.infer<typeof contactSchema>, string>>;
 
 export default function ContactPage() {
   const { t } = useLanguage();
+
+  usePageMeta({
+    title: t("contact.title"),
+    description: "Contact Rubi Girls. Send us a message for support, feedback or partnership inquiries.",
+    path: "/contato",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "ContactPage",
+      name: "Contact Rubi Girls",
+      url: "https://rubi-marketplace-euro.lovable.app/contato",
+    },
+  });
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
