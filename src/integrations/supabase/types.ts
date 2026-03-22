@@ -791,6 +791,7 @@ export type Database = {
           display_name: string | null
           featured_until: string | null
           gender: string | null
+          has_whatsapp: boolean | null
           id: string | null
           is_featured: boolean | null
           languages: string[] | null
@@ -809,6 +810,7 @@ export type Database = {
           display_name?: string | null
           featured_until?: string | null
           gender?: string | null
+          has_whatsapp?: never
           id?: string | null
           is_featured?: boolean | null
           languages?: string[] | null
@@ -827,6 +829,7 @@ export type Database = {
           display_name?: string | null
           featured_until?: string | null
           gender?: string | null
+          has_whatsapp?: never
           id?: string | null
           is_featured?: boolean | null
           languages?: string[] | null
