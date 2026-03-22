@@ -91,7 +91,7 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
     <>
       <div className="flex h-16 items-center justify-between px-6">
         <Link to="/" className="font-display text-xl font-bold tracking-tight text-primary">
-          AURA
+          <span className="font-bold">Rubi</span> <span className="font-medium text-foreground/80">Girls</span>
         </Link>
         <button className="md:hidden text-muted-foreground" onClick={() => setSidebarOpen(false)}>
           <X className="h-5 w-5" />
@@ -99,9 +99,7 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
       </div>
 
       <div className="px-4 pb-2">
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {roleLabel}
-        </span>
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{roleLabel}</p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-3">
@@ -109,12 +107,10 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
       </div>
 
       <div className="border-t border-border p-4">
-        <div className="mb-3 truncate text-sm text-muted-foreground">
-          {user?.email}
-        </div>
-        <Button variant="ghost" size="sm" className="w-full justify-start" onClick={signOut}>
-          <LogOut className="mr-2 h-4 w-4" />
-          {t("dash.sign_out")}
+        <p className="mb-2 truncate text-xs text-muted-foreground">{user?.email}</p>
+        <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-muted-foreground" onClick={signOut}>
+          <LogOut className="h-4 w-4" />
+          {t("dash.signout")}
         </Button>
       </div>
     </>
@@ -123,7 +119,9 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
   return (
     <div className="flex min-h-screen bg-background">
       <div className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-border bg-card px-4 md:hidden">
-        <Link to="/" className="font-display text-lg font-bold text-primary">AURA</Link>
+        <Link to="/" className="font-display text-lg font-bold text-primary">
+          <span className="font-bold">Rubi</span> <span className="font-medium text-foreground/80">Girls</span>
+        </Link>
         <button onClick={() => setSidebarOpen(true)} className="text-foreground">
           <Menu className="h-5 w-5" />
         </button>

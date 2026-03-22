@@ -117,8 +117,8 @@ export default function AffiliateDashboard() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "AURA — Convite exclusivo",
-          text: "Junte-se à AURA, a plataforma premium para profissionais independentes na Europa.",
+          title: "Rubi Girls — Convite exclusivo",
+          text: "Junte-se à Rubi Girls, a plataforma premium para profissionais independentes na Europa.",
           url: referralLink,
         });
       } catch {

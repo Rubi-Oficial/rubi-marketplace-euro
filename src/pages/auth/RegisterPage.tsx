@@ -87,7 +87,7 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="mb-8 text-center">
-          <Link to="/" className="font-display text-3xl font-bold text-primary">AURA</Link>
+          <Link to="/" className="font-display text-3xl font-bold text-primary"><span className="font-bold">Rubi</span> <span className="font-medium text-foreground/80">Girls</span></Link>
           <p className="mt-2 text-muted-foreground">{t("auth.create_account")}</p>
         </div>
 

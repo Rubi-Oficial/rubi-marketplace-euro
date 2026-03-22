@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
           price_data: {
             currency: "eur",
             product_data: {
-              name: `AURA - ${plan.name} Plan`,
+              name: `Rubi Girls - ${plan.name} Plan`,
               description: `${plan.billing_period === "quarterly" ? "Quarterly" : "Monthly"} subscription`,
             },
             unit_amount: Math.round(plan.price * 100),

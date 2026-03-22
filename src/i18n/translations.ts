@@ -101,7 +101,7 @@ const pt: TranslationMap = {
   // Blog
   "blog.title": "Blog",
   "blog.desc": "Dicas, novidades e guias para profissionais.",
-  "blog.cta_title": "Quer anunciar na AURA?",
+  "blog.cta_title": "Quer anunciar na Rubi Girls?",
   "blog.cta_desc": "Crie seu perfil verificado e comece a receber clientes hoje.",
   "blog.cta_button": "Começar Agora",
 
@@ -476,7 +476,7 @@ const en: TranslationMap = {
 
   "blog.title": "Blog",
   "blog.desc": "Tips, news and guides for professionals.",
-  "blog.cta_title": "Want to advertise on AURA?",
+  "blog.cta_title": "Want to advertise on Rubi Girls?",
   "blog.cta_desc": "Create your verified profile and start receiving clients today.",
   "blog.cta_button": "Get Started",
 
@@ -835,7 +835,7 @@ const es: TranslationMap = {
 
   "blog.title": "Blog",
   "blog.desc": "Consejos, novedades y guías para profesionales.",
-  "blog.cta_title": "¿Quieres anunciarte en AURA?",
+  "blog.cta_title": "¿Quieres anunciarte en Rubi Girls?",
   "blog.cta_desc": "Crea tu perfil verificado y comienza a recibir clientes hoy.",
   "blog.cta_button": "Empezar Ahora",
 
@@ -1194,7 +1194,7 @@ const fr: TranslationMap = {
 
   "blog.title": "Blog",
   "blog.desc": "Conseils, actualités et guides pour les professionnels.",
-  "blog.cta_title": "Vous souhaitez faire de la publicité sur AURA ?",
+  "blog.cta_title": "Vous souhaitez faire de la publicité sur Rubi Girls ?",
   "blog.cta_desc": "Créez votre profil vérifié et commencez à recevoir des clients dès aujourd'hui.",
   "blog.cta_button": "Commencer",
 
@@ -1553,7 +1553,7 @@ const de: TranslationMap = {
 
   "blog.title": "Blog",
   "blog.desc": "Tipps, Neuigkeiten und Leitfäden für Profis.",
-  "blog.cta_title": "Möchten Sie auf AURA werben?",
+  "blog.cta_title": "Möchten Sie auf Rubi Girls werben?",
   "blog.cta_desc": "Erstellen Sie Ihr verifiziertes Profil und empfangen Sie noch heute Kunden.",
   "blog.cta_button": "Jetzt Starten",
 
