@@ -101,7 +101,7 @@ const pt: TranslationMap = {
   // Blog
   "blog.title": "Blog",
   "blog.desc": "Dicas, novidades e guias para profissionais.",
-  "blog.cta_title": "Quer anunciar na AURA?",
+  "blog.cta_title": "Quer anunciar na Rubi Girls?",
   "blog.cta_desc": "Crie seu perfil verificado e comece a receber clientes hoje.",
   "blog.cta_button": "Começar Agora",
 
