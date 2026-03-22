@@ -84,6 +84,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <PageTracker />
           <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Post-OAuth redirect handler */}
