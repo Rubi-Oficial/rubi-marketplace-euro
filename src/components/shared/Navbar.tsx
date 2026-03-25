@@ -69,7 +69,7 @@ export default function Navbar() {
           {/* Language selector — always visible, before auth buttons */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="shrink-0 rounded-full h-8 w-8 flex items-center justify-center text-lg leading-none transition-colors hover:bg-accent focus:outline-none" aria-label="Select language">
+              <button className="shrink-0 rounded-full h-8 w-8 flex items-center justify-center text-lg leading-none transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2" aria-label="Select language">
                 {currentLang.flag}
               </button>
             </DropdownMenuTrigger>
@@ -111,7 +111,7 @@ export default function Navbar() {
           )}
         </div>
 
-        <button className="md:hidden text-foreground p-1" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="p-1 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
