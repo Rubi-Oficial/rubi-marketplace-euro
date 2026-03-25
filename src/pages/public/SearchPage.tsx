@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -29,7 +29,10 @@ export default function SearchPage() {
   const categoryFilter = searchParams.get("category") || "";
   const serviceFilter = searchParams.get("service") || "";
 
-  const filteredCities = countryFilter ? getCitiesByCountry(countryFilter) : [];
+  const filteredCities = useMemo(
+    () => (countryFilter ? getCitiesByCountry(countryFilter) : []),
+    [countryFilter, getCitiesByCountry]
+  );
 
   useEffect(() => {
     fetchServices().then(setServices).catch((err: unknown) => {
@@ -41,22 +44,21 @@ export default function SearchPage() {
     setLoading(true);
     fetchEligibleProfiles({
       search: searchQuery || undefined,
+      country: countryFilter || undefined,
+      city_slugs: countryFilter && !cityFilter ? filteredCities.map((c) => c.slug) : undefined,
       city_slug: cityFilter || undefined,
       category: categoryFilter || undefined,
       service_slug: serviceFilter || undefined,
+      limit: 50,
+      offset: 0,
     }).then((data) => {
-      if (countryFilter && !cityFilter) {
-        const countryCitySlugs = new Set(filteredCities.map((c) => c.slug));
-        setProfiles(data.filter((p) => p.city_slug && countryCitySlugs.has(p.city_slug)));
-      } else {
-        setProfiles(data);
-      }
+      setProfiles(data);
       setLoading(false);
     }).catch((err: unknown) => {
       console.error("[search] Failed to fetch profiles:", err);
       setLoading(false);
     });
-  }, [searchQuery, cityFilter, categoryFilter, serviceFilter, countryFilter, filteredCities.length]);
+  }, [searchQuery, cityFilter, categoryFilter, serviceFilter, countryFilter, filteredCities]);
 
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);

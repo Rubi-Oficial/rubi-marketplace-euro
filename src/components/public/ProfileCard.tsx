@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
+import type { Database } from "@/integrations/supabase/types";
 
 export interface EligibleProfile {
   id: string;
@@ -24,19 +25,57 @@ export interface EligibleProfile {
   has_whatsapp: boolean;
 }
 
+type EligibleProfileRow = Database["public"]["Views"]["eligible_profiles"]["Row"];
+type ProfileImageRow = Pick<Database["public"]["Tables"]["profile_images"]["Row"], "profile_id" | "storage_path">;
+type ProfileServiceRow = Pick<Database["public"]["Tables"]["profile_services"]["Row"], "profile_id">;
+
 export async function fetchEligibleProfiles(filters?: {
+  country?: string;
   city?: string;
   city_slug?: string;
+  city_slugs?: string[];
   category?: string;
   gender?: string;
   search?: string;
   service_slug?: string;
+  limit?: number;
+  offset?: number;
 }): Promise<EligibleProfile[]> {
+  const limit = Math.min(Math.max(filters?.limit ?? 50, 1), 100);
+  const offset = Math.max(filters?.offset ?? 0, 0);
+
+  let serviceProfileIds: string[] | null = null;
+  if (filters?.service_slug) {
+    const { data: serviceData } = await supabase
+      .from("services")
+      .select("id")
+      .eq("slug", filters.service_slug)
+      .single();
+
+    if (!serviceData) return [];
+
+    const { data: profileServiceRows } = await supabase
+      .from("profile_services")
+      .select("profile_id")
+      .eq("service_id", serviceData.id);
+
+    serviceProfileIds = (profileServiceRows || [])
+      .map((row: ProfileServiceRow) => row.profile_id)
+      .filter(Boolean);
+
+    if (serviceProfileIds.length === 0) return [];
+  }
+
   let query = supabase
     .from("eligible_profiles")
     .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, has_whatsapp")
     .order("is_featured", { ascending: false })
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
+
+  if (serviceProfileIds) query = query.in("id", serviceProfileIds);
+  if (filters?.country) query = query.ilike("country", filters.country);
+  if (filters?.city_slugs && filters.city_slugs.length > 0) query = query.in("city_slug", filters.city_slugs);
 
   if (filters?.city_slug) {
     query = query.eq("city_slug", filters.city_slug);
@@ -51,23 +90,10 @@ export async function fetchEligibleProfiles(filters?: {
     );
   }
 
-  const { data: profiles } = await query.limit(50);
+  const { data: profiles } = await query.range(offset, offset + limit - 1);
   if (!profiles || profiles.length === 0) return [];
 
-  let filteredProfileIds = profiles.map((p: any) => p.id).filter(Boolean) as string[];
-
-  if (filters?.service_slug && filteredProfileIds.length > 0) {
-    const { data: svcData } = await supabase
-      .from("services").select("id").eq("slug", filters.service_slug).single();
-    if (svcData) {
-      const { data: psData } = await supabase
-        .from("profile_services").select("profile_id").eq("service_id", svcData.id).in("profile_id", filteredProfileIds);
-      const matchedIds = new Set((psData || []).map((r: any) => r.profile_id));
-      filteredProfileIds = filteredProfileIds.filter((id) => matchedIds.has(id));
-    } else {
-      return [];
-    }
-  }
+  const filteredProfileIds = (profiles as EligibleProfileRow[]).map((p) => p.id).filter(Boolean) as string[];
 
   const { data: images } = await supabase
     .from("profile_images").select("profile_id, storage_path")
@@ -75,14 +101,15 @@ export async function fetchEligibleProfiles(filters?: {
     .order("sort_order", { ascending: true });
 
   const imageMap: Record<string, string[]> = {};
-  (images || []).forEach((img: any) => {
+  const profileImages = (images ?? []) as ProfileImageRow[];
+  profileImages.forEach((img) => {
     if (!imageMap[img.profile_id]) imageMap[img.profile_id] = [];
     imageMap[img.profile_id].push(
       supabase.storage.from("profile-images").getPublicUrl(img.storage_path).data.publicUrl
     );
   });
 
-  const profileMap = new Map(profiles.map((p: any) => [p.id, p]));
+  const profileMap = new Map((profiles as EligibleProfileRow[]).map((p) => [p.id, p]));
 
   return filteredProfileIds.map((id) => {
     const p = profileMap.get(id)!;
@@ -99,7 +126,7 @@ export async function fetchEligibleProfiles(filters?: {
 export async function fetchFilterOptions() {
   const { data: profiles } = await supabase
     .from("eligible_profiles").select("city, city_slug, category");
-  const rows = (profiles ?? []) as any[];
+  const rows = (profiles ?? []) as Pick<EligibleProfileRow, "city" | "category">[];
   const cities = [...new Set(rows.map((p) => p.city).filter(Boolean))] as string[];
   const categories = [...new Set(rows.map((p) => p.category).filter(Boolean))] as string[];
   return { cities: cities.sort(), categories: categories.sort() };
