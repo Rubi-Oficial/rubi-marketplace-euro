@@ -210,7 +210,7 @@ export default function SearchPage() {
         onClear={handleClearGeneralFilters}
         resultCount={profiles.length}
         services={services}
-        categories={CATEGORIES.map((c) => c.label)}
+        categories={CATEGORIES.map((c) => t(c.key))}
       />
 
       <LocationModal
