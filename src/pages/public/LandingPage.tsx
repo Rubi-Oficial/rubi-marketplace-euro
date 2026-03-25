@@ -58,29 +58,24 @@ export default function LandingPage() {
     });
   }, []);
 
-  const countryCitySlugs = useMemo(
-    () => new Set(filteredCities.map((c) => c.slug)),
-    [filteredCities]
-  );
-
   useEffect(() => {
     setLoading(true);
     fetchEligibleProfiles({
+      country: countryFilter || undefined,
+      city_slugs: countryFilter && !cityFilter ? filteredCities.map((c) => c.slug) : undefined,
       city_slug: cityFilter || undefined,
       category: categoryFilter || undefined,
       service_slug: serviceFilter || undefined,
+      limit: 20,
+      offset: 0,
     }).then((data) => {
-      if (countryFilter && !cityFilter) {
-        setProfiles(data.filter((p) => p.city_slug && countryCitySlugs.has(p.city_slug)).slice(0, 20));
-      } else {
-        setProfiles(data.slice(0, 20));
-      }
+      setProfiles(data);
       setLoading(false);
     }).catch((err: unknown) => {
       console.error("[landing] Failed to fetch profiles:", err);
       setLoading(false);
     });
-  }, [cityFilter, categoryFilter, serviceFilter, countryFilter, countryCitySlugs]);
+  }, [cityFilter, categoryFilter, serviceFilter, countryFilter, filteredCities]);
 
   const hasFilters = !!countryFilter || !!cityFilter || !!categoryFilter || !!serviceFilter;
   const hasLocationFilter = !!countryFilter || !!cityFilter;
