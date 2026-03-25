@@ -13,6 +13,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Plus, Pencil } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface Plan {
   id: string;
@@ -27,6 +28,7 @@ interface Plan {
 const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
 
 export default function AdminPlans() {
+  const { t } = useLanguage();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeSubs, setActiveSubs] = useState(0);
@@ -65,7 +67,7 @@ export default function AdminPlans() {
   };
 
   const handleSave = async () => {
-    if (!form.name || !form.price) { toast.error("Preencha nome e preço."); return; }
+    if (!form.name || !form.price) { toast.error(t("admin_plans.fill_fields")); return; }
     setSaving(true);
     const features = form.features.split("\n").map((f) => f.trim()).filter(Boolean);
     const payload = {
@@ -79,12 +81,12 @@ export default function AdminPlans() {
       const { error } = await supabase.from("plans").update(payload).eq("id", editPlan.id);
       if (error) { toast.error(error.message); setSaving(false); return; }
       await logAction("plan_updated");
-      toast.success("Plano atualizado!");
+      toast.success(t("admin_plans.updated"));
     } else {
       const { error } = await supabase.from("plans").insert(payload);
       if (error) { toast.error(error.message); setSaving(false); return; }
       await logAction("plan_created");
-      toast.success("Plano criado!");
+      toast.success(t("admin_plans.created"));
     }
     setSaving(false);
     setEditPlan(null);
@@ -96,7 +98,7 @@ export default function AdminPlans() {
   const toggleActive = async (plan: Plan) => {
     const { error } = await supabase.from("plans").update({ is_active: !plan.is_active }).eq("id", plan.id);
     if (error) { toast.error(error.message); return; }
-    toast.success(plan.is_active ? "Plano desativado." : "Plano ativado.");
+    toast.success(plan.is_active ? t("admin_plans.deactivated") : t("admin_plans.activated"));
     fetchPlans();
   };
 
@@ -106,11 +108,11 @@ export default function AdminPlans() {
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-foreground">Planos</h1>
-          <p className="mt-1 text-muted-foreground">{activeSubs} assinatura(s) ativa(s).</p>
+          <h1 className="font-display text-2xl font-bold text-foreground">{t("admin_plans.title")}</h1>
+          <p className="mt-1 text-muted-foreground">{t("admin_plans.active_subs", { count: String(activeSubs) })}</p>
         </div>
         <Button size="sm" onClick={() => { setShowCreate(true); setForm({ name: "", price: "", billing_period: "monthly" as "monthly" | "quarterly", features: "" }); }}>
-          <Plus className="mr-1.5 h-4 w-4" /> Novo plano
+          <Plus className="mr-1.5 h-4 w-4" /> {t("admin_plans.new_plan")}
         </Button>
       </div>
 
@@ -118,16 +120,16 @@ export default function AdminPlans() {
         {loading ? (
           [1, 2].map((i) => <div key={i} className="h-40 animate-pulse rounded-lg border border-border bg-muted" />)
         ) : plans.length === 0 ? (
-          <p className="col-span-full text-center text-muted-foreground py-8">Nenhum plano cadastrado.</p>
+          <p className="col-span-full text-center text-muted-foreground py-8">{t("admin_plans.no_plans")}</p>
         ) : (
           plans.map((plan) => (
             <div key={plan.id} className={`rounded-lg border bg-card p-5 space-y-3 ${plan.is_active ? "border-border" : "border-border opacity-50"}`}>
               <div className="flex items-center justify-between">
                 <h3 className="font-display text-lg font-semibold text-foreground">{plan.name}</h3>
-                <Badge variant={plan.is_active ? "default" : "secondary"}>{plan.is_active ? "Ativo" : "Inativo"}</Badge>
+                <Badge variant={plan.is_active ? "default" : "secondary"}>{plan.is_active ? t("admin_plans.active") : t("admin_plans.inactive")}</Badge>
               </div>
               <p className="font-display text-2xl font-bold tabular-nums text-foreground">{fmt(plan.price)}</p>
-              <p className="text-xs text-muted-foreground capitalize">{plan.billing_period === "monthly" ? "Mensal" : "Trimestral"}</p>
+              <p className="text-xs text-muted-foreground capitalize">{plan.billing_period === "monthly" ? t("admin_plans.monthly") : t("admin_plans.quarterly")}</p>
               {Array.isArray(plan.features_json) && plan.features_json.length > 0 && (
                 <ul className="text-xs text-muted-foreground space-y-1">
                   {plan.features_json.map((f: string, i: number) => <li key={i}>• {f}</li>)}
@@ -135,10 +137,10 @@ export default function AdminPlans() {
               )}
               <div className="flex gap-2 pt-2">
                 <Button variant="outline" size="sm" onClick={() => openEdit(plan)}>
-                  <Pencil className="mr-1 h-3 w-3" /> Editar
+                  <Pencil className="mr-1 h-3 w-3" /> {t("admin_plans.edit")}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => toggleActive(plan)}>
-                  {plan.is_active ? "Desativar" : "Ativar"}
+                  {plan.is_active ? t("admin_plans.deactivate") : t("admin_plans.activate")}
                 </Button>
               </div>
             </div>
@@ -149,29 +151,29 @@ export default function AdminPlans() {
       {/* Create / Edit dialog */}
       <Dialog open={dialogOpen} onOpenChange={() => { setEditPlan(null); setShowCreate(false); }}>
         <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{editPlan ? "Editar Plano" : "Novo Plano"}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editPlan ? t("admin_plans.edit_title") : t("admin_plans.new_title")}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label>Nome</Label>
+              <Label>{t("admin_plans.name_label")}</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Preço (R$)</Label>
+              <Label>{t("admin_plans.price_label")}</Label>
               <Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Período</Label>
+              <Label>{t("admin_plans.period_label")}</Label>
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={form.billing_period}
                 onChange={(e) => setForm({ ...form, billing_period: e.target.value as "monthly" | "quarterly" })}
               >
-                <option value="monthly">Mensal</option>
-                <option value="quarterly">Trimestral</option>
+                <option value="monthly">{t("admin_plans.monthly")}</option>
+                <option value="quarterly">{t("admin_plans.quarterly")}</option>
               </select>
             </div>
             <div className="space-y-1.5">
-              <Label>Features (uma por linha)</Label>
+              <Label>{t("admin_plans.features_label")}</Label>
               <textarea
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px]"
                 value={form.features}
@@ -180,7 +182,7 @@ export default function AdminPlans() {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSave} disabled={saving}>{saving ? "Salvando..." : "Salvar"}</Button>
+            <Button onClick={handleSave} disabled={saving}>{saving ? t("admin_plans.saving") : t("admin_plans.save")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

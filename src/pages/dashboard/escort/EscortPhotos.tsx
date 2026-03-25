@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { SortableMediaGrid } from "@/components/media/SortableMediaGrid";
 import { compressImage } from "@/lib/imageCompression";
 import type { MediaItem } from "@/components/media/SortableMediaItem";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const MAX_IMAGES = 10;
 const MAX_IMAGE_SIZE_MB = 2;
@@ -31,6 +32,7 @@ function getVideoDuration(file: File): Promise<number> {
 
 export default function EscortPhotos() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const imageRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -265,7 +267,7 @@ export default function EscortPhotos() {
 
   return (
     <div className="animate-fade-in">
-      <h1 className="font-display text-2xl font-bold text-foreground">Fotos & Vídeos</h1>
+      <h1 className="font-display text-2xl font-bold text-foreground">{t("photos.title")}</h1>
       <p className="mt-1 text-muted-foreground text-sm">
         Gerencie suas fotos e vídeos. Arraste para reordenar. Todo conteúdo passa por moderação.
       </p>
@@ -285,11 +287,11 @@ export default function EscortPhotos() {
         <TabsList>
           <TabsTrigger value="photos" className="gap-1.5">
             <ImageIcon className="h-3.5 w-3.5" />
-            Fotos ({images.length}/{MAX_IMAGES})
+            {t("photos.tab_photos", { count: String(images.length), max: String(MAX_IMAGES) })}
           </TabsTrigger>
           <TabsTrigger value="videos" className="gap-1.5">
             <Film className="h-3.5 w-3.5" />
-            Vídeos ({videos.length}/{MAX_VIDEOS})
+            {t("photos.tab_videos", { count: String(videos.length), max: String(MAX_VIDEOS) })}
           </TabsTrigger>
         </TabsList>
 

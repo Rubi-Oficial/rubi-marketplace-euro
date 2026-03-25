@@ -27,6 +27,7 @@ import {
   Trash2, Upload, Star, Clock, Mail, Phone, User, Calendar,
   ImageIcon, Video, GripVertical,
 } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 /* ───────── types ───────── */
 interface ProfileData {
@@ -78,21 +79,33 @@ interface UserInfo {
 }
 
 /* ───────── constants ───────── */
-const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  draft: { label: "Rascunho", variant: "secondary" },
-  pending_review: { label: "Em análise", variant: "outline" },
-  approved: { label: "Aprovado", variant: "default" },
-  rejected: { label: "Rejeitado", variant: "destructive" },
-  paused: { label: "Pausado", variant: "secondary" },
+const STATUS_MAP: Record<string, { key: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+  draft: { key: "admin_profile.status_draft", variant: "secondary" },
+  pending_review: { key: "admin_profile.status_pending_review", variant: "outline" },
+  approved: { key: "admin_profile.status_approved", variant: "default" },
+  rejected: { key: "admin_profile.status_rejected", variant: "destructive" },
+  paused: { key: "admin_profile.status_paused", variant: "secondary" },
 };
 
-const GENDER_OPTIONS = ["Women", "Men", "Couples", "Shemales", "Gay", "Virtual Sex"];
-const CATEGORY_OPTIONS = ["Premium", "Elite", "Companion", "Events"];
+const GENDER_OPTIONS = [
+  { value: "Women", key: "admin_profile.gender_women" },
+  { value: "Men", key: "admin_profile.gender_men" },
+  { value: "Couples", key: "admin_profile.gender_couples" },
+  { value: "Shemales", key: "admin_profile.gender_shemales" },
+  { value: "Gay", key: "admin_profile.gender_gay" },
+  { value: "Virtual Sex", key: "admin_profile.gender_virtual_sex" },
+];
+const CATEGORY_OPTIONS = [
+  { value: "Premium", key: "admin_profile.cat_premium" },
+  { value: "Elite", key: "admin_profile.cat_elite" },
+  { value: "Companion", key: "admin_profile.cat_companion" },
+  { value: "Events", key: "admin_profile.cat_events" },
+];
 
-const MOD_BADGE: Record<string, { label: string; variant: "default" | "destructive" | "outline" }> = {
-  approved: { label: "Aprovada", variant: "default" },
-  rejected: { label: "Rejeitada", variant: "destructive" },
-  pending: { label: "Pendente", variant: "outline" },
+const MOD_BADGE: Record<string, { key: string; variant: "default" | "destructive" | "outline" }> = {
+  approved: { key: "admin_profile.mod_approved", variant: "default" },
+  rejected: { key: "admin_profile.mod_rejected", variant: "destructive" },
+  pending: { key: "admin_profile.mod_pending", variant: "outline" },
 };
 
 /* ───────── helpers ───────── */
@@ -107,6 +120,7 @@ function formatDuration(s: number | null | undefined) {
 export default function AdminProfileDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
@@ -186,7 +200,7 @@ export default function AdminProfileDetail() {
         notes: note.trim() || null,
       });
     }
-    toast.success(`Status alterado para ${STATUS_MAP[newStatus]?.label || newStatus}.`);
+    toast.success(t("admin_profile.status_changed", { status: t(STATUS_MAP[newStatus]?.key ?? newStatus) }));
     setNote(""); setActing(false);
     loadAll();
   };
@@ -305,7 +319,7 @@ export default function AdminProfileDetail() {
     const newVal = !profile.is_featured;
     const { error } = await supabase.from("profiles").update({ is_featured: newVal }).eq("id", profile.id);
     if (error) { toast.error(error.message); return; }
-    toast.success(newVal ? "Destaque ativado." : "Destaque removido.");
+    toast.success(newVal ? t("admin_profile.featured_on") : t("admin_profile.featured_off"));
     loadAll();
   };
 
@@ -371,10 +385,10 @@ export default function AdminProfileDetail() {
             )}
           </p>
         </div>
-        <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+        <Badge variant={statusInfo.variant}>{t(statusInfo.key)}</Badge>
         <Button variant="outline" size="sm" onClick={toggleFeatured} className={profile.is_featured ? "text-amber-500" : ""}>
           <Star className={`mr-1.5 h-3.5 w-3.5 ${profile.is_featured ? "fill-current" : ""}`} />
-          {profile.is_featured ? "Destaque" : "Destacar"}
+          {profile.is_featured ? t("admin_profile.featured_label") : t("admin_profile.feature_action")}
         </Button>
         {!editing ? (
           <Button variant="outline" size="sm" onClick={startEditing}>
@@ -460,7 +474,7 @@ export default function AdminProfileDetail() {
                 <Select value={editForm.gender ?? ""} onValueChange={v => updateField("gender", v)}>
                   <SelectTrigger className="h-9 text-sm mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {GENDER_OPTIONS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                    {GENDER_OPTIONS.map(g => <SelectItem key={g.value} value={g.value}>{t(g.key)}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -469,7 +483,7 @@ export default function AdminProfileDetail() {
                 <Select value={editForm.category ?? ""} onValueChange={v => updateField("category", v)}>
                   <SelectTrigger className="h-9 text-sm mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {CATEGORY_OPTIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    {CATEGORY_OPTIONS.map(c => <SelectItem key={c.value} value={c.value}>{t(c.key)}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -677,6 +691,7 @@ function SortableMediaCard({ item, type, index, onModerate, onDelete }: {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1, zIndex: isDragging ? 50 : 0 };
   const mod = MOD_BADGE[item.moderation_status] || MOD_BADGE.pending;
+  const { t } = useLanguage();
 
   return (
     <div ref={setNodeRef} style={style} className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-muted">
@@ -715,7 +730,7 @@ function SortableMediaCard({ item, type, index, onModerate, onDelete }: {
 
       {/* Moderation badge */}
       <div className="absolute bottom-1 right-1">
-        <Badge variant={mod.variant} className="text-[10px]">{mod.label}</Badge>
+        <Badge variant={mod.variant} className="text-[10px]">{t(mod.key)}</Badge>
       </div>
 
       {/* Hover actions */}

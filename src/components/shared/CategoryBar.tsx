@@ -5,13 +5,13 @@ import { useRef, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
-  { label: "Women", slug: "women" },
-  { label: "Men", slug: "men" },
-  { label: "Couples", slug: "couples" },
-  { label: "Shemales", slug: "shemales" },
-  { label: "Gay", slug: "gay" },
-  { label: "Virtual Sex", slug: "virtual-sex" },
-  { label: "Vídeos", slug: "videos" },
+  { key: "cat.women", slug: "women" },
+  { key: "cat.men", slug: "men" },
+  { key: "cat.couples", slug: "couples" },
+  { key: "cat.shemales", slug: "shemales" },
+  { key: "cat.gay", slug: "gay" },
+  { key: "cat.virtual_sex", slug: "virtual-sex" },
+  { key: "cat.videos", slug: "videos" },
 ];
 
 export { CATEGORIES };
@@ -59,7 +59,7 @@ export default function CategoryBar() {
               </Link>
               {items.map((cat) => (
                 <Link key={cat.slug} to={`/categoria/${cat.slug}`} className={linkClasses(activeSlug === cat.slug)}>
-                  {cat.label}
+                  {t(cat.key)}
                 </Link>
               ))}
             </nav>
@@ -96,7 +96,7 @@ export default function CategoryBar() {
                   to={`/categoria/${cat.slug}`}
                   className={linkClasses(activeSlug === cat.slug)}
                 >
-                  {cat.label}
+                  {t(cat.key)}
                 </Link>
               ))}
             </div>
