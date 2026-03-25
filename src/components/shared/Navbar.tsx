@@ -141,7 +141,7 @@ export default function Navbar() {
                       : "text-muted-foreground hover:text-foreground hover:bg-accent"
                   }`}
                 >
-                  {cat.label}
+                  {t(cat.key)}
                 </Link>
               ))}
 
