@@ -111,15 +111,15 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen">
-      <section className="pt-4 pb-8">
+      <section className="pt-4 pb-24 md:pb-8">
         <div className="container mx-auto px-4">
 
-          <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="mb-5 flex flex-wrap items-center gap-2.5">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setFilterOpen(true)}
-              className={`h-9 gap-2 rounded-full border-border/40 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
+              className={`h-9 gap-2 rounded-full border-border/40 focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
             >
               <SlidersHorizontal className="h-3.5 w-3.5" />
               <span className="text-xs">{t("landing.filters")}</span>
@@ -134,7 +134,7 @@ export default function LandingPage() {
               variant="outline"
               size="sm"
               onClick={() => setLocationOpen(true)}
-              className={`h-9 gap-2 rounded-full border-border/40 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
+              className={`h-9 gap-2 rounded-full border-border/40 focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
             >
               <MapPin className="h-3.5 w-3.5" />
               <span className="text-xs">{t("landing.location")}</span>
@@ -156,7 +156,7 @@ export default function LandingPage() {
             />
 
             {hasFilters && (
-              <button onClick={clearFilters} className="text-xs text-muted-foreground hover:text-foreground ml-auto transition-colors">
+              <button onClick={clearFilters} className="ml-auto text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 rounded-sm">
                 {t("landing.clear_all")}
               </button>
             )}
@@ -243,6 +243,39 @@ export default function LandingPage() {
         countries={countries}
         getCitiesByCountry={getCitiesByCountry}
       />
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/50 bg-card/95 px-4 py-3 backdrop-blur-xl md:hidden">
+        <div className="mx-auto flex max-w-lg items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFilterOpen(true)}
+            className={`h-10 flex-1 rounded-full border-border/50 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
+          >
+            <SlidersHorizontal className="mr-2 h-3.5 w-3.5" />
+            {t("landing.filters")}
+            {hasGeneralFilter && (
+              <span className="ml-1.5 rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
+                {[categoryFilter, serviceFilter].filter(Boolean).length}
+              </span>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLocationOpen(true)}
+            className={`h-10 flex-1 rounded-full border-border/50 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
+          >
+            <MapPin className="mr-2 h-3.5 w-3.5" />
+            {t("landing.location")}
+            {hasLocationFilter && (
+              <span className="ml-1.5 rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
+                {[countryFilter, cityFilter].filter(Boolean).length}
+              </span>
+            )}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
