@@ -3,16 +3,9 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useRef, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { CATEGORY_DEFINITIONS } from "@/lib/categoryMapping";
 
-const CATEGORIES = [
-  { key: "cat.women", slug: "women" },
-  { key: "cat.men", slug: "men" },
-  { key: "cat.couples", slug: "couples" },
-  { key: "cat.shemales", slug: "shemales" },
-  { key: "cat.gay", slug: "gay" },
-  { key: "cat.virtual_sex", slug: "virtual-sex" },
-  { key: "cat.videos", slug: "videos" },
-];
+const CATEGORIES = CATEGORY_DEFINITIONS.map(({ key, slug }) => ({ key, slug }));
 
 export { CATEGORIES };
 

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { CATEGORY_SLUGS } from "../../../src/lib/categoryMapping.ts";
 
 const SITE_URL = "https://rubigirls.fun";
 
@@ -43,7 +44,7 @@ Deno.serve(async (req) => {
 
     const today = new Date().toISOString().split("T")[0];
 
-    const categories = ["women", "men", "trans", "couples"];
+    const categories = CATEGORY_SLUGS;
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
