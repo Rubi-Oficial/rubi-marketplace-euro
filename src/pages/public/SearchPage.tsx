@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta } from "@/hooks/usePageMeta";
+
+const CATEGORY_LABELS = CATEGORIES.map((c) => c.label);
 
 export default function SearchPage() {
   const { t } = useLanguage();
@@ -56,7 +58,7 @@ export default function SearchPage() {
       console.error("[search] Failed to fetch profiles:", err);
       setLoading(false);
     });
-  }, [searchQuery, cityFilter, categoryFilter, serviceFilter, countryFilter, filteredCities.length]);
+  }, [searchQuery, cityFilter, categoryFilter, serviceFilter, countryFilter]);
 
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -103,14 +105,23 @@ export default function SearchPage() {
     setSearchParams(params);
   };
 
-  const countryName = countries.find((c) => c.slug === countryFilter)?.name;
-  const cityName = filteredCities.find((c) => c.slug === cityFilter)?.name;
-  const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
+  const countryName = useMemo(
+    () => countries.find((c) => c.slug === countryFilter)?.name,
+    [countries, countryFilter]
+  );
+  const cityName = useMemo(
+    () => filteredCities.find((c) => c.slug === cityFilter)?.name,
+    [filteredCities, cityFilter]
+  );
+  const serviceName = useMemo(
+    () => services.find((s) => s.slug === serviceFilter)?.name,
+    [services, serviceFilter]
+  );
 
-  const searchTitle = cityName ? `${t("nav.explore")} in ${cityName}` : t("nav.explore");
+  const searchTitle = cityName ? `${t("nav.explore")} ${t("search.in")} ${cityName}` : t("nav.explore");
   usePageMeta({
     title: searchTitle,
-    description: `Search and browse verified professional profiles on Rubi Girls${cityName ? ` in ${cityName}` : ""}. Filter by category, service and location.`,
+    description: `${t("search.description_base")}${cityName ? ` ${t("search.in")} ${cityName}` : ""}. ${t("search.description_filters")}`,
     path: "/buscar",
   });
 
@@ -208,7 +219,7 @@ export default function SearchPage() {
         onClear={handleClearGeneralFilters}
         resultCount={profiles.length}
         services={services}
-        categories={CATEGORIES.map((c) => c.label)}
+        categories={CATEGORY_LABELS}
       />
 
       <LocationModal

@@ -27,6 +27,9 @@ const es: TranslationMap = {
   "search.clear_filters": "Limpiar filtros",
   "search.in_city": "en {city}",
   "search.for_service": "{service}",
+  "search.in": "en",
+  "search.description_base": "Busca y explora perfiles profesionales verificados en Rubi Girls",
+  "search.description_filters": "Filtra por categoría, servicio y ubicación",
 
   "profile.unavailable": "Perfil no disponible",
   "profile.unavailable_desc": "Este perfil no está disponible en este momento.",

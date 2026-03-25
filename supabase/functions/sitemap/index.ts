@@ -17,20 +17,34 @@ const STATIC_PAGES = [
 
 serve(async () => {
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Sitemap error: Missing required environment variables: SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY");
+      return new Response("Server configuration error", { status: 500 });
+    }
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Fetch active cities
-    const { data: cities } = await supabase
+    const { data: cities, error: citiesError } = await supabase
       .from("cities")
       .select("slug, name")
       .eq("is_active", true);
+    if (citiesError) {
+      console.error("Error fetching cities for sitemap:", citiesError);
+      return new Response("Error generating sitemap", { status: 500 });
+    }
 
     // Fetch approved profile slugs
-    const { data: profiles } = await supabase
+    const { data: profiles, error: profilesError } = await supabase
       .from("eligible_profiles")
       .select("slug, updated_at");
+    if (profilesError) {
+      console.error("Error fetching profiles for sitemap:", profilesError);
+      return new Response("Error generating sitemap", { status: 500 });
+    }
 
     const today = new Date().toISOString().split("T")[0];
 

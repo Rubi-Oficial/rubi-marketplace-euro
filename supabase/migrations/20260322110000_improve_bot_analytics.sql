@@ -113,7 +113,7 @@ BEGIN
           count(DISTINCT page_path) as unique_pages,
           min(created_at) as first_seen,
           max(created_at) as last_seen,
-          array_agg(DISTINCT page_path ORDER BY page_path) FILTER (WHERE page_path IS NOT NULL) as pages_visited
+          (array_agg(DISTINCT page_path ORDER BY page_path) FILTER (WHERE page_path IS NOT NULL))[1:20] as pages_visited
         FROM site_visits
         WHERE is_bot = true AND created_at >= now() - interval '24 hours'
         GROUP BY user_agent

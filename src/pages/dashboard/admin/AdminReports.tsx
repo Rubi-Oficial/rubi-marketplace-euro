@@ -9,7 +9,7 @@ import {
 } from "recharts";
 import { Users, FileText, DollarSign, Globe, ShieldAlert, Monitor, Smartphone, Tablet, Eye, Bot, AlertTriangle, Info, ChevronDown, ChevronUp } from "lucide-react";
 
-const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
+const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--muted-foreground))", "hsl(var(--destructive))", "hsl(var(--primary) / 0.4)"];
 const DEVICE_COLORS: Record<string, string> = {
@@ -696,7 +696,7 @@ function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
                   {data.top_countries.map((c, i) => (
                     <tr key={i} className="border-b border-border last:border-0">
                       <td className="px-4 py-2 text-foreground">{c.country}</td>
-                      <td className="px-4 py-2 text-muted-foreground">{data.top_cities[i]?.city || "—"}</td>
+                      <td className="px-4 py-2 text-muted-foreground">—</td>
                       <td className="px-4 py-2 text-right tabular-nums font-medium">{c.visits}</td>
                     </tr>
                   ))}
