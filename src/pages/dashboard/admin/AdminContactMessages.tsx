@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface ContactMessage {
   id: string;
@@ -35,6 +36,7 @@ interface ContactMessage {
 type FilterTab = "all" | "unread" | "read";
 
 export default function AdminContactMessages() {
+  const { t } = useLanguage();
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterTab>("all");
@@ -54,7 +56,7 @@ export default function AdminContactMessages() {
 
     const { data, error } = await query;
     if (error) {
-      toast.error("Erro ao carregar mensagens");
+      toast.error(t("admin_contact.error_load"));
     } else {
       setMessages((data as ContactMessage[]) ?? []);
     }
@@ -77,7 +79,7 @@ export default function AdminContactMessages() {
     setTogglingId(null);
 
     if (error) {
-      toast.error("Erro ao atualizar status");
+      toast.error(t("admin_contact.error_update"));
       return;
     }
 
@@ -95,12 +97,12 @@ export default function AdminContactMessages() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">Mensagens de Contacto</h1>
+        <h1 className="font-display text-2xl font-bold text-foreground">{t("admin_contact.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Mensagens recebidas pelo formulário de contacto
+          {t("admin_contact.desc")}
           {!loading && unreadCount > 0 && (
             <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-              {unreadCount} não lida{unreadCount > 1 ? "s" : ""}
+              {t("admin_contact.unread_count", { count: String(unreadCount) })}
             </span>
           )}
         </p>
@@ -108,9 +110,9 @@ export default function AdminContactMessages() {
 
       <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterTab)}>
         <TabsList>
-          <TabsTrigger value="all">Todas</TabsTrigger>
-          <TabsTrigger value="unread">Não lidas</TabsTrigger>
-          <TabsTrigger value="read">Lidas</TabsTrigger>
+          <TabsTrigger value="all">{t("admin_contact.tab_all")}</TabsTrigger>
+          <TabsTrigger value="unread">{t("admin_contact.tab_unread")}</TabsTrigger>
+          <TabsTrigger value="read">{t("admin_contact.tab_read")}</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -125,10 +127,10 @@ export default function AdminContactMessages() {
           <Inbox className="mx-auto h-10 w-10 text-muted-foreground/40" />
           <p className="mt-3 text-sm text-muted-foreground">
             {filter === "unread"
-              ? "Não há mensagens não lidas."
+              ? t("admin_contact.no_unread")
               : filter === "read"
-              ? "Não há mensagens lidas."
-              : "Nenhuma mensagem recebida ainda."}
+              ? t("admin_contact.no_read")
+              : t("admin_contact.no_messages")}
           </p>
         </div>
       ) : (
@@ -155,9 +157,9 @@ export default function AdminContactMessages() {
                 >
                   <TableCell>
                     {msg.is_read ? (
-                      <Badge variant="secondary">Lida</Badge>
+                      <Badge variant="secondary">{t("admin_contact.badge_read")}</Badge>
                     ) : (
-                      <Badge variant="default">Nova</Badge>
+                      <Badge variant="default">{t("admin_contact.badge_new")}</Badge>
                     )}
                   </TableCell>
                   <TableCell className={`font-medium ${!msg.is_read ? "text-foreground" : "text-muted-foreground"}`}>
@@ -181,7 +183,7 @@ export default function AdminContactMessages() {
                         e.stopPropagation();
                         toggleRead(msg);
                       }}
-                      title={msg.is_read ? "Marcar como não lida" : "Marcar como lida"}
+                      title={msg.is_read ? t("admin_contact.mark_unread") : t("admin_contact.mark_read")}
                     >
                       {msg.is_read ? <MailOpen className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
                     </Button>
@@ -197,7 +199,7 @@ export default function AdminContactMessages() {
       <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Mensagem de {selected?.name}</DialogTitle>
+            <DialogTitle>{t("admin_contact.msg_from", { name: selected?.name ?? "" })}</DialogTitle>
           </DialogHeader>
           {selected && (
             <div className="space-y-4">
@@ -206,9 +208,9 @@ export default function AdminContactMessages() {
                 <span>·</span>
                 <span>{format(new Date(selected.created_at), "dd/MM/yyyy HH:mm", { locale: pt })}</span>
                 {selected.is_read ? (
-                  <Badge variant="secondary" className="ml-auto">Lida</Badge>
+                  <Badge variant="secondary" className="ml-auto">{t("admin_contact.badge_read")}</Badge>
                 ) : (
-                  <Badge variant="default" className="ml-auto">Nova</Badge>
+                  <Badge variant="default" className="ml-auto">{t("admin_contact.badge_new")}</Badge>
                 )}
               </div>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
@@ -222,9 +224,9 @@ export default function AdminContactMessages() {
                   onClick={() => toggleRead(selected)}
                 >
                   {selected.is_read ? (
-                    <><MailOpen className="mr-2 h-4 w-4" />Marcar como não lida</>
+                    <><MailOpen className="mr-2 h-4 w-4" />{t("admin_contact.mark_unread")}</>
                   ) : (
-                    <><Mail className="mr-2 h-4 w-4" />Marcar como lida</>
+                    <><Mail className="mr-2 h-4 w-4" />{t("admin_contact.mark_read")}</>
                   )}
                 </Button>
               </div>
