@@ -31,7 +31,26 @@ Deno.serve(async (req) => {
     return new Response("Webhook Error", { status: 400 });
   }
 
-  console.log(`[stripe-webhook] Processing event: ${event.type} (${event.id})`);
+  const { error: dedupError } = await supabase
+    .from("stripe_webhook_event_dedup")
+    .insert({ event_id: event.id, event_type: event.type });
+
+  if (dedupError) {
+    if (dedupError.code === "23505") {
+      console.warn(`[stripe-webhook] replay_ignored event_id=${event.id} event_type=${event.type}`);
+      return new Response(JSON.stringify({ received: true, replay: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    console.error(
+      `[stripe-webhook] Failed to validate deduplication for event ${event.id}: ${dedupError.message}`,
+    );
+    return new Response("Internal error", { status: 500 });
+  }
+
+  console.log(`[stripe-webhook] new_event event_id=${event.id} event_type=${event.type}`);
 
   try {
     switch (event.type) {
@@ -88,27 +107,20 @@ Deno.serve(async (req) => {
               break;
             }
 
-            // Check no existing conversion for this user (first payment only)
-            const { count } = await supabase
+            const { data: referrer } = await supabase
+              .from("users")
+              .select("referral_code")
+              .eq("id", userData.referred_by_user_id)
+              .single();
+
+            const commissionAmount = Math.round(plan.price * COMMISSION_RATE * 100) / 100;
+
+            console.log(`[stripe-webhook] Creating commission: referrer=${userData.referred_by_user_id}, amount=${commissionAmount}`);
+
+            const { data: conversionRows, error: conversionError } = await supabase
               .from("referral_conversions")
-              .select("id", { count: "exact", head: true })
-              .eq("referred_user_id", userId)
-              .eq("conversion_type", "subscription");
-
-            if ((count ?? 0) === 0) {
-              const { data: referrer } = await supabase
-                .from("users")
-                .select("referral_code")
-                .eq("id", userData.referred_by_user_id)
-                .single();
-
-              const commissionAmount = Math.round(plan.price * COMMISSION_RATE * 100) / 100;
-
-              console.log(`[stripe-webhook] Creating commission: referrer=${userData.referred_by_user_id}, amount=${commissionAmount}`);
-
-              const { error: insertErr } = await supabase
-                .from("referral_conversions")
-                .insert({
+              .upsert(
+                {
                   referrer_user_id: userData.referred_by_user_id,
                   referred_user_id: userId,
                   referral_code: referrer?.referral_code ?? "",
@@ -117,15 +129,22 @@ Deno.serve(async (req) => {
                   commission_rate: COMMISSION_RATE,
                   commission_amount: commissionAmount,
                   status: "pending",
-                });
+                },
+                {
+                  onConflict: "referred_user_id,conversion_type",
+                  ignoreDuplicates: true,
+                },
+              )
+              .select("id");
 
-              if (insertErr) {
-                console.warn(`[stripe-webhook] Commission insert skipped (likely duplicate): ${insertErr.message}`);
-              } else {
-                console.log(`[stripe-webhook] Commission created successfully`);
-              }
+            if (conversionError) {
+              console.error(`[stripe-webhook] Failed to upsert commission for user ${userId}: ${conversionError.message}`);
+            } else if ((conversionRows?.length ?? 0) === 0) {
+              console.warn(
+                `[stripe-webhook] idempotency_conflict conversion_exists referred_user_id=${userId} conversion_type=subscription`,
+              );
             } else {
-              console.log(`[stripe-webhook] Commission already exists for referred user ${userId}, skipping`);
+              console.log(`[stripe-webhook] Commission created successfully`);
             }
           }
         }
