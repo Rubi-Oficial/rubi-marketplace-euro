@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
       line_items: [
         {
           price_data: {
-            currency: "eur",
+            currency: "brl",
             product_data: {
               name: `Rubi Girls - ${plan.name} Plan`,
               description: `${plan.billing_period === "quarterly" ? "Quarterly" : "Monthly"} subscription`,

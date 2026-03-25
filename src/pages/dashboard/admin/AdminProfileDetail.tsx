@@ -495,7 +495,7 @@ export default function AdminProfileDetail() {
               <Detail label="Gênero" value={profile.gender} />
               <Detail label="Categoria" value={profile.category} />
               <Detail label="Slug" value={profile.slug} />
-              <Detail label="Preço a partir de" value={profile.pricing_from ? `€${profile.pricing_from}` : null} />
+              <Detail label="Preço a partir de" value={profile.pricing_from ? `R$\u00A0${profile.pricing_from}` : null} />
               <Detail label="Idiomas" value={profile.languages?.join(", ")} />
               <Detail label="Destaque" value={profile.is_featured ? "Sim" : "Não"} />
               <Detail label="Destaque até" value={profile.featured_until ? new Date(profile.featured_until).toLocaleDateString("pt-BR") : null} />

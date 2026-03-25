@@ -177,7 +177,7 @@ const pt: TranslationMap = {
   // Common
   "common.featured": "Destaque",
   "common.years": "anos",
-  "common.from_price": "A partir de €{price}",
+  "common.from_price": "A partir de R$\u00A0{price}",
   "common.services": "Serviços",
   "common.all": "Todos",
   "common.details": "Detalhes",

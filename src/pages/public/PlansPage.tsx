@@ -61,7 +61,7 @@ export default function PlansPage() {
               <h3 className="font-display text-xl font-bold text-foreground">{plan.name}</h3>
               <div className="mt-3">
                 <span className="font-display text-3xl font-bold text-primary">
-                  €{plan.price.toLocaleString("en-EU", { minimumFractionDigits: 2 })}
+                  R$&nbsp;{plan.price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                 </span>
                 <span className="text-sm text-muted-foreground">{period}</span>
               </div>

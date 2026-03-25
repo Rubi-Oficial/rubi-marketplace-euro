@@ -417,7 +417,7 @@ export default function EscortProfile() {
                   onChange={(e) => update("languages", e.target.value)} placeholder="English, Dutch" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="pricing_from">Preço inicial (€)</Label>
+                <Label htmlFor="pricing_from">Preço inicial (R$)</Label>
                 <Input id="pricing_from" type="number" min={0} value={form.pricing_from} disabled={!canEdit}
                   onChange={(e) => update("pricing_from", e.target.value)} placeholder="200" />
               </div>

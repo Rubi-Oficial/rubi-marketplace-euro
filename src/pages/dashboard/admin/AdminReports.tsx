@@ -688,7 +688,6 @@ function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
                 <thead>
                   <tr className="border-y border-border bg-muted/30">
                     <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">País</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Cidade</th>
                     <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Visitas</th>
                   </tr>
                 </thead>
@@ -696,12 +695,11 @@ function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
                   {data.top_countries.map((c, i) => (
                     <tr key={i} className="border-b border-border last:border-0">
                       <td className="px-4 py-2 text-foreground">{c.country}</td>
-                      <td className="px-4 py-2 text-muted-foreground">—</td>
                       <td className="px-4 py-2 text-right tabular-nums font-medium">{c.visits}</td>
                     </tr>
                   ))}
                   {data.top_countries.length === 0 && (
-                    <tr><td colSpan={3} className="px-4 py-4 text-center text-muted-foreground">Sem dados</td></tr>
+                    <tr><td colSpan={2} className="px-4 py-4 text-center text-muted-foreground">Sem dados</td></tr>
                   )}
                 </tbody>
               </table>
