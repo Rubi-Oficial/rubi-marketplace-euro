@@ -7,7 +7,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend,
 } from "recharts";
-import { Users, FileText, DollarSign, Globe, ShieldAlert, Monitor, Smartphone, Tablet, Eye, Bot, AlertTriangle, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { Users, FileText, DollarSign, Globe, ShieldAlert, Monitor, Smartphone, Tablet, Eye, Bot, AlertTriangle, Info, ChevronDown, ChevronUp, RefreshCw, UserCheck, TrendingDown, Layers } from "lucide-react";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
 
@@ -55,10 +55,18 @@ interface AccessAnalytics {
   top_utm_sources: { utm_source: string; visits: number }[];
   top_countries: { country: string; visits: number }[];
   top_cities: { city: string; visits: number }[];
-  suspicious_ips: { ip_hash: string; hits: number; last_seen: string; unique_pages: number; is_known_bot: boolean }[];
+  suspicious_ips: { ip_hash: string; hits: number; last_seen: string; unique_pages: number; is_known_bot: boolean; country_code: string; city_name: string; user_agent_sample: string | null }[];
   suspicious_sessions: { session_id: string; pageviews: number; started: string; last_seen: string; unique_pages: number }[];
   recent_bots: { ip_hash: string; user_agent: string; page_path: string; created_at: string; country_code: string; city_name: string }[];
   bot_by_agent: { user_agent: string; hits: number; unique_ips: number; unique_pages: number; first_seen: string; last_seen: string; pages_visited: string[] }[];
+  authenticated_visits_24h: number;
+  authenticated_visits_7d: number;
+  anonymous_visits_24h: number;
+  bounce_rate_7d: number | null;
+  avg_session_depth_7d: number | null;
+  hourly_distribution: { hour: number; visits: number; bot_visits: number; auth_visits: number }[];
+  top_authenticated_users: { user_id: string; display_name: string; role: string; visits: number; sessions: number; unique_pages: number; last_seen: string }[];
+  top_utm_campaigns: { utm_campaign: string; utm_source: string; utm_medium: string; visits: number; unique_sessions: number }[];
 }
 
 export default function AdminReports() {
@@ -121,8 +129,8 @@ export default function AdminReports() {
     load();
   }, []);
 
-  const loadAccessAnalytics = async () => {
-    if (accessData) return;
+  const loadAccessAnalytics = async (force = false) => {
+    if (accessData && !force) return;
     setAccessLoading(true);
     try {
       const { data, error } = await supabase.rpc("get_access_analytics");
@@ -340,7 +348,7 @@ export default function AdminReports() {
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
           ) : accessData ? (
-            <AccessAnalyticsPanel data={accessData} />
+            <AccessAnalyticsPanel data={accessData} onRefresh={() => loadAccessAnalytics(true)} refreshing={accessLoading} />
           ) : (
             <Card>
               <CardContent className="py-10 text-center text-muted-foreground">
@@ -455,7 +463,7 @@ const BOT_SEVERITY_STYLES: Record<BotSeverity, { badge: string; row: string; ico
   danger: { badge: "bg-red-100 text-red-800 border-red-200", row: "bg-red-50/30", icon: <ShieldAlert className="h-3 w-3 text-red-600" /> },
 };
 
-function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
+function AccessAnalyticsPanel({ data, onRefresh, refreshing }: { data: AccessAnalytics; onRefresh: () => void; refreshing: boolean }) {
   const botRate24h = data.visits_24h > 0 ? ((data.bot_count_24h / data.visits_24h) * 100).toFixed(1) : "0";
   const hasSuspicious = data.suspicious_ips.length > 0 || data.suspicious_sessions.length > 0;
   const [expandedBotRow, setExpandedBotRow] = useState<number | null>(null);
@@ -475,7 +483,20 @@ function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
 
   return (
     <div className="space-y-4">
-      {/* KPIs */}
+      {/* Header with refresh */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium text-muted-foreground">Análise de Acessos</h2>
+        <button
+          onClick={onRefresh}
+          disabled={refreshing}
+          className="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
+          Atualizar
+        </button>
+      </div>
+
+      {/* KPIs row 1 */}
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         <StatCard label="Visitas (24h)" value={data.visits_24h.toLocaleString()} />
         <StatCard label="Visitas (7d)" value={data.visits_7d.toLocaleString()} />
@@ -487,6 +508,50 @@ function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
               <p className="font-display text-2xl font-bold tabular-nums text-foreground">{data.bot_count_24h}</p>
               <Badge variant={Number(botRate24h) > 20 ? "destructive" : "outline"} className="text-xs">{botRate24h}%</Badge>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* KPIs row 2 */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground flex items-center gap-1"><UserCheck className="h-3 w-3" /> Autenticados (24h)</p>
+            <div className="mt-1 flex items-center gap-2">
+              <p className="font-display text-2xl font-bold tabular-nums text-foreground">{(data.authenticated_visits_24h ?? 0).toLocaleString()}</p>
+              {data.visits_24h > 0 && (
+                <span className="text-xs text-muted-foreground">({((data.authenticated_visits_24h ?? 0) / data.visits_24h * 100).toFixed(0)}%)</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground flex items-center gap-1"><Eye className="h-3 w-3" /> Anônimos (24h)</p>
+            <p className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground">{(data.anonymous_visits_24h ?? 0).toLocaleString()}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground flex items-center gap-1"><TrendingDown className="h-3 w-3" /> Taxa de Rejeição (7d)</p>
+            <div className="mt-1 flex items-center gap-2">
+              <p className="font-display text-2xl font-bold tabular-nums text-foreground">
+                {data.bounce_rate_7d != null ? `${data.bounce_rate_7d}%` : "—"}
+              </p>
+              {data.bounce_rate_7d != null && (
+                <Badge variant={data.bounce_rate_7d > 70 ? "destructive" : data.bounce_rate_7d > 50 ? "outline" : "secondary"} className="text-xs">
+                  {data.bounce_rate_7d > 70 ? "Alto" : data.bounce_rate_7d > 50 ? "Médio" : "Bom"}
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground flex items-center gap-1"><Layers className="h-3 w-3" /> Profundidade Média (7d)</p>
+            <p className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground">
+              {data.avg_session_depth_7d != null ? `${data.avg_session_depth_7d} pág.` : "—"}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -508,9 +573,11 @@ function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
                     <thead>
                       <tr className="border-b border-border">
                         <th className="px-2 py-1.5 text-left text-muted-foreground">IP Hash</th>
+                        <th className="px-2 py-1.5 text-left text-muted-foreground">País / Cidade</th>
                         <th className="px-2 py-1.5 text-right text-muted-foreground">Hits</th>
                         <th className="px-2 py-1.5 text-right text-muted-foreground">Páginas</th>
                         <th className="px-2 py-1.5 text-center text-muted-foreground">Bot?</th>
+                        <th className="px-2 py-1.5 text-left text-muted-foreground">User Agent</th>
                         <th className="px-2 py-1.5 text-right text-muted-foreground">Último</th>
                       </tr>
                     </thead>
@@ -518,9 +585,11 @@ function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
                       {data.suspicious_ips.map((ip, i) => (
                         <tr key={i} className="border-b border-border/50 last:border-0">
                           <td className="px-2 py-1.5 font-mono text-foreground">{ip.ip_hash.substring(0, 12)}…</td>
+                          <td className="px-2 py-1.5 text-muted-foreground">{ip.country_code || "—"}{ip.city_name ? ` / ${ip.city_name}` : ""}</td>
                           <td className="px-2 py-1.5 text-right tabular-nums text-destructive font-medium">{ip.hits}</td>
                           <td className="px-2 py-1.5 text-right tabular-nums">{ip.unique_pages}</td>
                           <td className="px-2 py-1.5 text-center">{ip.is_known_bot ? "✓" : "—"}</td>
+                          <td className="px-2 py-1.5 max-w-[180px] truncate text-muted-foreground" title={ip.user_agent_sample || undefined}>{ip.user_agent_sample ? ip.user_agent_sample.substring(0, 40) + (ip.user_agent_sample.length > 40 ? "…" : "") : "—"}</td>
                           <td className="px-2 py-1.5 text-right tabular-nums">{new Date(ip.last_seen).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</td>
                         </tr>
                       ))}
@@ -586,8 +655,35 @@ function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* Top pages */}
+      {/* Hourly distribution chart */}
+      {(data.hourly_distribution ?? []).length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Distribuição Horária (últimas 24h)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={(data.hourly_distribution ?? []).map(h => ({
+                hora: `${String(h.hour).padStart(2, "0")}h`,
+                Visitas: h.visits,
+                Bots: h.bot_visits,
+                Autenticados: h.auth_visits,
+              }))}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="hora" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 11 }} />
+                <Legend iconSize={9} wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="Visitas" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="Bots" fill="hsl(var(--destructive) / 0.6)" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="Autenticados" fill="hsl(var(--primary) / 0.4)" radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Top 10 Páginas</CardTitle>
@@ -706,6 +802,87 @@ function AccessAnalyticsPanel({ data }: { data: AccessAnalytics }) {
                 </tbody>
               </table>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Top Authenticated Users + UTM Campaigns */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Top authenticated users */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <UserCheck className="h-4 w-4" /> Usuários Mais Ativos (7d)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {(data.top_authenticated_users ?? []).length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-y border-border bg-muted/30">
+                      <th className="px-3 py-2 text-left text-muted-foreground">Usuário</th>
+                      <th className="px-3 py-2 text-left text-muted-foreground">Papel</th>
+                      <th className="px-3 py-2 text-right text-muted-foreground">Visitas</th>
+                      <th className="px-3 py-2 text-right text-muted-foreground">Sessões</th>
+                      <th className="px-3 py-2 text-right text-muted-foreground">Páginas</th>
+                      <th className="px-3 py-2 text-right text-muted-foreground">Último acesso</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(data.top_authenticated_users ?? []).map((u, i) => (
+                      <tr key={i} className="border-b border-border/50 last:border-0 hover:bg-muted/10">
+                        <td className="px-3 py-1.5 font-medium text-foreground max-w-[160px] truncate">{u.display_name}</td>
+                        <td className="px-3 py-1.5">
+                          <Badge variant="outline" className="text-[10px]">{u.role === "client" ? "Cliente" : u.role === "professional" ? "Profissional" : u.role === "admin" ? "Admin" : u.role}</Badge>
+                        </td>
+                        <td className="px-3 py-1.5 text-right tabular-nums font-medium">{u.visits}</td>
+                        <td className="px-3 py-1.5 text-right tabular-nums">{u.sessions}</td>
+                        <td className="px-3 py-1.5 text-right tabular-nums">{u.unique_pages}</td>
+                        <td className="px-3 py-1.5 text-right tabular-nums text-muted-foreground">{new Date(u.last_seen).toLocaleDateString("pt-BR")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="py-6 text-center text-sm text-muted-foreground">Nenhum usuário autenticado registrado</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* UTM Campaigns */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Campanhas UTM (30d)</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {(data.top_utm_campaigns ?? []).length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-y border-border bg-muted/30">
+                      <th className="px-3 py-2 text-left text-muted-foreground">Campanha</th>
+                      <th className="px-3 py-2 text-left text-muted-foreground">Fonte / Meio</th>
+                      <th className="px-3 py-2 text-right text-muted-foreground">Visitas</th>
+                      <th className="px-3 py-2 text-right text-muted-foreground">Sessões</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(data.top_utm_campaigns ?? []).map((c, i) => (
+                      <tr key={i} className="border-b border-border/50 last:border-0">
+                        <td className="px-3 py-1.5 font-medium text-foreground max-w-[140px] truncate">{c.utm_campaign}</td>
+                        <td className="px-3 py-1.5 text-muted-foreground">{c.utm_source} / {c.utm_medium}</td>
+                        <td className="px-3 py-1.5 text-right tabular-nums font-medium">{c.visits}</td>
+                        <td className="px-3 py-1.5 text-right tabular-nums">{c.unique_sessions}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="py-6 text-center text-sm text-muted-foreground">Sem dados de campanhas UTM</p>
+            )}
           </CardContent>
         </Card>
       </div>
