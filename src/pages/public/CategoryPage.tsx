@@ -6,7 +6,7 @@ import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
 import { SlidersHorizontal, MapPin, ArrowRight } from "lucide-react";
-import { CATEGORIES } from "@/components/shared/CategoryBar";
+import { CATEGORY_DB_VALUE_BY_SLUG, CATEGORY_DEFINITIONS } from "@/lib/categoryMapping";
 import { useLocations } from "@/hooks/useLocations";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -25,8 +25,9 @@ export default function CategoryPage() {
 
   const { countries, getCitiesByCountry } = useLocations();
 
-  const categoryMeta = CATEGORIES.find((c) => c.slug === slug);
-  const categoryName = categoryMeta?.label || slug?.replace(/-/g, " ") || "";
+  const categoryMeta = CATEGORY_DEFINITIONS.find((c) => c.slug === slug);
+  const categoryDbValue = slug ? CATEGORY_DB_VALUE_BY_SLUG[slug] : "";
+  const categoryName = categoryMeta ? t(categoryMeta.key) : slug?.replace(/-/g, " ") || "";
 
   const filteredCities = useMemo(
     () => (countryFilter ? getCitiesByCountry(countryFilter) : []),
@@ -43,10 +44,14 @@ export default function CategoryPage() {
   }, []);
 
   useEffect(() => {
-    if (!categoryName) return;
+    if (!categoryDbValue) {
+      setProfiles([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     fetchEligibleProfiles({
-      gender: categoryName,
+      gender: categoryDbValue,
       service_slug: serviceFilter || undefined,
       city_slug: cityFilter || undefined,
     }).then((data) => {
@@ -57,7 +62,7 @@ export default function CategoryPage() {
       }
       setLoading(false);
     });
-  }, [categoryName, serviceFilter, cityFilter, countryFilter, countryCitySlugs]);
+  }, [categoryDbValue, serviceFilter, cityFilter, countryFilter, countryCitySlugs]);
 
   usePageMeta({
     title: `${categoryName} — Profiles`,
