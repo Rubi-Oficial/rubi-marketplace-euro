@@ -165,6 +165,27 @@ export type Database = {
         }
         Relationships: []
       }
+      ip_geo_cache: {
+        Row: {
+          city_name: string | null
+          country_code: string | null
+          ip_hash: string
+          last_resolved_at: string
+        }
+        Insert: {
+          city_name?: string | null
+          country_code?: string | null
+          ip_hash: string
+          last_resolved_at?: string
+        }
+        Update: {
+          city_name?: string | null
+          country_code?: string | null
+          ip_hash?: string
+          last_resolved_at?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           created_at: string

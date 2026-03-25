@@ -141,7 +141,7 @@ export default function Navbar() {
                       : "text-muted-foreground hover:text-foreground hover:bg-accent"
                   }`}
                 >
-                  {cat.label}
+                  {t(cat.key)}
                 </Link>
               ))}
 
@@ -194,7 +194,7 @@ export default function Navbar() {
           </Link>
           {CATEGORIES.map((cat) => (
             <Link key={cat.slug} to={`/categoria/${cat.slug}`} onClick={() => setMobileOpen(false)} className="block text-sm text-muted-foreground py-2 px-4 rounded-md hover:bg-accent transition-colors">
-              {cat.label}
+              {t(cat.key)}
             </Link>
           ))}
           <Link to="/planos" onClick={() => setMobileOpen(false)} className="block text-sm text-foreground py-2.5 px-2 rounded-md hover:bg-accent transition-colors">{t("nav.plans")}</Link>
