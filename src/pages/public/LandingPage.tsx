@@ -1,14 +1,16 @@
 import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, SlidersHorizontal, MapPin, SearchX, X } from "lucide-react";
+import { useState } from "react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
-import { useEffect, useState, useMemo } from "react";
-import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
+import { useProfileFilters } from "@/hooks/useProfileFilters";
 import { VideoSection } from "@/components/public/VideoSection";
 import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
-import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
-import { useLocations } from "@/hooks/useLocations";
+import { FilterBar } from "@/components/public/FilterBar";
+import { MobileFilterBar } from "@/components/public/MobileFilterBar";
+import { ProfileGrid, ProfileGridSkeleton } from "@/components/public/ProfileGrid";
+import { EmptyState } from "@/components/public/EmptyState";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -34,212 +36,70 @@ export default function LandingPage() {
     },
   });
 
-  const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const {
+    filters,
+    profiles,
+    loading,
+    services,
+    countries,
+    getCitiesByCountry,
+    hasFilters,
+    hasLocationFilter,
+    hasGeneralFilter,
+    clearFilters,
+    handleApplyFilters,
+    handleApplyLocation,
+    handleRemoveFilter,
+    countryName,
+    cityName,
+    serviceName,
+  } = useProfileFilters({ limit: 20 });
+
   const [filterOpen, setFilterOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
 
-  const [countryFilter, setCountryFilter] = useState("");
-  const [cityFilter, setCityFilter] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [serviceFilter, setServiceFilter] = useState("");
-
-  const { countries, getCitiesByCountry } = useLocations();
-
-  const filteredCities = useMemo(
-    () => (countryFilter ? getCitiesByCountry(countryFilter) : []),
-    [countryFilter, getCitiesByCountry]
-  );
-
-  useEffect(() => {
-    fetchServices().then(setServices).catch((err: unknown) => {
-      console.error("[landing] Failed to fetch services:", err);
-    });
-  }, []);
-
-  useEffect(() => {
-    setLoading(true);
-    fetchEligibleProfiles({
-      country: countryFilter || undefined,
-      city_slugs: countryFilter && !cityFilter ? filteredCities.map((c) => c.slug) : undefined,
-      city_slug: cityFilter || undefined,
-      category: categoryFilter || undefined,
-      service_slug: serviceFilter || undefined,
-      limit: 20,
-      offset: 0,
-    }).then((data) => {
-      setProfiles(data);
-      setLoading(false);
-    }).catch((err: unknown) => {
-      console.error("[landing] Failed to fetch profiles:", err);
-      setLoading(false);
-    });
-  }, [cityFilter, categoryFilter, serviceFilter, countryFilter, filteredCities]);
-
-  const hasFilters = !!countryFilter || !!cityFilter || !!categoryFilter || !!serviceFilter;
-  const hasLocationFilter = !!countryFilter || !!cityFilter;
-  const hasGeneralFilter = !!categoryFilter || !!serviceFilter;
-
-  const clearFilters = () => {
-    setCountryFilter("");
-    setCityFilter("");
-    setCategoryFilter("");
-    setServiceFilter("");
-  };
-
-  const handleApplyFilters = (partial: Partial<{ category: string; service: string }>) => {
-    if (partial.category !== undefined) setCategoryFilter(partial.category);
-    if (partial.service !== undefined) setServiceFilter(partial.service);
-  };
-
-  const handleApplyLocation = (country: string, city: string) => {
-    setCountryFilter(country);
-    setCityFilter(city);
-  };
-
-  const handleRemoveFilter = (key: string) => {
-    if (key === "country") { setCountryFilter(""); setCityFilter(""); }
-    else if (key === "city") setCityFilter("");
-    else if (key === "category") setCategoryFilter("");
-    else if (key === "service") setServiceFilter("");
-  };
-
-  const countryName = countries.find((c) => c.slug === countryFilter)?.name;
-  const cityName = filteredCities.find((c) => c.slug === cityFilter)?.name;
-  const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
+  const generalCount = [filters.category, filters.service].filter(Boolean).length;
+  const locationCount = [filters.country, filters.city].filter(Boolean).length;
 
   return (
     <div className="min-h-screen">
       <section className="pt-4 pb-24 md:pb-8">
         <div className="container mx-auto px-4">
-
-          <div className="mb-5 flex flex-wrap items-center gap-2.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setFilterOpen(true)}
-              className={`h-9 gap-2 rounded-full border-border/40 focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
-            >
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-              <span className="text-xs">{t("landing.filters")}</span>
-              {hasGeneralFilter && (
-                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
-                  {[categoryFilter, serviceFilter].filter(Boolean).length}
-                </span>
-              )}
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setLocationOpen(true)}
-              className={`h-9 gap-2 rounded-full border-border/40 focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
-            >
-              <MapPin className="h-3.5 w-3.5" />
-              <span className="text-xs">{t("landing.location")}</span>
-              {hasLocationFilter && (
-                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
-                  {[countryFilter, cityFilter].filter(Boolean).length}
-                </span>
-              )}
-            </Button>
-
-            <ActiveFilterChips
-              filters={{ country: countryFilter, city: cityFilter, category: categoryFilter, service: serviceFilter }}
-              countryName={countryName}
-              cityName={cityName}
-              serviceName={serviceName}
-              onRemove={handleRemoveFilter}
-              onClearAll={clearFilters}
-              inline
-            />
-
-            {hasFilters && (
-              <button onClick={clearFilters} className="ml-auto text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 rounded-sm">
-                {t("landing.clear_all")}
-              </button>
-            )}
-          </div>
+          <FilterBar
+            hasGeneralFilter={hasGeneralFilter}
+            hasLocationFilter={hasLocationFilter}
+            hasFilters={hasFilters}
+            generalCount={generalCount}
+            locationCount={locationCount}
+            countryFilter={filters.country}
+            cityFilter={filters.city}
+            categoryFilter={filters.category}
+            serviceFilter={filters.service}
+            countryName={countryName}
+            cityName={cityName}
+            serviceName={serviceName}
+            onOpenFilters={() => setFilterOpen(true)}
+            onOpenLocation={() => setLocationOpen(true)}
+            onRemoveFilter={handleRemoveFilter}
+            onClearAll={clearFilters}
+          />
 
           {loading ? (
-            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-muted" />
-              ))}
-            </div>
+            <ProfileGridSkeleton count={8} />
           ) : profiles.length > 0 ? (
-            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-              {profiles.map((p) => (
-                <ProfileCard key={p.id} profile={p} />
-              ))}
-            </div>
+            <ProfileGrid profiles={profiles} />
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-border/50 bg-card p-10 md:p-16 text-center shadow-sm">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-                <SearchX className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground font-display">
-                {hasFilters ? t("landing.empty_title") : t("search.no_filters")}
-              </h3>
-              <p className="mt-1.5 text-sm text-muted-foreground max-w-md">
-                {hasFilters ? t("landing.empty_desc") : t("landing.cta_desc")}
-              </p>
-
-              {hasFilters && (
-                <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                  {(countryFilter || cityFilter) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 gap-1.5 rounded-full text-xs"
-                      onClick={() => { setCountryFilter(""); setCityFilter(""); }}
-                    >
-                      <X className="h-3 w-3" />
-                      {t("landing.empty_remove_location")}
-                    </Button>
-                  )}
-                  {serviceFilter && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 gap-1.5 rounded-full text-xs"
-                      onClick={() => setServiceFilter("")}
-                    >
-                      <X className="h-3 w-3" />
-                      {t("landing.empty_remove_service")}
-                    </Button>
-                  )}
-                  {categoryFilter && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 gap-1.5 rounded-full text-xs"
-                      onClick={() => setCategoryFilter("")}
-                    >
-                      <X className="h-3 w-3" />
-                      {t("landing.empty_remove_category")}
-                    </Button>
-                  )}
-                  <Button
-                    variant="premium"
-                    size="sm"
-                    className="h-8 rounded-full text-xs"
-                    onClick={clearFilters}
-                  >
-                    {t("landing.empty_browse_all")}
-                  </Button>
-                </div>
-              )}
-
-              {!hasFilters && (
-                <Button variant="premium" size="sm" className="mt-5" asChild>
-                  <Link to="/cadastro?role=professional">
-                    {t("landing.cta_button")} <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                  </Link>
-                </Button>
-              )}
-            </div>
+            <EmptyState
+              hasFilters={hasFilters}
+              countryFilter={filters.country}
+              cityFilter={filters.city}
+              serviceFilter={filters.service}
+              categoryFilter={filters.category}
+              onRemoveLocation={() => { handleRemoveFilter("country"); }}
+              onRemoveService={() => handleRemoveFilter("service")}
+              onRemoveCategory={() => handleRemoveFilter("category")}
+              onClearAll={clearFilters}
+            />
           )}
 
           {profiles.length > 0 && (
@@ -254,7 +114,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <VideoSection filters={{ activeCity: cityFilter, activeService: serviceFilter }} />
+      <VideoSection filters={{ activeCity: filters.city, activeService: filters.service }} />
 
       <section className="border-t border-border/30 py-10 bg-secondary/20">
         <div className="container mx-auto px-4 text-center">
@@ -275,9 +135,9 @@ export default function LandingPage() {
       <FilterModal
         open={filterOpen}
         onOpenChange={setFilterOpen}
-        filters={{ category: categoryFilter, service: serviceFilter }}
+        filters={{ category: filters.category, service: filters.service }}
         onApply={handleApplyFilters}
-        onClear={() => { setCategoryFilter(""); setServiceFilter(""); }}
+        onClear={() => { handleRemoveFilter("category"); handleRemoveFilter("service"); }}
         resultCount={profiles.length}
         services={services}
         categories={CATEGORIES.map((c) => t(c.key))}
@@ -286,45 +146,21 @@ export default function LandingPage() {
       <LocationModal
         open={locationOpen}
         onOpenChange={setLocationOpen}
-        selectedCountry={countryFilter}
-        selectedCity={cityFilter}
+        selectedCountry={filters.country}
+        selectedCity={filters.city}
         onApply={handleApplyLocation}
         countries={countries}
         getCitiesByCountry={getCitiesByCountry}
       />
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/50 bg-card/95 px-4 py-3 backdrop-blur-xl md:hidden">
-        <div className="mx-auto flex max-w-lg items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setFilterOpen(true)}
-            className={`h-10 flex-1 rounded-full border-border/50 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
-          >
-            <SlidersHorizontal className="mr-2 h-3.5 w-3.5" />
-            {t("landing.filters")}
-            {hasGeneralFilter && (
-              <span className="ml-1.5 rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
-                {[categoryFilter, serviceFilter].filter(Boolean).length}
-              </span>
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setLocationOpen(true)}
-            className={`h-10 flex-1 rounded-full border-border/50 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
-          >
-            <MapPin className="mr-2 h-3.5 w-3.5" />
-            {t("landing.location")}
-            {hasLocationFilter && (
-              <span className="ml-1.5 rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
-                {[countryFilter, cityFilter].filter(Boolean).length}
-              </span>
-            )}
-          </Button>
-        </div>
-      </div>
+      <MobileFilterBar
+        hasGeneralFilter={hasGeneralFilter}
+        hasLocationFilter={hasLocationFilter}
+        generalCount={generalCount}
+        locationCount={locationCount}
+        onOpenFilters={() => setFilterOpen(true)}
+        onOpenLocation={() => setLocationOpen(true)}
+      />
     </div>
   );
 }
