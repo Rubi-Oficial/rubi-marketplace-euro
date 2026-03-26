@@ -184,14 +184,37 @@ export default function SearchPage() {
           ))}
         </div>
       ) : profiles.length === 0 ? (
-        <div className="rounded-xl border border-border/50 bg-card p-16 text-center shadow-sm">
-          <p className="text-muted-foreground">
-            {hasFilters ? t("search.no_match") : t("search.no_filters")}
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-border/50 bg-card p-10 md:p-16 text-center shadow-sm">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+            <SearchX className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold text-foreground font-display">
+            {hasFilters || searchQuery ? t("search.no_match") : t("search.no_filters")}
+          </h3>
+          <p className="mt-1.5 text-sm text-muted-foreground max-w-md">
+            {t("landing.empty_desc")}
           </p>
-          {hasFilters && (
-            <Button variant="ghost" size="sm" className="mt-4" onClick={clearFilters}>
-              {t("search.clear_filters")}
-            </Button>
+          {(hasFilters || searchQuery) && (
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+              {(countryFilter || cityFilter) && (
+                <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-full text-xs" onClick={() => { handleRemoveFilter("country"); }}>
+                  <X className="h-3 w-3" /> {t("landing.empty_remove_location")}
+                </Button>
+              )}
+              {serviceFilter && (
+                <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-full text-xs" onClick={() => handleRemoveFilter("service")}>
+                  <X className="h-3 w-3" /> {t("landing.empty_remove_service")}
+                </Button>
+              )}
+              {categoryFilter && (
+                <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-full text-xs" onClick={() => handleRemoveFilter("category")}>
+                  <X className="h-3 w-3" /> {t("landing.empty_remove_category")}
+                </Button>
+              )}
+              <Button variant="premium" size="sm" className="h-8 rounded-full text-xs" onClick={clearFilters}>
+                {t("landing.empty_browse_all")}
+              </Button>
+            </div>
           )}
         </div>
       ) : (
