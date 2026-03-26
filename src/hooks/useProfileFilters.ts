@@ -1,0 +1,130 @@
+import { useEffect, useMemo, useState } from "react";
+import { fetchEligibleProfiles, fetchServices, type EligibleProfile } from "@/lib/profileApi";
+import { useLocations } from "@/hooks/useLocations";
+
+interface UseProfileFiltersOptions {
+  /** Default limit for fetching profiles */
+  limit?: number;
+  /** Initial filter values */
+  initialFilters?: {
+    country?: string;
+    city?: string;
+    category?: string;
+    service?: string;
+    search?: string;
+  };
+}
+
+export interface FilterState {
+  country: string;
+  city: string;
+  category: string;
+  service: string;
+  search: string;
+}
+
+export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
+  const { limit = 50, initialFilters } = options;
+  const { countries, getCitiesByCountry } = useLocations();
+
+  const [filters, setFilters] = useState<FilterState>({
+    country: initialFilters?.country ?? "",
+    city: initialFilters?.city ?? "",
+    category: initialFilters?.category ?? "",
+    service: initialFilters?.service ?? "",
+    search: initialFilters?.search ?? "",
+  });
+
+  const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
+
+  const filteredCities = useMemo(
+    () => (filters.country ? getCitiesByCountry(filters.country) : []),
+    [filters.country, getCitiesByCountry]
+  );
+
+  useEffect(() => {
+    fetchServices().then(setServices).catch((err: unknown) => {
+      console.error("[filters] Failed to fetch services:", err);
+    });
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchEligibleProfiles({
+      search: filters.search || undefined,
+      country: filters.country || undefined,
+      city_slugs: filters.country && !filters.city ? filteredCities.map((c) => c.slug) : undefined,
+      city_slug: filters.city || undefined,
+      category: filters.category || undefined,
+      service_slug: filters.service || undefined,
+      limit,
+      offset: 0,
+    }).then((data) => {
+      setProfiles(data);
+      setLoading(false);
+    }).catch((err: unknown) => {
+      console.error("[filters] Failed to fetch profiles:", err);
+      setLoading(false);
+    });
+  }, [filters.search, filters.city, filters.category, filters.service, filters.country, filteredCities, limit]);
+
+  const hasFilters = !!filters.country || !!filters.city || !!filters.category || !!filters.service;
+  const hasLocationFilter = !!filters.country || !!filters.city;
+  const hasGeneralFilter = !!filters.category || !!filters.service;
+
+  const updateFilter = (key: keyof FilterState, value: string) => {
+    setFilters((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key === "country") next.city = "";
+      return next;
+    });
+  };
+
+  const clearFilters = () => {
+    setFilters((prev) => ({ ...prev, country: "", city: "", category: "", service: "" }));
+  };
+
+  const handleApplyFilters = (partial: Partial<{ category: string; service: string }>) => {
+    setFilters((prev) => ({ ...prev, ...partial }));
+  };
+
+  const handleApplyLocation = (country: string, city: string) => {
+    setFilters((prev) => ({ ...prev, country, city }));
+  };
+
+  const handleRemoveFilter = (key: string) => {
+    if (key === "country") {
+      setFilters((prev) => ({ ...prev, country: "", city: "" }));
+    } else {
+      setFilters((prev) => ({ ...prev, [key]: "" }));
+    }
+  };
+
+  const countryName = countries.find((c) => c.slug === filters.country)?.name;
+  const cityName = filteredCities.find((c) => c.slug === filters.city)?.name;
+  const serviceName = services.find((s) => s.slug === filters.service)?.name;
+
+  return {
+    filters,
+    setFilters,
+    profiles,
+    loading,
+    services,
+    countries,
+    filteredCities,
+    getCitiesByCountry,
+    hasFilters,
+    hasLocationFilter,
+    hasGeneralFilter,
+    updateFilter,
+    clearFilters,
+    handleApplyFilters,
+    handleApplyLocation,
+    handleRemoveFilter,
+    countryName,
+    cityName,
+    serviceName,
+  };
+}
