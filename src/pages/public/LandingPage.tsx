@@ -63,7 +63,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen">
-      <section className="pt-4 pb-24 md:pb-8">
+      <section className="pt-4 pb-8 md:pb-8">
         <div className="container mx-auto px-4">
           <FilterBar
             hasGeneralFilter={hasGeneralFilter}

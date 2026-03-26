@@ -43,7 +43,7 @@ export function FilterBar({
   const { t } = useLanguage();
 
   return (
-    <div className="mb-5 flex flex-wrap items-center gap-2.5">
+    <div className="mb-5 hidden md:flex flex-wrap items-center gap-2.5">
       <Button
         variant="outline"
         size="sm"

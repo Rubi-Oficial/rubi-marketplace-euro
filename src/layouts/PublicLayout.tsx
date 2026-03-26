@@ -15,7 +15,7 @@ export default function PublicLayout() {
           <Outlet />
         </main>
       </div>
-      <footer className="border-t border-border/50 py-10 mt-8 bg-secondary/30">
+      <footer className="border-t-2 border-border py-10 mt-8 bg-secondary/40">
         <div className="container mx-auto px-4">
           <div className="grid gap-10 md:grid-cols-4">
             <div>
