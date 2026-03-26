@@ -107,7 +107,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="group relative flex flex-col overflow-hidden rounded-xl bg-white shadow-sm border border-border/40 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/8 cursor-pointer"
+      className="group relative flex flex-col overflow-hidden rounded-xl bg-card shadow-sm border border-border/40 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/8 cursor-pointer"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => navigate(`/perfil/${profile.slug}`)}
