@@ -174,7 +174,7 @@ export default function LandingPage() {
                 <ProfileCard key={p.id} profile={p} />
               ))}
             </div>
-          ) : profiles.length === 0 ? (
+          ) : (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-border/50 bg-card p-10 md:p-16 text-center shadow-sm">
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
                 <SearchX className="h-6 w-6 text-muted-foreground" />
