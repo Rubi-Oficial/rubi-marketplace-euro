@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, MapPin, SearchX, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useLocations } from "@/hooks/useLocations";
-import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
+import { useProfileFilters } from "@/hooks/useProfileFilters";
 import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
+import { ProfileGrid, ProfileGridSkeleton } from "@/components/public/ProfileGrid";
+import { EmptyState } from "@/components/public/EmptyState";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -15,52 +16,58 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 export default function SearchPage() {
   const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
 
-  const { countries, getCitiesByCountry } = useLocations();
-
+  // Sync URL params → hook
   const searchQuery = searchParams.get("q") || "";
-  const countryFilter = searchParams.get("country") || "";
-  const cityFilter = searchParams.get("city") || "";
-  const categoryFilter = searchParams.get("category") || "";
-  const serviceFilter = searchParams.get("service") || "";
+  const urlCountry = searchParams.get("country") || "";
+  const urlCity = searchParams.get("city") || "";
+  const urlCategory = searchParams.get("category") || "";
+  const urlService = searchParams.get("service") || "";
 
-  const filteredCities = useMemo(
-    () => (countryFilter ? getCitiesByCountry(countryFilter) : []),
-    [countryFilter, getCitiesByCountry]
-  );
+  const {
+    filters,
+    setFilters,
+    profiles,
+    loading,
+    services,
+    countries,
+    getCitiesByCountry,
+    hasFilters,
+    hasLocationFilter,
+    hasGeneralFilter,
+    countryName,
+    cityName,
+    serviceName,
+    filteredCities,
+  } = useProfileFilters({
+    limit: 50,
+    initialFilters: {
+      country: urlCountry,
+      city: urlCity,
+      category: urlCategory,
+      service: urlService,
+      search: searchQuery,
+    },
+  });
 
-  useEffect(() => {
-    fetchServices().then(setServices).catch((err: unknown) => {
-      console.error("[search] Failed to fetch services:", err);
+  // Sync filter changes back to URL
+  const syncToUrl = (next: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams);
+    Object.entries(next).forEach(([k, v]) => {
+      if (v) params.set(k, v);
+      else params.delete(k);
     });
-  }, []);
-
-  useEffect(() => {
-    setLoading(true);
-    fetchEligibleProfiles({
-      search: searchQuery || undefined,
-      country: countryFilter || undefined,
-      city_slugs: countryFilter && !cityFilter ? filteredCities.map((c) => c.slug) : undefined,
-      city_slug: cityFilter || undefined,
-      category: categoryFilter || undefined,
-      service_slug: serviceFilter || undefined,
-      limit: 50,
-      offset: 0,
-    }).then((data) => {
-      setProfiles(data);
-      setLoading(false);
-    }).catch((err: unknown) => {
-      console.error("[search] Failed to fetch profiles:", err);
-      setLoading(false);
-    });
-  }, [searchQuery, cityFilter, categoryFilter, serviceFilter, countryFilter, filteredCities]);
+    setSearchParams(params);
+  };
 
   const updateParam = (key: string, value: string) => {
+    setFilters((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key === "country") next.city = "";
+      return next;
+    });
     const params = new URLSearchParams(searchParams);
     if (value) params.set(key, value);
     else params.delete(key);
@@ -68,30 +75,23 @@ export default function SearchPage() {
     setSearchParams(params);
   };
 
-  const clearFilters = () => setSearchParams(searchQuery ? { q: searchQuery } : {});
-  const hasFilters = !!countryFilter || !!cityFilter || !!categoryFilter || !!serviceFilter;
-  const hasLocationFilter = !!countryFilter || !!cityFilter;
-  const hasGeneralFilter = !!categoryFilter || !!serviceFilter;
+  const clearFilters = () => {
+    setFilters((prev) => ({ ...prev, country: "", city: "", category: "", service: "" }));
+    setSearchParams(searchQuery ? { q: searchQuery } : {});
+  };
 
   const handleApplyFilters = (partial: Partial<{ category: string; service: string }>) => {
-    const params = new URLSearchParams(searchParams);
-    Object.entries(partial).forEach(([k, v]) => {
-      if (v) params.set(k, v);
-      else params.delete(k);
-    });
-    setSearchParams(params);
+    setFilters((prev) => ({ ...prev, ...partial }));
+    syncToUrl({ ...filters, ...partial });
   };
 
   const handleApplyLocation = (country: string, city: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (country) params.set("country", country);
-    else params.delete("country");
-    if (city) params.set("city", city);
-    else params.delete("city");
-    setSearchParams(params);
+    setFilters((prev) => ({ ...prev, country, city }));
+    syncToUrl({ ...filters, country, city });
   };
 
   const handleClearGeneralFilters = () => {
+    setFilters((prev) => ({ ...prev, category: "", service: "" }));
     const params = new URLSearchParams(searchParams);
     params.delete("category");
     params.delete("service");
@@ -99,15 +99,16 @@ export default function SearchPage() {
   };
 
   const handleRemoveFilter = (key: string) => {
+    setFilters((prev) => {
+      const next = { ...prev, [key]: "" };
+      if (key === "country") next.city = "";
+      return next;
+    });
     const params = new URLSearchParams(searchParams);
     params.delete(key);
     if (key === "country") params.delete("city");
     setSearchParams(params);
   };
-
-  const countryName = countries.find((c) => c.slug === countryFilter)?.name;
-  const cityName = filteredCities.find((c) => c.slug === cityFilter)?.name;
-  const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
 
   const searchTitle = cityName ? `${t("nav.explore")} in ${cityName}` : t("nav.explore");
   usePageMeta({
@@ -124,8 +125,8 @@ export default function SearchPage() {
           <Input
             placeholder={t("nav.search_placeholder")}
             className="pl-10 h-10 bg-card border-border/40 text-sm rounded-xl"
-            value={searchQuery}
-            onChange={(e) => updateParam("q", e.target.value)}
+            value={filters.search}
+            onChange={(e) => updateParam("search", e.target.value)}
           />
         </div>
 
@@ -139,7 +140,7 @@ export default function SearchPage() {
           <span className="text-xs hidden sm:inline">{t("landing.filters")}</span>
           {hasGeneralFilter && (
             <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
-              {[categoryFilter, serviceFilter].filter(Boolean).length}
+              {[filters.category, filters.service].filter(Boolean).length}
             </span>
           )}
         </Button>
@@ -154,14 +155,14 @@ export default function SearchPage() {
           <span className="text-xs hidden sm:inline">{t("landing.location")}</span>
           {hasLocationFilter && (
             <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
-              {[countryFilter, cityFilter].filter(Boolean).length}
+              {[filters.country, filters.city].filter(Boolean).length}
             </span>
           )}
         </Button>
       </div>
 
       <ActiveFilterChips
-        filters={{ country: countryFilter, city: cityFilter, category: categoryFilter, service: serviceFilter }}
+        filters={{ country: filters.country, city: filters.city, category: filters.category, service: filters.service }}
         countryName={countryName}
         cityName={cityName}
         serviceName={serviceName}
@@ -178,57 +179,27 @@ export default function SearchPage() {
       </p>
 
       {loading ? (
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-muted" />
-          ))}
-        </div>
+        <ProfileGridSkeleton count={6} columns="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" />
       ) : profiles.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-border/50 bg-card p-10 md:p-16 text-center shadow-sm">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-            <SearchX className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-semibold text-foreground font-display">
-            {hasFilters || searchQuery ? t("search.no_match") : t("search.no_filters")}
-          </h3>
-          <p className="mt-1.5 text-sm text-muted-foreground max-w-md">
-            {t("landing.empty_desc")}
-          </p>
-          {(hasFilters || searchQuery) && (
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-              {(countryFilter || cityFilter) && (
-                <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-full text-xs" onClick={() => { handleRemoveFilter("country"); }}>
-                  <X className="h-3 w-3" /> {t("landing.empty_remove_location")}
-                </Button>
-              )}
-              {serviceFilter && (
-                <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-full text-xs" onClick={() => handleRemoveFilter("service")}>
-                  <X className="h-3 w-3" /> {t("landing.empty_remove_service")}
-                </Button>
-              )}
-              {categoryFilter && (
-                <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-full text-xs" onClick={() => handleRemoveFilter("category")}>
-                  <X className="h-3 w-3" /> {t("landing.empty_remove_category")}
-                </Button>
-              )}
-              <Button variant="premium" size="sm" className="h-8 rounded-full text-xs" onClick={clearFilters}>
-                {t("landing.empty_browse_all")}
-              </Button>
-            </div>
-          )}
-        </div>
+        <EmptyState
+          hasFilters={hasFilters || !!filters.search}
+          countryFilter={filters.country}
+          cityFilter={filters.city}
+          serviceFilter={filters.service}
+          categoryFilter={filters.category}
+          onRemoveLocation={() => handleRemoveFilter("country")}
+          onRemoveService={() => handleRemoveFilter("service")}
+          onRemoveCategory={() => handleRemoveFilter("category")}
+          onClearAll={clearFilters}
+        />
       ) : (
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-          {profiles.map((p) => (
-            <ProfileCard key={p.id} profile={p} />
-          ))}
-        </div>
+        <ProfileGrid profiles={profiles} />
       )}
 
       <FilterModal
         open={filterOpen}
         onOpenChange={setFilterOpen}
-        filters={{ category: categoryFilter, service: serviceFilter }}
+        filters={{ category: filters.category, service: filters.service }}
         onApply={handleApplyFilters}
         onClear={handleClearGeneralFilters}
         resultCount={profiles.length}
@@ -239,8 +210,8 @@ export default function SearchPage() {
       <LocationModal
         open={locationOpen}
         onOpenChange={setLocationOpen}
-        selectedCountry={countryFilter}
-        selectedCity={cityFilter}
+        selectedCountry={filters.country}
+        selectedCity={filters.city}
         onApply={handleApplyLocation}
         countries={countries}
         getCitiesByCountry={getCitiesByCountry}
