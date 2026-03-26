@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, SlidersHorizontal, MapPin } from "lucide-react";
+import { ArrowRight, SlidersHorizontal, MapPin, SearchX, X } from "lucide-react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { useEffect, useState, useMemo } from "react";
 import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
@@ -175,21 +175,70 @@ export default function LandingPage() {
               ))}
             </div>
           ) : (
-            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="group relative block overflow-hidden rounded-xl bg-card">
-                  <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-                    <div className="flex h-full items-center justify-center text-muted-foreground/20">
-                      <div className="h-14 w-14 rounded-full bg-muted-foreground/10" />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-muted/60 via-transparent to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <div className="h-4 w-24 rounded bg-muted-foreground/10 mb-1" />
-                      <div className="h-3 w-16 rounded bg-muted-foreground/8" />
-                    </div>
-                  </div>
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-border/50 bg-card p-10 md:p-16 text-center shadow-sm">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                <SearchX className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground font-display">
+                {hasFilters ? t("landing.empty_title") : t("search.no_filters")}
+              </h3>
+              <p className="mt-1.5 text-sm text-muted-foreground max-w-md">
+                {hasFilters ? t("landing.empty_desc") : t("landing.cta_desc")}
+              </p>
+
+              {hasFilters && (
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                  {(countryFilter || cityFilter) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5 rounded-full text-xs"
+                      onClick={() => { setCountryFilter(""); setCityFilter(""); }}
+                    >
+                      <X className="h-3 w-3" />
+                      {t("landing.empty_remove_location")}
+                    </Button>
+                  )}
+                  {serviceFilter && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5 rounded-full text-xs"
+                      onClick={() => setServiceFilter("")}
+                    >
+                      <X className="h-3 w-3" />
+                      {t("landing.empty_remove_service")}
+                    </Button>
+                  )}
+                  {categoryFilter && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5 rounded-full text-xs"
+                      onClick={() => setCategoryFilter("")}
+                    >
+                      <X className="h-3 w-3" />
+                      {t("landing.empty_remove_category")}
+                    </Button>
+                  )}
+                  <Button
+                    variant="premium"
+                    size="sm"
+                    className="h-8 rounded-full text-xs"
+                    onClick={clearFilters}
+                  >
+                    {t("landing.empty_browse_all")}
+                  </Button>
                 </div>
-              ))}
+              )}
+
+              {!hasFilters && (
+                <Button variant="premium" size="sm" className="mt-5" asChild>
+                  <Link to="/cadastro?role=professional">
+                    {t("landing.cta_button")} <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+              )}
             </div>
           )}
 
