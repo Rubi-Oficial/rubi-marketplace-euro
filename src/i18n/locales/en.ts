@@ -19,6 +19,12 @@ const en: TranslationMap = {
   "landing.cta_title": "Ready to grow your business?",
   "landing.cta_desc": "Create your verified profile in minutes.",
   "landing.cta_button": "Create Your Profile",
+  "landing.empty_title": "No profiles found",
+  "landing.empty_desc": "Try adjusting your filters or broadening your search.",
+  "landing.empty_remove_location": "Remove location",
+  "landing.empty_remove_service": "Remove service",
+  "landing.empty_remove_category": "Remove category",
+  "landing.empty_browse_all": "Browse all profiles",
 
   "search.loading": "Loading...",
   "search.profiles": "profile(s)",

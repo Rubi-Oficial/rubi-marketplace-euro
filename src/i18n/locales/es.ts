@@ -19,6 +19,12 @@ const es: TranslationMap = {
   "landing.cta_title": "¿Listo para hacer crecer tu negocio?",
   "landing.cta_desc": "Crea tu perfil verificado en minutos.",
   "landing.cta_button": "Crear Tu Perfil",
+  "landing.empty_title": "No se encontraron perfiles",
+  "landing.empty_desc": "Intenta ajustar los filtros o ampliar la búsqueda.",
+  "landing.empty_remove_location": "Eliminar ubicación",
+  "landing.empty_remove_service": "Eliminar servicio",
+  "landing.empty_remove_category": "Eliminar categoría",
+  "landing.empty_browse_all": "Ver todos los perfiles",
 
   "search.loading": "Cargando...",
   "search.profiles": "perfil(es)",
