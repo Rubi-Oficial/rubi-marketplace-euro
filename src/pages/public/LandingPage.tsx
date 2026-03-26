@@ -62,7 +62,7 @@ export default function LandingPage() {
   const locationCount = [filters.country, filters.city].filter(Boolean).length;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-20 md:pb-0">
       <section className="pt-4 pb-8 md:pb-8">
         <div className="container mx-auto px-4">
           <FilterBar
