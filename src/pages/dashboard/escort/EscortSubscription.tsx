@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Check, CreditCard, Calendar, AlertCircle, XCircle, Clock } from "lucide-react";
+import { Check, CreditCard, Calendar, AlertCircle, XCircle, Clock, Sparkles, Zap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Plan {
@@ -14,6 +14,9 @@ interface Plan {
   billing_period: string;
   features_json: string[];
   is_active: boolean;
+  tier?: string;
+  is_boost?: boolean;
+  highlight_days?: number;
 }
 
 interface Subscription {
@@ -67,13 +70,17 @@ export default function EscortSubscription() {
   const { user, session } = useAuth();
   const [searchParams] = useSearchParams();
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [boostPlans, setBoostPlans] = useState<Plan[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [highlightTier, setHighlightTier] = useState<string>("standard");
+  const [highlightExpiresAt, setHighlightExpiresAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   useEffect(() => {
     const status = searchParams.get("status");
     if (status === "success") toast.success("Pagamento realizado com sucesso! O seu perfil será ativado em breve.");
+    if (status === "boost_success") toast.success("Boost aplicado! O seu perfil subiu ao topo.");
     if (status === "canceled") toast.info("Checkout cancelado. Pode tentar novamente quando quiser.");
   }, [searchParams]);
 
@@ -81,7 +88,7 @@ export default function EscortSubscription() {
     if (!user) return;
 
     const load = async () => {
-      const [plansRes, subRes] = await Promise.all([
+      const [plansRes, subRes, profileRes] = await Promise.all([
         supabase.from("plans").select("*").eq("is_active", true).order("price"),
         supabase
           .from("subscriptions")
@@ -91,10 +98,24 @@ export default function EscortSubscription() {
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
+        supabase
+          .from("profiles")
+          .select("highlight_tier, highlight_expires_at")
+          .eq("user_id", user.id)
+          .maybeSingle(),
       ]);
 
-      setPlans((plansRes.data as Plan[]) || []);
+      const allPlans = (plansRes.data as Plan[]) || [];
+      setPlans(allPlans.filter((p) => !p.is_boost));
+      setBoostPlans(allPlans.filter((p) => p.is_boost));
       setSubscription(subRes.data as Subscription | null);
+
+      if (profileRes.data) {
+        const profileData = profileRes.data as { highlight_tier?: string; highlight_expires_at?: string | null };
+        setHighlightTier(profileData.highlight_tier ?? "standard");
+        setHighlightExpiresAt(profileData.highlight_expires_at ?? null);
+      }
+
       setLoading(false);
     };
 
@@ -295,6 +316,89 @@ export default function EscortSubscription() {
           O seu perfil só ficará visível publicamente com uma assinatura ativa e perfil aprovado.
         </p>
       )}
+
+      {/* ── Boost / Subida ao topo ─────────────────────────────────────── */}
+      {boostPlans.length > 0 && (() => {
+        const hasActiveHighlight =
+          (highlightTier === "premium" || highlightTier === "exclusive") &&
+          highlightExpiresAt &&
+          new Date(highlightExpiresAt) > new Date();
+
+        const tierLabel = highlightTier === "exclusive" ? "Exclusive" : "Premium";
+        const tierColor = highlightTier === "exclusive" ? "text-yellow-600" : "text-purple-600";
+
+        return (
+          <div className="mt-8">
+            <div className="flex items-center gap-2 mb-1">
+              <Zap className="h-5 w-5 text-primary" />
+              <h2 className="font-display text-lg font-semibold text-foreground">Boost — Subida ao Topo</h2>
+            </div>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Suba o seu perfil para o topo do bloco {highlightTier !== "standard" ? tierLabel : "do seu tier"}.
+              {!hasActiveHighlight && (
+                <span className="ml-1 text-destructive">Necessita de um plano Premium ou Exclusive ativo.</span>
+              )}
+            </p>
+
+            {hasActiveHighlight && (
+              <div className="mb-4 rounded-lg border border-border bg-card p-3 flex items-center gap-2">
+                <Sparkles className={`h-4 w-4 shrink-0 ${tierColor}`} />
+                <p className="text-sm text-foreground">
+                  Tier atual: <span className={`font-semibold ${tierColor}`}>{tierLabel}</span>
+                  {highlightExpiresAt && (
+                    <span className="ml-2 text-muted-foreground text-xs">
+                      — válido até {new Date(highlightExpiresAt).toLocaleDateString("pt-BR")}
+                    </span>
+                  )}
+                </p>
+              </div>
+            )}
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {boostPlans.map((plan) => {
+                const disabled = !hasActiveHighlight || !!checkoutLoading;
+                return (
+                  <div
+                    key={plan.id}
+                    className={`rounded-lg border p-6 transition-all ${
+                      hasActiveHighlight
+                        ? "border-primary/30 bg-card hover:border-primary/60"
+                        : "border-border bg-muted/30 opacity-60"
+                    }`}
+                  >
+                    <div className="flex items-baseline justify-between gap-2">
+                      <h3 className="font-display text-xl font-bold text-foreground">{plan.name}</h3>
+                    </div>
+                    <div className="mt-3">
+                      <span className="font-display text-3xl font-bold tabular-nums text-foreground">
+                        €{plan.price.toLocaleString("pt-PT", { minimumFractionDigits: 2 })}
+                      </span>
+                      <span className="text-sm text-muted-foreground"> / por uso</span>
+                    </div>
+                    <Button
+                      className="mt-6 w-full"
+                      disabled={disabled}
+                      onClick={() => handleCheckout(plan.id)}
+                    >
+                      {checkoutLoading === plan.id ? (
+                        <span className="flex items-center gap-2">
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          Redirecionando…
+                        </span>
+                      ) : (
+                        <>
+                          <Zap className="mr-2 h-4 w-4" />
+                          Subir ao topo
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

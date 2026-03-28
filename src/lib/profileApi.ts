@@ -12,6 +12,8 @@ export interface EligibleProfile {
   slug: string | null;
   pricing_from: number | null;
   is_featured: boolean;
+  highlight_tier: string;
+  highlight_expires_at: string | null;
   image_urls: string[];
   bio: string | null;
   has_whatsapp: boolean;
@@ -60,8 +62,9 @@ export async function fetchEligibleProfiles(filters?: {
 
   let query = supabase
     .from("eligible_profiles")
-    .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, has_whatsapp")
-    .order("is_featured", { ascending: false })
+    .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, highlight_tier, highlight_expires_at, tier_rank, effective_sort_key, bio, has_whatsapp")
+    .order("tier_rank", { ascending: false })
+    .order("effective_sort_key", { ascending: false })
     .order("created_at", { ascending: false })
     .order("id", { ascending: false });
 
@@ -109,7 +112,10 @@ export async function fetchEligibleProfiles(filters?: {
       id: p.id!, display_name: p.display_name ?? "", age: p.age ?? null, gender: p.gender ?? null,
       city: p.city ?? null, city_slug: p.city_slug ?? null, category: p.category ?? null,
       slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
-      is_featured: p.is_featured ?? false, image_urls: imageMap[p.id!] || [],
+      is_featured: p.is_featured ?? false,
+      highlight_tier: p.highlight_tier ?? "standard",
+      highlight_expires_at: p.highlight_expires_at ?? null,
+      image_urls: imageMap[p.id!] || [],
       bio: p.bio ?? null, has_whatsapp: p.has_whatsapp ?? false,
     };
   });
