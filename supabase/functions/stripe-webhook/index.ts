@@ -56,15 +56,49 @@ Deno.serve(async (req) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const userId = session.metadata?.user_id;
-        const planId = session.metadata?.plan_id;
+        const userId        = session.metadata?.user_id;
+        const planId        = session.metadata?.plan_id;
+        const highlightType = session.metadata?.highlight_type; // "plan" | "boost" | undefined
 
-        console.log(`[stripe-webhook] checkout.session.completed — user=${userId}, plan=${planId}, session=${session.id}`);
+        console.log(`[stripe-webhook] checkout.session.completed — user=${userId}, plan=${planId}, highlight_type=${highlightType}, session=${session.id}`);
 
         if (!userId || !planId) {
           console.warn("[stripe-webhook] Missing user_id or plan_id in session metadata, skipping");
           break;
         }
+
+        // Fetch plan details for highlight handling
+        const { data: planData } = await supabase
+          .from("plans")
+          .select("tier, is_boost, highlight_days, price")
+          .eq("id", planId)
+          .maybeSingle();
+
+        // ── Boost: one-time payment ──────────────────────────────────────────
+        if (highlightType === "boost" || planData?.is_boost === true) {
+          const { data: profileRow } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("user_id", userId)
+            .maybeSingle();
+
+          if (profileRow?.id) {
+            const { error: boostErr } = await supabase.rpc("apply_boost", {
+              p_profile_id: profileRow.id,
+              p_source:     event.id,
+            });
+            if (boostErr) {
+              console.error(`[stripe-webhook] apply_boost failed for profile ${profileRow.id}:`, boostErr.message);
+            } else {
+              console.log(`[stripe-webhook] Boost applied for profile ${profileRow.id}`);
+            }
+          } else {
+            console.warn(`[stripe-webhook] No profile found for user ${userId}, skipping boost`);
+          }
+          break; // Do not proceed to subscription handling
+        }
+
+        // ── Regular subscription plan ────────────────────────────────────────
 
         // Update subscription record
         const { data: sub, error: subError } = await supabase
@@ -86,13 +120,42 @@ Deno.serve(async (req) => {
 
         console.log(`[stripe-webhook] Subscription ${sub.id} activated for user ${userId}`);
 
+        // ── Highlight tier activation (premium / exclusive plans) ────────────
+        if (planData && planData.tier && planData.tier !== "standard") {
+          const { data: profileRow } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("user_id", userId)
+            .maybeSingle();
+
+          if (profileRow?.id) {
+            const { error: hlErr } = await supabase.rpc("activate_or_renew_highlight", {
+              p_profile_id: profileRow.id,
+              p_tier:       planData.tier,
+              p_days:       planData.highlight_days ?? 30,
+              p_source:     event.id,
+            });
+            if (hlErr) {
+              console.error(`[stripe-webhook] activate_or_renew_highlight failed for profile ${profileRow.id}:`, hlErr.message);
+            } else {
+              console.log(`[stripe-webhook] Highlight activated: tier=${planData.tier} for profile ${profileRow.id}`);
+            }
+          }
+        }
+
         // Affiliate commission logic
         if (sub) {
-          const { data: plan } = await supabase
-            .from("plans")
-            .select("price")
-            .eq("id", sub.plan_id)
-            .single();
+          // planData already contains price; fallback to re-fetch if planData is missing
+          let commissionPlan: { price: number } | null = planData ? { price: planData.price } : null;
+
+          if (!commissionPlan) {
+            const { data: fetchedPlan } = await supabase
+              .from("plans")
+              .select("price")
+              .eq("id", sub.plan_id)
+              .single();
+            commissionPlan = fetchedPlan;
+          }
 
           const { data: userData } = await supabase
             .from("users")
@@ -100,7 +163,7 @@ Deno.serve(async (req) => {
             .eq("id", userId)
             .single();
 
-          if (userData?.referred_by_user_id && plan) {
+          if (userData?.referred_by_user_id && commissionPlan) {
             // Block self-referral
             if (userData.referred_by_user_id === userId) {
               console.warn(`[stripe-webhook] Self-referral blocked for user ${userId}`);
@@ -113,7 +176,7 @@ Deno.serve(async (req) => {
               .eq("id", userData.referred_by_user_id)
               .single();
 
-            const commissionAmount = Math.round(plan.price * COMMISSION_RATE * 100) / 100;
+            const commissionAmount = Math.round(commissionPlan.price * COMMISSION_RATE * 100) / 100;
 
             console.log(`[stripe-webhook] Creating commission: referrer=${userData.referred_by_user_id}, amount=${commissionAmount}`);
 
