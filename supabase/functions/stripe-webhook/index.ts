@@ -145,8 +145,9 @@ Deno.serve(async (req) => {
 
         // Affiliate commission logic
         if (sub) {
-          // planData already contains price; fallback to re-fetch if planData is missing
-          let commissionPlan: { price: number } | null = planData ? { price: planData.price } : null;
+          // planData already contains price; fallback to re-fetch if planData is missing or price is null
+          let commissionPlan: { price: number } | null =
+            planData?.price != null ? { price: planData.price } : null;
 
           if (!commissionPlan) {
             const { data: fetchedPlan } = await supabase

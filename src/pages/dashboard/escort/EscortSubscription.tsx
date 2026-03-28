@@ -111,8 +111,9 @@ export default function EscortSubscription() {
       setSubscription(subRes.data as Subscription | null);
 
       if (profileRes.data) {
-        setHighlightTier((profileRes.data as any).highlight_tier ?? "standard");
-        setHighlightExpiresAt((profileRes.data as any).highlight_expires_at ?? null);
+        const profileData = profileRes.data as { highlight_tier?: string; highlight_expires_at?: string | null };
+        setHighlightTier(profileData.highlight_tier ?? "standard");
+        setHighlightExpiresAt(profileData.highlight_expires_at ?? null);
       }
 
       setLoading(false);

@@ -21,6 +21,8 @@ interface ProfileData {
   status?: string | null;
   city?: string | null;
   category?: string | null;
+  highlight_tier?: string | null;
+  highlight_expires_at?: string | null;
   [key: string]: unknown;
 }
 
@@ -358,8 +360,8 @@ const EscortDashboard = forwardRef<HTMLDivElement>(function EscortDashboard(_pro
 
       {/* Highlight tier status */}
       {(() => {
-        const tier = (d.profile as any)?.highlight_tier as string | undefined;
-        const expiresAt = (d.profile as any)?.highlight_expires_at as string | null | undefined;
+        const tier = d.profile?.highlight_tier;
+        const expiresAt = d.profile?.highlight_expires_at;
         const isActiveTier =
           (tier === "premium" || tier === "exclusive") &&
           expiresAt &&
