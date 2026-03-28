@@ -186,6 +186,75 @@ export type Database = {
         }
         Relationships: []
       }
+      highlight_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          profile_id: string
+          sort_key: number | null
+          source: string | null
+          tier: string
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          profile_id: string
+          sort_key?: number | null
+          source?: string | null
+          tier: string
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          profile_id?: string
+          sort_key?: number | null
+          source?: string | null
+          tier?: string
+          user_id?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "highlight_events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "highlight_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      highlight_tier_counters: {
+        Row: {
+          next_bottom_key: number
+          next_top_key: number
+          tier: string
+        }
+        Insert: {
+          next_bottom_key?: number
+          next_top_key?: number
+          tier: string
+        }
+        Update: {
+          next_bottom_key?: number
+          next_top_key?: number
+          tier?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           created_at: string
@@ -227,28 +296,37 @@ export type Database = {
           billing_period: Database["public"]["Enums"]["billing_period"]
           created_at: string
           features_json: Json
+          highlight_days: number
           id: string
           is_active: boolean
+          is_boost: boolean
           name: string
           price: number
+          tier: string
         }
         Insert: {
           billing_period?: Database["public"]["Enums"]["billing_period"]
           created_at?: string
           features_json?: Json
+          highlight_days?: number
           id?: string
           is_active?: boolean
+          is_boost?: boolean
           name: string
           price: number
+          tier?: string
         }
         Update: {
           billing_period?: Database["public"]["Enums"]["billing_period"]
           created_at?: string
           features_json?: Json
+          highlight_days?: number
           id?: string
           is_active?: boolean
+          is_boost?: boolean
           name?: string
           price?: number
+          tier?: string
         }
         Relationships: []
       }
@@ -392,6 +470,9 @@ export type Database = {
           display_name: string | null
           featured_until: string | null
           gender: string | null
+          highlight_expires_at: string | null
+          highlight_sort_key: number
+          highlight_tier: string
           id: string
           is_featured: boolean
           languages: string[] | null
@@ -415,6 +496,9 @@ export type Database = {
           display_name?: string | null
           featured_until?: string | null
           gender?: string | null
+          highlight_expires_at?: string | null
+          highlight_sort_key?: number
+          highlight_tier?: string
           id?: string
           is_featured?: boolean
           languages?: string[] | null
@@ -438,6 +522,9 @@ export type Database = {
           display_name?: string | null
           featured_until?: string | null
           gender?: string | null
+          highlight_expires_at?: string | null
+          highlight_sort_key?: number
+          highlight_tier?: string
           id?: string
           is_featured?: boolean
           languages?: string[] | null
@@ -810,14 +897,20 @@ export type Database = {
           country: string | null
           created_at: string | null
           display_name: string | null
+          effective_sort_key: number | null
           featured_until: string | null
           gender: string | null
+          has_telegram: boolean | null
           has_whatsapp: boolean | null
+          highlight_expires_at: string | null
+          highlight_sort_key: number | null
+          highlight_tier: string | null
           id: string | null
           is_featured: boolean | null
           languages: string[] | null
           pricing_from: number | null
           slug: string | null
+          tier_rank: number | null
           updated_at: string | null
         }
         Insert: {
@@ -829,14 +922,20 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           display_name?: string | null
+          effective_sort_key?: never
           featured_until?: string | null
           gender?: string | null
+          has_telegram?: never
           has_whatsapp?: never
+          highlight_expires_at?: string | null
+          highlight_sort_key?: number | null
+          highlight_tier?: string | null
           id?: string | null
           is_featured?: boolean | null
           languages?: string[] | null
           pricing_from?: number | null
           slug?: string | null
+          tier_rank?: never
           updated_at?: string | null
         }
         Update: {
@@ -848,20 +947,41 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           display_name?: string | null
+          effective_sort_key?: never
           featured_until?: string | null
           gender?: string | null
+          has_telegram?: never
           has_whatsapp?: never
+          highlight_expires_at?: string | null
+          highlight_sort_key?: number | null
+          highlight_tier?: string | null
           id?: string | null
           is_featured?: boolean | null
           languages?: string[] | null
           pricing_from?: number | null
           slug?: string | null
+          tier_rank?: never
           updated_at?: string | null
         }
         Relationships: []
       }
     }
     Functions: {
+      activate_or_renew_highlight: {
+        Args: {
+          p_profile_id: string
+          p_tier: string
+          p_days: number
+          p_source?: string
+        }
+        Returns: undefined
+      }
+      alloc_bottom_key: { Args: { p_tier: string }; Returns: number }
+      alloc_top_key: { Args: { p_tier: string }; Returns: number }
+      apply_boost: {
+        Args: { p_profile_id: string; p_source?: string }
+        Returns: undefined
+      }
       get_access_analytics: { Args: never; Returns: Json }
       get_admin_dashboard_stats: { Args: never; Returns: Json }
       get_admin_sanity_checks: { Args: never; Returns: Json }
