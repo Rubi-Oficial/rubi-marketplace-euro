@@ -170,12 +170,37 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
           </div>
         )}
 
-        {profile.is_featured && (
-          <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full gold-gradient px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-md">
-            <Sparkles className="h-2.5 w-2.5" />
-            {t("common.featured")}
-          </div>
-        )}
+        {/* Tier badge — exclusive > premium > featured (legacy) */}
+        {(() => {
+          const isActive =
+            profile.highlight_expires_at &&
+            new Date(profile.highlight_expires_at) > new Date();
+          if (profile.highlight_tier === "exclusive" && isActive) {
+            return (
+              <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-md">
+                <Sparkles className="h-2.5 w-2.5" />
+                Exclusive
+              </div>
+            );
+          }
+          if (profile.highlight_tier === "premium" && isActive) {
+            return (
+              <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-500 to-violet-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-md">
+                <Sparkles className="h-2.5 w-2.5" />
+                Premium
+              </div>
+            );
+          }
+          if (profile.is_featured) {
+            return (
+              <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full gold-gradient px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-md">
+                <Sparkles className="h-2.5 w-2.5" />
+                {t("common.featured")}
+              </div>
+            );
+          }
+          return null;
+        })()}
 
         {profile.category && (
           <div className="absolute top-3 right-3 rounded-full bg-black/50 backdrop-blur-sm px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90">

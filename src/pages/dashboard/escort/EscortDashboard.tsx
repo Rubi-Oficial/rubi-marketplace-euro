@@ -10,7 +10,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import {
   FileText, Image, CreditCard, BarChart3, Eye, Copy, Link2,
   MousePointerClick, UserPlus, DollarSign, Clock, CheckCircle2, Send,
-  AlertCircle, Pause, Play,
+  AlertCircle, Pause, Play, Sparkles, Zap,
 } from "lucide-react";
 
 /* ── Data hook ── */
@@ -355,6 +355,49 @@ const EscortDashboard = forwardRef<HTMLDivElement>(function EscortDashboard(_pro
           </Button>
         </div>
       )}
+
+      {/* Highlight tier status */}
+      {(() => {
+        const tier = (d.profile as any)?.highlight_tier as string | undefined;
+        const expiresAt = (d.profile as any)?.highlight_expires_at as string | null | undefined;
+        const isActiveTier =
+          (tier === "premium" || tier === "exclusive") &&
+          expiresAt &&
+          new Date(expiresAt) > new Date();
+
+        if (!isActiveTier) return null;
+
+        const isExclusive = tier === "exclusive";
+        const borderClass = isExclusive
+          ? "border-yellow-500/40 bg-yellow-500/5"
+          : "border-purple-500/40 bg-purple-500/5";
+        const iconClass = isExclusive ? "text-yellow-500" : "text-purple-500";
+        const label = isExclusive ? "Exclusive" : "Premium";
+
+        return (
+          <div className={`rounded-lg border p-4 ${borderClass}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <Sparkles className={`h-5 w-5 shrink-0 ${iconClass}`} />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    Destaque {label} ativo
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Válido até {new Date(expiresAt!).toLocaleDateString("pt-BR")}
+                  </p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/app/plano">
+                  <Zap className="mr-1.5 h-3.5 w-3.5" />
+                  Subir ao topo
+                </Link>
+              </Button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Affiliate section */}
       <div>
