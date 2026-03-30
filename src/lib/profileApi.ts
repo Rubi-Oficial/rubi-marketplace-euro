@@ -62,9 +62,8 @@ export async function fetchEligibleProfiles(filters?: {
 
   let query = supabase
     .from("eligible_profiles")
-    .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, highlight_tier, highlight_expires_at, tier_rank, effective_sort_key, bio, has_whatsapp")
-    .order("tier_rank", { ascending: false })
-    .order("effective_sort_key", { ascending: false })
+    .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, has_whatsapp, created_at")
+    .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false })
     .order("id", { ascending: false });
 
