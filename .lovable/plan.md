@@ -1,34 +1,28 @@
 
 
-# Fix: Build errors in `track-visit` edge function
+# Analysis: Profile Display on Landing Page
 
-## Errors (5 total)
+## Status: Profiles ARE displaying correctly
 
-1. **Lines 139-140**: `data.country_code || ""` — TS infers `{}` from the fallback `||` with empty string when the column type is nullable. Fix: cast explicitly.
-2. **Line 212**: `getCachedGeo` parameter type mismatch — `ReturnType<typeof createClient>` is too strict with generics. Fix: use `any` for the supabase param type.
-3. **Lines 144-145**: Same issue for `enrichGeoAsync`.
-4. **Line 246**: `EdgeRuntime` is not defined — Deno edge runtime uses `globalThis` or we should just fire-and-forget with `.catch()` instead.
+The API query to `eligible_profiles` returns **4 profiles** with HTTP 200. The UI renders them with working image carousels.
 
-## Changes — single file: `supabase/functions/track-visit/index.ts`
+## Minor Issues Found
 
-### Fix 1: Replace `ReturnType<typeof createClient>` with `any` in function signatures
-- `getCachedGeo(supabase: any, ...)` (line 129)
-- `enrichGeoAsync(supabase: any, ...)` (line 145)
+### 1. Two test profiles missing from results
+Sofia Laurent and Nina Dubois are not returned by the `eligible_profiles` view. This is likely a data issue (expired subscription, status not "approved", etc.) — not a code bug. To investigate further, we'd need to query the `profiles` and `subscriptions` tables directly to check their status.
 
-### Fix 2: Fix nullable string coercion (lines 139-140)
-```ts
-country_code: (data.country_code as string) || "",
-city_name: (data.city_name as string) || "",
-```
+### 2. React `forwardRef` warnings (cosmetic)
+`ProfileGrid` and `MobileFilterBar` receive refs from parent components but aren't wrapped in `React.forwardRef()`. This causes console warnings but doesn't break functionality.
 
-### Fix 3: Replace `EdgeRuntime.waitUntil()` with fire-and-forget (line 246)
-```ts
-enrichGeoAsync(supabase, { visitIds, ipHash, ip }).catch(console.error);
-```
+**Fix:** Wrap both components with `forwardRef` or remove the ref passing in `LandingPage`.
 
-This removes the dependency on `EdgeRuntime` which isn't available in the Deno type checker, while preserving the async geo enrichment behavior.
+## Recommended Next Steps
 
-## Impact
-- No behavior change — only type fixes and a runtime-equivalent replacement for `waitUntil`.
-- All other edge functions (`create-checkout`, `sitemap`, `stripe-webhook`) should pass once this file is fixed (the errors are all in `track-visit`).
+1. **Investigate missing profiles** — Query the database to check why Sofia Laurent and Nina Dubois don't appear in `eligible_profiles` (check their `profiles.status` and `subscriptions.status`).
+2. **Fix forwardRef warnings** — Quick cleanup in `ProfileGrid.tsx` and `MobileFilterBar.tsx`.
+
+## Technical Details
+
+- **Files to edit:** `src/components/public/ProfileGrid.tsx`, `src/components/public/MobileFilterBar.tsx`
+- **Database check needed:** Query `profiles` table for the 2 missing profiles' status and subscription state
 
