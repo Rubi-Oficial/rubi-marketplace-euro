@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { useProfileFilters } from "@/hooks/useProfileFilters";
 import { VideoSection } from "@/components/public/VideoSection";
@@ -40,6 +40,9 @@ export default function LandingPage() {
     filters,
     profiles,
     loading,
+    loadingMore,
+    hasMore,
+    loadMore,
     services,
     countries,
     getCitiesByCountry,
@@ -60,6 +63,26 @@ export default function LandingPage() {
 
   const generalCount = [filters.category, filters.service].filter(Boolean).length;
   const locationCount = [filters.country, filters.city].filter(Boolean).length;
+
+  // Infinite scroll with IntersectionObserver
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          loadMore();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadingMore, loadMore]);
 
   return (
     <div className="min-h-screen pb-20 md:pb-0">
@@ -87,7 +110,24 @@ export default function LandingPage() {
           {loading ? (
             <ProfileGridSkeleton count={8} />
           ) : profiles.length > 0 ? (
-            <ProfileGrid profiles={profiles} />
+            <>
+              <ProfileGrid profiles={profiles} />
+
+              {/* Sentinel for infinite scroll */}
+              <div ref={sentinelRef} className="h-1" />
+
+              {loadingMore && (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              )}
+
+              {!hasMore && profiles.length > 0 && (
+                <p className="py-6 text-center text-sm text-muted-foreground">
+                  {t("landing.view_all") ?? "Todos os perfis carregados"}
+                </p>
+              )}
+            </>
           ) : (
             <EmptyState
               hasFilters={hasFilters}
@@ -100,16 +140,6 @@ export default function LandingPage() {
               onRemoveCategory={() => handleRemoveFilter("category")}
               onClearAll={clearFilters}
             />
-          )}
-
-          {profiles.length > 0 && (
-            <div className="mt-8 text-center">
-              <Button variant="outline" asChild>
-                <Link to="/buscar">
-                  {t("landing.view_all")} <ArrowRight className="ml-1.5 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
           )}
         </div>
       </section>

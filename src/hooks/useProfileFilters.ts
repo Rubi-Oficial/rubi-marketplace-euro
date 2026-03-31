@@ -1,11 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchEligibleProfiles, fetchServices, type EligibleProfile } from "@/lib/profileApi";
 import { useLocations } from "@/hooks/useLocations";
 
 interface UseProfileFiltersOptions {
-  /** Default limit for fetching profiles */
   limit?: number;
-  /** Initial filter values */
   initialFilters?: {
     country?: string;
     city?: string;
@@ -37,7 +35,10 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
 
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const offsetRef = useRef(0);
 
   const filteredCities = useMemo(
     () => (filters.country ? getCitiesByCountry(filters.country) : []),
@@ -50,25 +51,51 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
     });
   }, []);
 
+  const buildFilterParams = useCallback(() => ({
+    search: filters.search || undefined,
+    country: filters.country || undefined,
+    city_slugs: filters.country && !filters.city ? filteredCities.map((c) => c.slug) : undefined,
+    city_slug: filters.city || undefined,
+    category: filters.category || undefined,
+    service_slug: filters.service || undefined,
+    limit,
+  }), [filters.search, filters.country, filters.city, filters.category, filters.service, filteredCities, limit]);
+
+  // Initial load + filter changes
   useEffect(() => {
     setLoading(true);
-    fetchEligibleProfiles({
-      search: filters.search || undefined,
-      country: filters.country || undefined,
-      city_slugs: filters.country && !filters.city ? filteredCities.map((c) => c.slug) : undefined,
-      city_slug: filters.city || undefined,
-      category: filters.category || undefined,
-      service_slug: filters.service || undefined,
-      limit,
-      offset: 0,
-    }).then((data) => {
-      setProfiles(data);
-      setLoading(false);
-    }).catch((err: unknown) => {
-      console.error("[filters] Failed to fetch profiles:", err);
-      setLoading(false);
-    });
-  }, [filters.search, filters.city, filters.category, filters.service, filters.country, filteredCities, limit]);
+    setHasMore(true);
+    offsetRef.current = 0;
+
+    fetchEligibleProfiles({ ...buildFilterParams(), offset: 0 })
+      .then((data) => {
+        setProfiles(data);
+        setHasMore(data.length >= limit);
+        offsetRef.current = data.length;
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        console.error("[filters] Failed to fetch profiles:", err);
+        setLoading(false);
+      });
+  }, [buildFilterParams, limit]);
+
+  const loadMore = useCallback(() => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+
+    fetchEligibleProfiles({ ...buildFilterParams(), offset: offsetRef.current })
+      .then((data) => {
+        setProfiles((prev) => [...prev, ...data]);
+        setHasMore(data.length >= limit);
+        offsetRef.current += data.length;
+        setLoadingMore(false);
+      })
+      .catch((err: unknown) => {
+        console.error("[filters] Failed to load more profiles:", err);
+        setLoadingMore(false);
+      });
+  }, [loadingMore, hasMore, buildFilterParams, limit]);
 
   const hasFilters = !!filters.country || !!filters.city || !!filters.category || !!filters.service;
   const hasLocationFilter = !!filters.country || !!filters.city;
@@ -111,6 +138,9 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
     setFilters,
     profiles,
     loading,
+    loadingMore,
+    hasMore,
+    loadMore,
     services,
     countries,
     filteredCities,
