@@ -89,9 +89,11 @@ export default function ProfilePage() {
         .order("sort_order");
 
       if (vidData) {
+        const vidPaths = vidData.map((v) => v.storage_path);
+        const vidUrls = await getSignedUrls(vidPaths);
         setVideos(vidData.map((v) => ({
           ...v,
-          url: supabase.storage.from("profile-images").getPublicUrl(v.storage_path).data.publicUrl,
+          url: vidUrls[v.storage_path] || "",
         })));
       }
 

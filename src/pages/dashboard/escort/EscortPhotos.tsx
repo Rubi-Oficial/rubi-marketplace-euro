@@ -51,11 +51,17 @@ export default function EscortPhotos() {
       supabase.from("profile_videos").select("*").eq("profile_id", pid).order("sort_order"),
     ]);
 
+    const allPaths = [
+      ...(imgData ?? []).map((img) => img.storage_path),
+      ...(vidData ?? []).map((v) => v.storage_path),
+    ];
+    const urlMap = await getSignedUrls(allPaths);
+
     if (imgData) {
       setImages(imgData.map((img) => ({
         ...img,
         moderation_status: img.moderation_status as MediaItem["moderation_status"],
-        url: supabase.storage.from("profile-images").getPublicUrl(img.storage_path).data.publicUrl,
+        url: urlMap[img.storage_path] || "",
         type: "image" as const,
       })));
     }
@@ -64,7 +70,7 @@ export default function EscortPhotos() {
       setVideos(vidData.map((v) => ({
         ...v,
         moderation_status: v.moderation_status as MediaItem["moderation_status"],
-        url: supabase.storage.from("profile-images").getPublicUrl(v.storage_path).data.publicUrl,
+        url: urlMap[v.storage_path] || "",
         type: "video" as const,
         duration_seconds: v.duration_seconds ?? undefined,
       })));

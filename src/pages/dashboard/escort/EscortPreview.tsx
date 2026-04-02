@@ -47,16 +47,20 @@ export default function EscortPreview() {
       ]);
 
       if (imgRes.data) {
+        const imgPaths = imgRes.data.map((img) => img.storage_path);
+        const imgUrls = await getSignedUrls(imgPaths);
         setImages(imgRes.data.map((img) => ({
           ...img,
-          url: supabase.storage.from("profile-images").getPublicUrl(img.storage_path).data.publicUrl,
+          url: imgUrls[img.storage_path] || "",
         })));
       }
 
       if (vidRes.data) {
+        const vidPaths = vidRes.data.map((v) => v.storage_path);
+        const vidUrls = await getSignedUrls(vidPaths);
         setVideos(vidRes.data.map((v) => ({
           ...v,
-          url: supabase.storage.from("profile-images").getPublicUrl(v.storage_path).data.publicUrl,
+          url: vidUrls[v.storage_path] || "",
         })));
       }
 

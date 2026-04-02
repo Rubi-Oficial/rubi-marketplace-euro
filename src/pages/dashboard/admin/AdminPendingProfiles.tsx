@@ -53,9 +53,11 @@ export default function AdminPendingProfiles() {
     ]);
 
     setProfiles((profileData as PendingProfile[]) ?? []);
+    const imgPaths = (imgData ?? []).map((img: any) => img.storage_path);
+    const imgUrls = await getSignedUrls(imgPaths);
     setPendingImages((imgData ?? []).map((img: any) => ({
       ...img,
-      url: supabase.storage.from("profile-images").getPublicUrl(img.storage_path).data.publicUrl,
+      url: imgUrls[img.storage_path] || "",
       profile_name: img.profiles?.display_name || "—",
     })));
     setLoading(false);
