@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
+import { getSignedUrls } from "@/lib/storageUrls";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
