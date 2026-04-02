@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { getSignedUrls } from "@/lib/storageUrls";
 
 export interface EligibleProfile {
   id: string;
@@ -94,13 +95,15 @@ export async function fetchEligibleProfiles(filters?: {
     .in("profile_id", filteredProfileIds).eq("moderation_status", "approved")
     .order("sort_order", { ascending: true });
 
+  const imgRows = (images ?? []) as ProfileImageRow[];
+  const allPaths = imgRows.map((img) => img.storage_path);
+  const signedUrlMap = await getSignedUrls(allPaths);
+
   const imageMap: Record<string, string[]> = {};
-  const profileImages = (images ?? []) as ProfileImageRow[];
-  profileImages.forEach((img) => {
+  imgRows.forEach((img) => {
     if (!imageMap[img.profile_id]) imageMap[img.profile_id] = [];
-    imageMap[img.profile_id].push(
-      supabase.storage.from("profile-images").getPublicUrl(img.storage_path).data.publicUrl
-    );
+    const url = signedUrlMap[img.storage_path];
+    if (url) imageMap[img.profile_id].push(url);
   });
 
   const profileMap = new Map((profiles as EligibleProfileRow[]).map((p) => [p.id, p]));

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/imageCompression";
+import { getSignedUrls } from "@/lib/storageUrls";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -163,21 +164,28 @@ export default function AdminProfileDetail() {
       if (u) setUserInfo(u as UserInfo);
     }
 
-    if (imgRes.data) {
-      setImages(imgRes.data.map((img: any) => ({
-        ...img,
-        url: supabase.storage.from("profile-images").getPublicUrl(img.storage_path).data.publicUrl,
-      })));
-    }
+    if (imgRes.data || vidRes.data) {
+      const allPaths = [
+        ...(imgRes.data ?? []).map((img: any) => img.storage_path),
+        ...(vidRes.data ?? []).map((v: any) => v.storage_path),
+        ...(vidRes.data ?? []).filter((v: any) => v.thumbnail_path).map((v: any) => v.thumbnail_path),
+      ];
+      const urlMap = await getSignedUrls(allPaths);
 
-    if (vidRes.data) {
-      setVideos(vidRes.data.map((v: any) => ({
-        ...v,
-        url: supabase.storage.from("profile-images").getPublicUrl(v.storage_path).data.publicUrl,
-        thumbnail_url: v.thumbnail_path
-          ? supabase.storage.from("profile-images").getPublicUrl(v.thumbnail_path).data.publicUrl
-          : null,
-      })));
+      if (imgRes.data) {
+        setImages(imgRes.data.map((img: any) => ({
+          ...img,
+          url: urlMap[img.storage_path] || "",
+        })));
+      }
+
+      if (vidRes.data) {
+        setVideos(vidRes.data.map((v: any) => ({
+          ...v,
+          url: urlMap[v.storage_path] || "",
+          thumbnail_url: v.thumbnail_path ? (urlMap[v.thumbnail_path] || null) : null,
+        })));
+      }
     }
 
     if (psRes.data) setServices(psRes.data.map((r: any) => r.services?.name || "Unknown"));

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Heart, Search } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { getSignedUrls } from "@/lib/storageUrls";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProfileCard, EligibleProfile } from "@/components/public/ProfileCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,12 +40,14 @@ export default function ClientFavorites() {
         .eq("moderation_status", "approved")
         .order("sort_order", { ascending: true });
 
+      const allPaths = (images || []).map((img: any) => img.storage_path);
+      const urlMap = await getSignedUrls(allPaths);
+
       const imageMap: Record<string, string[]> = {};
       (images || []).forEach((img: any) => {
         if (!imageMap[img.profile_id]) imageMap[img.profile_id] = [];
-        imageMap[img.profile_id].push(
-          supabase.storage.from("profile-images").getPublicUrl(img.storage_path).data.publicUrl
-        );
+        const url = urlMap[img.storage_path];
+        if (url) imageMap[img.profile_id].push(url);
       });
 
       // Maintain favorites order

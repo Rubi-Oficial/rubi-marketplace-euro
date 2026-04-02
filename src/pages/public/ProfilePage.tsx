@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
+import { getSignedUrls } from "@/lib/storageUrls";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
@@ -72,9 +73,11 @@ export default function ProfilePage() {
         .order("sort_order");
 
       if (imgData) {
+        const imgPaths = imgData.map((img) => img.storage_path);
+        const imgUrls = await getSignedUrls(imgPaths);
         setImages(imgData.map((img) => ({
           ...img,
-          url: supabase.storage.from("profile-images").getPublicUrl(img.storage_path).data.publicUrl,
+          url: imgUrls[img.storage_path] || "",
         })));
       }
 
@@ -86,9 +89,11 @@ export default function ProfilePage() {
         .order("sort_order");
 
       if (vidData) {
+        const vidPaths = vidData.map((v) => v.storage_path);
+        const vidUrls = await getSignedUrls(vidPaths);
         setVideos(vidData.map((v) => ({
           ...v,
-          url: supabase.storage.from("profile-images").getPublicUrl(v.storage_path).data.publicUrl,
+          url: vidUrls[v.storage_path] || "",
         })));
       }
 
