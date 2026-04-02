@@ -127,6 +127,7 @@ Deno.serve(async (req) => {
       );
     }
 
+    const appUrl = Deno.env.get("APP_URL") ?? req.headers.get("origin") ?? "https://rubi-marketplace-euro.lovable.app";
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     // Reuse existing Stripe customer if available
