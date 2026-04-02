@@ -171,6 +171,11 @@ async function enrichGeoAsync(
     .is("city_name", null);
 }
 
+function truncate(val: string | undefined | null, maxLen: number): string | null {
+  if (!val) return null;
+  return val.slice(0, maxLen);
+}
+
 function normalizePayload(body: unknown): VisitPayload[] {
   if (body && typeof body === "object" && Array.isArray((body as { visits?: unknown[] }).visits)) {
     return (body as { visits: VisitPayload[] }).visits;
