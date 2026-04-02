@@ -217,18 +217,18 @@ Deno.serve(async (req) => {
     const cachedGeo = ipHash ? await getCachedGeo(supabase, ipHash) : null;
 
     const rows = visits.map((visit) => ({
-      session_id: visit.session_id,
-      page_path: visit.page_path,
-      referrer_url: visit.referrer_url || null,
-      utm_source: visit.utm_source || null,
-      utm_medium: visit.utm_medium || null,
-      utm_campaign: visit.utm_campaign || null,
+      session_id: truncate(visit.session_id, 128) || visit.session_id,
+      page_path: truncate(visit.page_path, 512) || visit.page_path,
+      referrer_url: truncate(visit.referrer_url, 2048),
+      utm_source: truncate(visit.utm_source, 256),
+      utm_medium: truncate(visit.utm_medium, 256),
+      utm_campaign: truncate(visit.utm_campaign, 256),
       ip_hash: ipHash,
       country_code: cachedGeo?.country_code || null,
       city_name: cachedGeo?.city_name || null,
-      user_agent: userAgent,
+      user_agent: truncate(userAgent, 512),
       device_type: getDeviceType(userAgent),
-      user_id: visit.user_id || null,
+      user_id: null,
       is_bot: isBot(userAgent),
     }));
 
