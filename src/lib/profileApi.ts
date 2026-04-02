@@ -95,11 +95,12 @@ export async function fetchEligibleProfiles(filters?: {
     .in("profile_id", filteredProfileIds).eq("moderation_status", "approved")
     .order("sort_order", { ascending: true });
 
-  const allPaths = profileImages.map((img) => img.storage_path);
+  const imgRows = (images ?? []) as ProfileImageRow[];
+  const allPaths = imgRows.map((img) => img.storage_path);
   const signedUrlMap = await getSignedUrls(allPaths);
 
   const imageMap: Record<string, string[]> = {};
-  profileImages.forEach((img) => {
+  imgRows.forEach((img) => {
     if (!imageMap[img.profile_id]) imageMap[img.profile_id] = [];
     const url = signedUrlMap[img.storage_path];
     if (url) imageMap[img.profile_id].push(url);
