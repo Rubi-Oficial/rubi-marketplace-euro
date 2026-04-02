@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Heart, Search } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { getSignedUrls } from "@/lib/storageUrls";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProfileCard, EligibleProfile } from "@/components/public/ProfileCard";
 import { Skeleton } from "@/components/ui/skeleton";
