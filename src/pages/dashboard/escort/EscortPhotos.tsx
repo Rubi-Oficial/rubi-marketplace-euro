@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { getSignedUrls } from "@/lib/storageUrls";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Upload, ImageIcon, Film, AlertCircle } from "lucide-react";
