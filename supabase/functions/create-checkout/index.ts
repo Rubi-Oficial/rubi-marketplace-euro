@@ -232,7 +232,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("[create-checkout] Unhandled error:", err);
     return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
+      JSON.stringify({ error: "An unexpected error occurred. Please try again." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
