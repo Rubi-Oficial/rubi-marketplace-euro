@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { CATEGORY_SLUGS } from "../../../src/lib/categoryMapping.ts";
+
+const CATEGORY_SLUGS = ["women", "men", "couples", "shemales", "gay", "virtual-sex", "videos"];
 
 const SITE_URL = "https://rubigirls.fun";
 
