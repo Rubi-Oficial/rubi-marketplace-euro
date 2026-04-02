@@ -73,9 +73,11 @@ export default function ProfilePage() {
         .order("sort_order");
 
       if (imgData) {
+        const imgPaths = imgData.map((img) => img.storage_path);
+        const imgUrls = await getSignedUrls(imgPaths);
         setImages(imgData.map((img) => ({
           ...img,
-          url: supabase.storage.from("profile-images").getPublicUrl(img.storage_path).data.publicUrl,
+          url: imgUrls[img.storage_path] || "",
         })));
       }
 
