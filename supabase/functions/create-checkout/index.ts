@@ -193,8 +193,8 @@ Deno.serve(async (req) => {
             quantity: 1,
           },
         ],
-        success_url: `${req.headers.get("origin")}/app/plano?status=success`,
-        cancel_url:  `${req.headers.get("origin")}/app/plano?status=canceled`,
+        success_url: `${appUrl}/app/plano?status=success`,
+        cancel_url:  `${appUrl}/app/plano?status=canceled`,
       });
     }
 
