@@ -77,6 +77,10 @@ export default {
           light: "hsl(350 60% 62%)",
           dark: "hsl(340 70% 38%)",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
         surface: {
           light: "hsl(270 15% 97%)",
           hover: "hsl(270 15% 93%)",

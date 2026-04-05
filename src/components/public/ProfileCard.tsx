@@ -310,13 +310,13 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
           {profile.has_whatsapp && (
             <Button
               size="sm"
-              className="shrink-0 rounded-lg px-3 bg-green-600 hover:bg-green-700 text-white border-0"
+              className="shrink-0 rounded-lg px-3 bg-success hover:bg-success/90 text-success-foreground border-0"
               disabled={whatsappLoading}
               onClick={handleWhatsApp}
-              aria-label={`WhatsApp de ${profile.display_name}`}
+              aria-label={`WhatsApp — ${profile.display_name}`}
             >
               {whatsappLoading ? (
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-success-foreground border-t-transparent" />
               ) : (
                 <MessageCircle className="h-4 w-4" />
               )}

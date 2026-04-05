@@ -10,10 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { Eye, EyeOff, User, Briefcase } from "lucide-react";
 
 const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, ref) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<"client" | "professional">("client");
   const [loading, setLoading] = useState(false);
@@ -87,12 +89,15 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="mb-8 text-center">
-          <Link to="/" className="font-display text-3xl font-bold text-primary"><span className="font-bold">Rubi</span> <span className="font-medium text-foreground/80">Girls</span></Link>
+          <Link to="/" className="font-display text-3xl font-bold text-primary" aria-label="Rubi Girls — Home">
+            <span className="font-bold">Rubi</span>{" "}
+            <span className="font-medium text-foreground/80">Girls</span>
+          </Link>
           <p className="mt-2 text-muted-foreground">{t("auth.create_account")}</p>
         </div>
 
-        <div className="rounded-lg border border-border bg-card p-6">
-          <form onSubmit={handleRegister} className="space-y-4">
+        <div className="rounded-2xl border border-border/60 bg-card p-6 sm:p-8 shadow-sm">
+          <form onSubmit={handleRegister} className="space-y-4" noValidate>
             <div className="space-y-2">
               <Label htmlFor="fullName">{t("auth.full_name")}</Label>
               <Input
@@ -101,6 +106,8 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder={t("auth.your_name")}
                 required
+                autoComplete="name"
+                className="rounded-lg"
               />
             </div>
             <div className="space-y-2">
@@ -112,45 +119,64 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t("auth.email_placeholder")}
                 required
+                autoComplete="email"
+                className="rounded-lg"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t("auth.password")}</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t("auth.password_placeholder")}
-                minLength={6}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t("auth.password_placeholder")}
+                  minLength={6}
+                  required
+                  autoComplete="new-password"
+                  className="pr-10 rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2">
               <Label>{t("auth.account_type")}</Label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setRole("client")}
-                  className={`rounded-md border px-4 py-3 text-sm transition-all ${
+                  className={`flex flex-col items-center gap-1.5 rounded-xl border-2 px-4 py-4 text-sm transition-all duration-200 ${
                     role === "client"
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:border-primary/40"
+                      ? "border-primary bg-primary/8 text-primary shadow-sm"
+                      : "border-border text-muted-foreground hover:border-primary/30 hover:bg-accent/50"
                   }`}
+                  aria-pressed={role === "client"}
                 >
-                  {t("auth.client")}
+                  <User className="h-5 w-5" />
+                  <span className="font-medium">{t("auth.client")}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setRole("professional")}
-                  className={`rounded-md border px-4 py-3 text-sm transition-all ${
+                  className={`flex flex-col items-center gap-1.5 rounded-xl border-2 px-4 py-4 text-sm transition-all duration-200 ${
                     role === "professional"
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:border-primary/40"
+                      ? "border-primary bg-primary/8 text-primary shadow-sm"
+                      : "border-border text-muted-foreground hover:border-primary/30 hover:bg-accent/50"
                   }`}
+                  aria-pressed={role === "professional"}
                 >
-                  {t("auth.professional")}
+                  <Briefcase className="h-5 w-5" />
+                  <span className="font-medium">{t("auth.professional")}</span>
                 </button>
               </div>
             </div>
@@ -161,7 +187,7 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
               </p>
             )}
 
-            <Button type="submit" variant="premium" className="w-full" disabled={loading}>
+            <Button type="submit" variant="premium" className="w-full rounded-lg h-11 text-sm font-semibold" disabled={loading}>
               {loading ? t("auth.creating") : t("auth.create")}
             </Button>
           </form>
@@ -175,8 +201,8 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
             </div>
           </div>
 
-          <Button variant="outline" className="w-full" onClick={handleGoogleRegister}>
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+          <Button variant="outline" className="w-full rounded-lg h-11 text-sm" onClick={handleGoogleRegister}>
+            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
               <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
               <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
               <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
@@ -187,7 +213,7 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {t("auth.has_account")}{" "}
-            <Link to="/login" className="text-primary hover:underline">
+            <Link to="/login" className="text-primary font-medium hover:underline">
               {t("auth.sign_in")}
             </Link>
           </p>

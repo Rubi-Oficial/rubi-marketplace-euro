@@ -17,18 +17,26 @@ export const MobileFilterBar = React.forwardRef<HTMLDivElement, MobileFilterBarP
     const { t } = useLanguage();
 
     return (
-      <div ref={ref} className="fixed inset-x-0 bottom-0 z-40 border-t border-border/50 bg-card/95 px-4 py-3 backdrop-blur-xl md:hidden">
+      <div
+        ref={ref}
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/50 bg-card/95 px-4 py-3 backdrop-blur-xl md:hidden safe-area-bottom"
+        role="toolbar"
+        aria-label="Filters"
+      >
         <div className="mx-auto flex max-w-lg items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={onOpenFilters}
-            className={`h-10 flex-1 rounded-full border-border/50 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
+            className={`h-11 flex-1 rounded-full border-border/50 text-sm font-medium transition-all duration-200 ${
+              hasGeneralFilter ? "border-primary/40 text-primary bg-primary/5" : ""
+            }`}
+            aria-label={`${t("landing.filters")}${hasGeneralFilter ? ` (${generalCount} active)` : ""}`}
           >
-            <SlidersHorizontal className="mr-2 h-3.5 w-3.5" />
+            <SlidersHorizontal className="mr-2 h-4 w-4" />
             {t("landing.filters")}
             {hasGeneralFilter && (
-              <span className="ml-1.5 rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
+              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
                 {generalCount}
               </span>
             )}
@@ -37,12 +45,15 @@ export const MobileFilterBar = React.forwardRef<HTMLDivElement, MobileFilterBarP
             variant="outline"
             size="sm"
             onClick={onOpenLocation}
-            className={`h-10 flex-1 rounded-full border-border/50 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
+            className={`h-11 flex-1 rounded-full border-border/50 text-sm font-medium transition-all duration-200 ${
+              hasLocationFilter ? "border-primary/40 text-primary bg-primary/5" : ""
+            }`}
+            aria-label={`${t("landing.location")}${hasLocationFilter ? ` (${locationCount} active)` : ""}`}
           >
-            <MapPin className="mr-2 h-3.5 w-3.5" />
+            <MapPin className="mr-2 h-4 w-4" />
             {t("landing.location")}
             {hasLocationFilter && (
-              <span className="ml-1.5 rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
+              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
                 {locationCount}
               </span>
             )}
