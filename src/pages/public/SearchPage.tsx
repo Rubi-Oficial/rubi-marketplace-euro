@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Search, SlidersHorizontal, MapPin, SearchX, X } from "lucide-react";
+import { useSearchParams, Link } from "react-router-dom";
+import { Search, SlidersHorizontal, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useProfileFilters } from "@/hooks/useProfileFilters";
@@ -11,7 +11,7 @@ import { ProfileGrid, ProfileGridSkeleton } from "@/components/public/ProfileGri
 import { EmptyState } from "@/components/public/EmptyState";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 
 export default function SearchPage() {
   const { t } = useLanguage();
@@ -19,7 +19,6 @@ export default function SearchPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
 
-  // Sync URL params → hook
   const searchQuery = searchParams.get("q") || "";
   const urlCountry = searchParams.get("country") || "";
   const urlCity = searchParams.get("city") || "";
@@ -52,7 +51,6 @@ export default function SearchPage() {
     },
   });
 
-  // Sync filter changes back to URL
   const syncToUrl = (next: Record<string, string>) => {
     const params = new URLSearchParams(searchParams);
     Object.entries(next).forEach(([k, v]) => {
@@ -115,18 +113,37 @@ export default function SearchPage() {
     title: searchTitle,
     description: `Search and browse verified professional profiles on Rubi Girls${cityName ? ` in ${cityName}` : ""}. Filter by category, service and location.`,
     path: "/buscar",
+    breadcrumbs: [
+      { name: "Home", url: SITE_URL },
+      { name: t("nav.explore"), url: `${SITE_URL}/buscar` },
+    ],
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "SearchResultsPage",
+      name: searchTitle,
+      url: `${SITE_URL}/buscar`,
+    },
   });
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">
+      <nav aria-label="Breadcrumb" className="mb-4 text-xs text-muted-foreground">
+        <ol className="flex items-center gap-1.5">
+          <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
+          <li className="text-border">/</li>
+          <li className="text-foreground">{t("nav.explore")}</li>
+        </ol>
+      </nav>
+
       <div className="flex items-center gap-2 mb-4">
         <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder={t("nav.search_placeholder")}
             className="pl-10 h-10 bg-card border-border/40 text-sm rounded-xl"
             value={filters.search}
             onChange={(e) => updateParam("search", e.target.value)}
+            aria-label={t("nav.search_placeholder")}
           />
         </div>
 
@@ -135,8 +152,9 @@ export default function SearchPage() {
           size="sm"
           onClick={() => setFilterOpen(true)}
           className={`h-10 gap-1.5 rounded-full border-border/40 shrink-0 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
+          aria-label={t("landing.filters")}
         >
-          <SlidersHorizontal className="h-3.5 w-3.5" />
+          <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
           <span className="text-xs hidden sm:inline">{t("landing.filters")}</span>
           {hasGeneralFilter && (
             <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
@@ -150,8 +168,9 @@ export default function SearchPage() {
           size="sm"
           onClick={() => setLocationOpen(true)}
           className={`h-10 gap-1.5 rounded-full border-border/40 shrink-0 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
+          aria-label={t("landing.location")}
         >
-          <MapPin className="h-3.5 w-3.5" />
+          <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
           <span className="text-xs hidden sm:inline">{t("landing.location")}</span>
           {hasLocationFilter && (
             <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
@@ -170,7 +189,7 @@ export default function SearchPage() {
         onClearAll={clearFilters}
       />
 
-      <p className="mb-4 text-xs text-muted-foreground">
+      <p className="mb-4 text-xs text-muted-foreground" aria-live="polite">
         {loading ? t("search.loading") : [
           `${profiles.length} ${t("search.profiles")}`,
           cityName && t("search.in_city", { city: cityName }),

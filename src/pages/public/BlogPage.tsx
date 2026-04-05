@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 
 const posts = [
   {
@@ -32,12 +32,43 @@ export default function BlogPage() {
     title: t("blog.title"),
     description: "Tips, news and guides for independent professionals. Read the Rubi Girls blog.",
     path: "/blog",
+    breadcrumbs: [
+      { name: "Home", url: SITE_URL },
+      { name: t("blog.title"), url: `${SITE_URL}/blog` },
+    ],
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Blog",
+      name: "Rubi Girls Blog",
+      description: "Tips, news and guides for independent professionals.",
+      url: `${SITE_URL}/blog`,
+      publisher: {
+        "@type": "Organization",
+        name: "Rubi Girls",
+        url: SITE_URL,
+      },
+      blogPost: posts.map((post) => ({
+        "@type": "BlogPosting",
+        headline: post.title,
+        description: post.excerpt,
+        datePublished: post.date,
+        url: `${SITE_URL}/blog/${post.slug}`,
+      })),
+    },
   });
 
   const dateLocale = lang === "pt" ? "pt-BR" : lang === "es" ? "es-ES" : lang === "fr" ? "fr-FR" : lang === "de" ? "de-DE" : "en-GB";
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fade-in">
+      <nav aria-label="Breadcrumb" className="mb-6 text-xs text-muted-foreground">
+        <ol className="flex items-center gap-1.5">
+          <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
+          <li className="text-border">/</li>
+          <li className="text-foreground">{t("blog.title")}</li>
+        </ol>
+      </nav>
+
       <div className="mb-10">
         <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl">{t("blog.title")}</h1>
         <p className="mt-2 text-muted-foreground">{t("blog.desc")}</p>
@@ -56,20 +87,22 @@ export default function BlogPage() {
               {post.excerpt}
             </p>
             <div className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              {new Date(post.date).toLocaleDateString(dateLocale)}
+              <Calendar className="h-3 w-3" aria-hidden="true" />
+              <time dateTime={post.date}>
+                {new Date(post.date).toLocaleDateString(dateLocale)}
+              </time>
             </div>
           </article>
         ))}
       </div>
 
-      <div className="mt-16 mx-auto max-w-xl text-center rounded-lg border border-primary/20 bg-primary/5 p-8">
+      <section className="mt-16 mx-auto max-w-xl text-center rounded-lg border border-primary/20 bg-primary/5 p-8">
         <h2 className="font-display text-xl font-bold text-foreground">{t("blog.cta_title")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">{t("blog.cta_desc")}</p>
         <Button variant="premium" className="mt-4" asChild>
           <Link to="/cadastro?role=professional">{t("blog.cta_button")}</Link>
         </Button>
-      </div>
+      </section>
     </div>
   );
 }

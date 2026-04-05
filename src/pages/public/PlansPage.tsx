@@ -4,7 +4,7 @@ import { Check, ArrowRight, Shield, Zap, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 
 interface Plan {
   id: string;
@@ -28,10 +28,35 @@ export default function PlansPage() {
     title: t("plans.title"),
     description: "Choose a Rubi Girls plan. Verified profile, dedicated support and full GDPR compliance. Cancel anytime.",
     path: "/planos",
+    breadcrumbs: [
+      { name: "Home", url: SITE_URL },
+      { name: t("plans.title"), url: `${SITE_URL}/planos` },
+    ],
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: t("plans.title"),
+      description: "Choose a Rubi Girls plan for your professional profile.",
+      url: `${SITE_URL}/planos`,
+    },
   });
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fade-in">
+      <nav aria-label="Breadcrumb" className="mb-6 text-xs text-muted-foreground">
+        <ol className="flex items-center gap-1.5" itemScope itemType="https://schema.org/BreadcrumbList">
+          <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+            <Link to="/" itemProp="item" className="hover:text-foreground transition-colors"><span itemProp="name">Home</span></Link>
+            <meta itemProp="position" content="1" />
+          </li>
+          <li className="text-border">/</li>
+          <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+            <span itemProp="name" className="text-foreground">{t("plans.title")}</span>
+            <meta itemProp="position" content="2" />
+          </li>
+        </ol>
+      </nav>
+
       <div className="text-center mb-12">
         <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
           {t("plans.title")}
@@ -58,7 +83,7 @@ export default function PlansPage() {
                   {t("plans.most_popular")}
                 </span>
               )}
-              <h3 className="font-display text-xl font-bold text-foreground">{plan.name}</h3>
+              <h2 className="font-display text-xl font-bold text-foreground">{plan.name}</h2>
               <div className="mt-3">
                 <span className="font-display text-3xl font-bold text-primary">
                   €{plan.price.toLocaleString("en-EU", { minimumFractionDigits: 2 })}
@@ -70,7 +95,7 @@ export default function PlansPage() {
                 <ul className="mt-6 flex-1 space-y-3">
                   {plan.features_json.map((f, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" aria-hidden="true" />
                       <span>{f}</span>
                     </li>
                   ))}
@@ -84,7 +109,7 @@ export default function PlansPage() {
               >
                 <Link to="/cadastro?role=professional">
                   {t("plans.get_started")}
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
                 </Link>
               </Button>
             </div>
@@ -93,22 +118,22 @@ export default function PlansPage() {
       </div>
 
       {plans.length === 0 && (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center py-12" role="status" aria-label="Loading plans">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       )}
 
       <div className="mt-16 grid gap-6 sm:grid-cols-3 max-w-3xl mx-auto">
         {[
-          { icon: <Shield className="h-5 w-5" />, title: t("plans.cancel_title"), desc: t("plans.cancel_desc") },
-          { icon: <Zap className="h-5 w-5" />, title: t("plans.live_title"), desc: t("plans.live_desc") },
-          { icon: <Users className="h-5 w-5" />, title: t("plans.referral_title"), desc: t("plans.referral_desc") },
+          { icon: <Shield className="h-5 w-5" aria-hidden="true" />, title: t("plans.cancel_title"), desc: t("plans.cancel_desc") },
+          { icon: <Zap className="h-5 w-5" aria-hidden="true" />, title: t("plans.live_title"), desc: t("plans.live_desc") },
+          { icon: <Users className="h-5 w-5" aria-hidden="true" />, title: t("plans.referral_title"), desc: t("plans.referral_desc") },
         ].map((item) => (
           <div key={item.title} className="text-center">
             <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
               {item.icon}
             </div>
-            <p className="text-sm font-semibold text-foreground">{item.title}</p>
+            <h3 className="text-sm font-semibold text-foreground">{item.title}</h3>
             <p className="mt-1 text-xs text-muted-foreground">{item.desc}</p>
           </div>
         ))}
