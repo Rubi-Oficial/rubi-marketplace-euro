@@ -1,7 +1,7 @@
 import { forwardRef, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, Sparkles, ChevronLeft, ChevronRight, Euro, Heart, ArrowRight, MessageCircle } from "lucide-react";
+import { MapPin, Sparkles, ChevronLeft, ChevronRight, Euro, Heart, ArrowRight, MessageCircle, User } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,50 @@ export { fetchEligibleProfiles, fetchFilterOptions, fetchServices } from "@/lib/
 const ROTATION_INTERVAL = 5000;
 const PAUSE_AFTER_MANUAL = 10000;
 const BIO_MAX_LENGTH = 150;
+
+/* ── Progressive image with blur-up ── */
+function ProgressiveImage({ src, alt, eager }: { src: string; alt: string; eager?: boolean }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <>
+      <img
+        src={src}
+        alt={alt}
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+        className={cn(
+          "absolute inset-0 h-full w-full object-cover transition-all duration-500",
+          loaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-md scale-105"
+        )}
+      />
+      {!loaded && (
+        <div className="absolute inset-0 bg-muted animate-pulse" />
+      )}
+    </>
+  );
+}
+
+/* ── Placeholder for profiles with no photos ── */
+function ProfilePlaceholder({ name }: { name: string }) {
+  const initials = name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-muted via-muted/80 to-muted/60">
+      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 mb-3">
+        <User className="h-10 w-10 text-primary/40" />
+      </div>
+      <span className="text-lg font-display font-bold text-muted-foreground/50 tracking-wider">
+        {initials}
+      </span>
+    </div>
+  );
+}
 
 export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile }>(({ profile }, ref) => {
   const navigate = useNavigate();
@@ -116,20 +160,25 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
       <div className="relative h-[340px] sm:h-[380px] overflow-hidden bg-muted">
         {urls.length > 0 ? (
           urls.map((url, idx) => (
-            <img
+            <div
               key={url}
-              src={url}
-              alt={`${profile.display_name} — ${idx + 1}`}
-              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
-                idx === activeIdx ? "opacity-100" : "opacity-0"
-              }`}
-              loading={idx === 0 ? "eager" : "lazy"}
-            />
+              className={cn(
+                "absolute inset-0 transition-opacity duration-700",
+                idx === activeIdx ? "opacity-100 z-[1]" : "opacity-0 z-0"
+              )}
+            >
+              {/* Only render images near activeIdx for performance */}
+              {(idx === activeIdx || idx === (activeIdx + 1) % urls.length || idx === (activeIdx - 1 + urls.length) % urls.length) && (
+                <ProgressiveImage
+                  src={url}
+                  alt={`${profile.display_name} — ${idx + 1}`}
+                  eager={idx === 0}
+                />
+              )}
+            </div>
           ))
         ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground/20">
-            <div className="h-14 w-14 rounded-full bg-muted-foreground/10" />
-          </div>
+          <ProfilePlaceholder name={profile.display_name || "?"} />
         )}
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
