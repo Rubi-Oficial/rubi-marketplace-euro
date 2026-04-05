@@ -17,7 +17,7 @@ const variants = {
 
 const transition = {
   duration: 0.3,
-  ease: [0.25, 0.1, 0.25, 1], // cubic-bezier — smooth ease-out
+  ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
 };
 
 interface PageTransitionProps {
