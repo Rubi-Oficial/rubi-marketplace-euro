@@ -80,9 +80,16 @@ export async function fetchEligibleProfiles(filters?: {
   if (filters?.category) query = query.ilike("category", filters.category);
   if (filters?.gender) query = query.ilike("gender", filters.gender);
   if (filters?.search) {
-    query = query.or(
-      `display_name.ilike.%${filters.search}%,city.ilike.%${filters.search}%,category.ilike.%${filters.search}%`
-    );
+    // Sanitize search input: remove PostgREST special characters to prevent filter injection
+    const sanitized = filters.search
+      .replace(/[%_\\(),."']/g, "")
+      .trim()
+      .slice(0, 100);
+    if (sanitized.length > 0) {
+      query = query.or(
+        `display_name.ilike.%${sanitized}%,city.ilike.%${sanitized}%,category.ilike.%${sanitized}%`
+      );
+    }
   }
 
   const { data: profiles } = await query.range(offset, offset + limit - 1);
