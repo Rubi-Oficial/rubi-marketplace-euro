@@ -9,7 +9,7 @@ import { SlidersHorizontal, MapPin, ArrowRight } from "lucide-react";
 import { CATEGORY_DB_VALUE_BY_SLUG, CATEGORY_DEFINITIONS } from "@/lib/categoryMapping";
 import { useLocations } from "@/hooks/useLocations";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 
 export default function CategoryPage() {
   const { t } = useLanguage();
@@ -68,12 +68,17 @@ export default function CategoryPage() {
     title: `${categoryName} — Profiles`,
     description: `Browse verified ${categoryName.toLowerCase()} profiles on Rubi Girls. Photos, reviews and direct contact across Europe.`,
     path: `/categoria/${slug}`,
+    breadcrumbs: [
+      { name: "Home", url: SITE_URL },
+      { name: categoryName, url: `${SITE_URL}/categoria/${slug}` },
+    ],
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       name: `${categoryName} Profiles`,
       description: `Verified ${categoryName.toLowerCase()} profiles across Europe`,
-      url: `https://rubigirls.fun/categoria/${slug}`,
+      url: `${SITE_URL}/categoria/${slug}`,
+      isPartOf: { "@type": "WebSite", name: "Rubi Girls", url: SITE_URL },
     },
   });
 
@@ -108,6 +113,14 @@ export default function CategoryPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">
+      <nav aria-label="Breadcrumb" className="mb-4 text-xs text-muted-foreground">
+        <ol className="flex items-center gap-1.5">
+          <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
+          <li className="text-border">/</li>
+          <li className="text-foreground">{categoryName}</li>
+        </ol>
+      </nav>
+
       <div className="mb-4">
         <h1 className="font-display text-xl font-bold text-foreground capitalize sm:text-2xl">
           {categoryName}
@@ -124,7 +137,7 @@ export default function CategoryPage() {
           onClick={() => setFilterOpen(true)}
           className={`h-9 gap-2 rounded-full border-border/40 ${hasServiceFilter ? "border-primary/40 text-primary" : ""}`}
         >
-          <SlidersHorizontal className="h-3.5 w-3.5" />
+          <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
           <span className="text-xs">{t("landing.filters")}</span>
           {hasServiceFilter && (
             <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">1</span>
@@ -137,7 +150,7 @@ export default function CategoryPage() {
           onClick={() => setLocationOpen(true)}
           className={`h-9 gap-2 rounded-full border-border/40 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
         >
-          <MapPin className="h-3.5 w-3.5" />
+          <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
           <span className="text-xs">{t("landing.location")}</span>
           {hasLocationFilter && (
             <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
@@ -184,15 +197,15 @@ export default function CategoryPage() {
         </div>
       )}
 
-      <div className="mt-16 mx-auto max-w-lg text-center">
+      <section className="mt-16 mx-auto max-w-lg text-center">
         <h2 className="font-display text-lg font-semibold text-foreground">{t("category.cta_title")}</h2>
         <p className="mt-1.5 text-sm text-muted-foreground">{t("category.cta_desc")}</p>
         <Button variant="premium" className="mt-4" asChild>
           <Link to="/cadastro?role=professional">
-            {t("nav.get_started")} <ArrowRight className="ml-1.5 h-4 w-4" />
+            {t("nav.get_started")} <ArrowRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
           </Link>
         </Button>
-      </div>
+      </section>
 
       <FilterModal
         open={filterOpen}

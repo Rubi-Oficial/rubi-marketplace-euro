@@ -5,7 +5,7 @@ import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLocations } from "@/hooks/useLocations";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 
 export default function CityPage() {
   const { t } = useLanguage();
@@ -35,21 +35,42 @@ export default function CityPage() {
     title: `Professionals in ${cityName}`,
     description: `Find verified professionals in ${cityName}${countryObj ? `, ${countryObj.name}` : ""}. Browse profiles with photos and direct contact.`,
     path: `/cidade/${slug}`,
+    breadcrumbs: [
+      { name: "Home", url: SITE_URL },
+      ...(countryObj ? [{ name: countryObj.name, url: `${SITE_URL}/buscar?country=${countryObj.slug}` }] : []),
+      { name: cityName, url: `${SITE_URL}/cidade/${slug}` },
+    ],
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       name: `Professionals in ${cityName}`,
       description: `Verified profiles in ${cityName}`,
-      url: `https://rubigirls.fun/cidade/${slug}`,
+      url: `${SITE_URL}/cidade/${slug}`,
+      about: {
+        "@type": "City",
+        name: cityName,
+        ...(countryObj ? { containedInPlace: { "@type": "Country", name: countryObj.name } } : {}),
+      },
     },
   });
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">
+      <nav aria-label="Breadcrumb" className="mb-4 text-xs text-muted-foreground">
+        <ol className="flex items-center gap-1.5">
+          <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
+          <li className="text-border">/</li>
+          {countryObj && (
+            <>
+              <li><Link to={`/buscar?country=${countryObj.slug}`} className="hover:text-foreground transition-colors">{countryObj.name}</Link></li>
+              <li className="text-border">/</li>
+            </>
+          )}
+          <li className="text-foreground">{cityName}</li>
+        </ol>
+      </nav>
+
       <div className="mb-4">
-        <Link to="/buscar" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-3 transition-colors">
-          <ArrowLeft className="h-3 w-3" /> {t("city.back")}
-        </Link>
         <h1 className="font-display text-xl font-bold text-foreground capitalize sm:text-2xl">{cityName}</h1>
         {countryObj && (
           <p className="text-xs text-muted-foreground mt-0.5">{countryObj.name}</p>
@@ -60,7 +81,7 @@ export default function CityPage() {
       </div>
 
       {services.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-5">
+        <nav aria-label="Service filters" className="flex flex-wrap gap-1.5 mb-5">
           <button
             onClick={() => setActiveService("")}
             className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
@@ -80,7 +101,7 @@ export default function CityPage() {
               {s.name}
             </button>
           ))}
-        </div>
+        </nav>
       )}
 
       {loading ? (
@@ -107,15 +128,15 @@ export default function CityPage() {
         </div>
       )}
 
-      <div className="mt-14 mx-auto max-w-lg text-center">
+      <section className="mt-14 mx-auto max-w-lg text-center">
         <h2 className="font-display text-lg font-semibold text-foreground">{t("city.cta_title", { city: cityName })}</h2>
         <p className="mt-1.5 text-sm text-muted-foreground">{t("city.cta_desc")}</p>
         <Button variant="premium" className="mt-4" asChild>
           <Link to="/cadastro?role=professional">
-            {t("nav.get_started")} <ArrowRight className="ml-1.5 h-4 w-4" />
+            {t("nav.get_started")} <ArrowRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
           </Link>
         </Button>
-      </div>
+      </section>
     </div>
   );
 }
