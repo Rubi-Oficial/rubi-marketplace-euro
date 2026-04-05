@@ -33,14 +33,8 @@ export function getRoleDashboard(role: AppRole | null): string {
   }
 }
 
-export function getRolePrefix(role: AppRole | null): string {
-  switch (role) {
-    case "admin": return "/admin";
-    case "professional": return "/app";
-    case "client": return "/cliente";
-    default: return "/";
-  }
-}
+/** @deprecated Use getRoleDashboard instead */
+export const getRolePrefix = getRoleDashboard;
 
 async function fetchUserRole(userId: string): Promise<AppRole | null> {
   try {

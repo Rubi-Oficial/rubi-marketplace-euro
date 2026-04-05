@@ -57,7 +57,8 @@ export default function ClientSettings() {
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setChangingPassword(false);
     if (error) {
-      toast.error(error.message);
+      console.error("[ClientSettings] Password error:", error.message);
+      toast.error(t("settings.password_error") || "Não foi possível alterar a senha. Tente novamente.");
     } else {
       toast.success(t("settings.password_changed_success"));
       setCurrentPassword("");
