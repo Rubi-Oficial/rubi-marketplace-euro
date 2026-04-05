@@ -32,7 +32,7 @@ export default function EscortSettings() {
     setSaving(true);
     const { error } = await supabase.from("users").update({ full_name: fullName, phone }).eq("id", user.id);
     setSaving(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { console.error("[EscortSettings] Save error:", error.message); toast.error(t("settings.save_error") || "Não foi possível guardar. Tente novamente."); return; }
     toast.success(t("settings.data_updated"));
   };
 
@@ -41,7 +41,7 @@ export default function EscortSettings() {
     setChangingPw(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setChangingPw(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { console.error("[EscortSettings] Password error:", error.message); toast.error(t("settings.password_error") || "Não foi possível alterar a senha. Tente novamente."); return; }
     setNewPassword("");
     toast.success(t("settings.password_changed"));
   };

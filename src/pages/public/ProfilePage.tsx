@@ -89,11 +89,23 @@ export default function ProfilePage() {
 
         // Set profile with contact info
         const contact = contactResult.data as { whatsapp: string | null; telegram: string | null } | null;
-        setProfile({
-          ...eligible,
+        const mappedProfile: PublicProfile = {
+          id: eligible.id ?? "",
+          display_name: eligible.display_name ?? "",
+          age: eligible.age ?? null,
+          city: eligible.city ?? null,
+          city_slug: eligible.city_slug ?? null,
+          country: eligible.country ?? null,
+          category: eligible.category ?? null,
+          bio: eligible.bio ?? null,
+          languages: eligible.languages ?? null,
+          pricing_from: eligible.pricing_from ?? null,
+          slug: eligible.slug ?? null,
+          is_featured: eligible.is_featured ?? false,
           whatsapp: contact?.whatsapp ?? null,
           telegram: contact?.telegram ?? null,
-        } as unknown as PublicProfile);
+        };
+        setProfile(mappedProfile);
 
         // Process images + videos signed URLs in a single batch
         const allPaths: string[] = [];
