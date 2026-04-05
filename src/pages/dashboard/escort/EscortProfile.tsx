@@ -128,7 +128,7 @@ export default function EscortProfile() {
     if (!user || !profileId) return;
     setSaving(true);
 
-    const newSlug = generateSlug(form.display_name);
+    const newSlug = generateSlug(form.display_name, form.city);
     const payload: any = {
       display_name: form.display_name.trim(),
       age: form.age ? parseInt(form.age) : null,
