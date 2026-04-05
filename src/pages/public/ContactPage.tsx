@@ -7,8 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/lib/supabase";
 import { CheckCircle, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -25,13 +26,18 @@ export default function ContactPage() {
     title: t("contact.title"),
     description: "Contact Rubi Girls. Send us a message for support, feedback or partnership inquiries.",
     path: "/contato",
+    breadcrumbs: [
+      { name: "Home", url: SITE_URL },
+      { name: t("contact.title"), url: `${SITE_URL}/contato` },
+    ],
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "ContactPage",
       name: "Contact Rubi Girls",
-      url: "https://rubigirls.fun/contato",
+      url: `${SITE_URL}/contato`,
     },
   });
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -75,7 +81,7 @@ export default function ContactPage() {
     return (
       <div className="container mx-auto max-w-xl px-4 py-12 animate-fade-in">
         <div className="flex flex-col items-center text-center py-16">
-          <CheckCircle className="h-12 w-12 text-primary mb-4" />
+          <CheckCircle className="h-12 w-12 text-primary mb-4" aria-hidden="true" />
           <h1 className="font-display text-3xl font-bold text-foreground">{t("contact.sent_title")}</h1>
           <p className="mt-2 text-muted-foreground">{t("contact.sent_desc")}</p>
           <Button variant="outline" className="mt-6" onClick={() => { setSent(false); setName(""); setEmail(""); setMessage(""); }}>
@@ -88,33 +94,41 @@ export default function ContactPage() {
 
   return (
     <div className="container mx-auto max-w-xl px-4 py-12 animate-fade-in">
+      <nav aria-label="Breadcrumb" className="mb-6 text-xs text-muted-foreground">
+        <ol className="flex items-center gap-1.5">
+          <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
+          <li className="text-border">/</li>
+          <li className="text-foreground">{t("contact.title")}</li>
+        </ol>
+      </nav>
+
       <h1 className="font-display text-4xl font-bold text-foreground">{t("contact.title")}</h1>
       <p className="mt-2 text-muted-foreground">{t("contact.desc")}</p>
 
       {submitError && (
-        <Alert variant="destructive" className="mt-6">
+        <Alert variant="destructive" className="mt-6" role="alert">
           <AlertDescription>{submitError}</AlertDescription>
         </Alert>
       )}
 
-      <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+      <form className="mt-8 space-y-4" onSubmit={handleSubmit} noValidate>
         <div className="space-y-2">
           <Label htmlFor="name">{t("contact.name")}</Label>
-          <Input id="name" placeholder={t("contact.name_placeholder")} value={name} onChange={(e) => setName(e.target.value)} />
-          {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+          <Input id="name" placeholder={t("contact.name_placeholder")} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" aria-invalid={!!errors.name} />
+          {errors.name && <p className="text-sm text-destructive" role="alert">{errors.name}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">{t("contact.email")}</Label>
-          <Input id="email" type="email" placeholder={t("contact.email_placeholder")} value={email} onChange={(e) => setEmail(e.target.value)} />
-          {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+          <Input id="email" type="email" placeholder={t("contact.email_placeholder")} value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" aria-invalid={!!errors.email} />
+          {errors.email && <p className="text-sm text-destructive" role="alert">{errors.email}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="message">{t("contact.message")}</Label>
-          <Textarea id="message" placeholder={t("contact.message_placeholder")} rows={5} value={message} onChange={(e) => setMessage(e.target.value)} />
-          {errors.message && <p className="text-sm text-destructive">{errors.message}</p>}
+          <Textarea id="message" placeholder={t("contact.message_placeholder")} rows={5} value={message} onChange={(e) => setMessage(e.target.value)} aria-invalid={!!errors.message} />
+          {errors.message && <p className="text-sm text-destructive" role="alert">{errors.message}</p>}
         </div>
         <Button variant="premium" className="w-full" disabled={sending}>
-          {sending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t("contact.sending")}</> : t("contact.send")}
+          {sending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />{t("contact.sending")}</> : t("contact.send")}
         </Button>
       </form>
     </div>
