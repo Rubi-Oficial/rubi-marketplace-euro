@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { fetchEligibleProfiles, fetchServices, type EligibleProfile } from "@/lib/profileApi";
+import { fetchEligibleProfiles, fetchServices, prefetchNextBatchUrls, type EligibleProfile } from "@/lib/profileApi";
 import { useLocations } from "@/hooks/useLocations";
 
 interface UseProfileFiltersOptions {
@@ -73,6 +73,10 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
         setHasMore(data.length >= limit);
         offsetRef.current = data.length;
         setLoading(false);
+        // Prefetch next batch's signed URLs in background
+        if (data.length >= limit) {
+          prefetchNextBatchUrls({ ...buildFilterParams(), offset: data.length }).catch(() => {});
+        }
       })
       .catch((err: unknown) => {
         console.error("[filters] Failed to fetch profiles:", err);
@@ -90,6 +94,10 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
         setHasMore(data.length >= limit);
         offsetRef.current += data.length;
         setLoadingMore(false);
+        // Prefetch next batch's signed URLs in background
+        if (data.length >= limit) {
+          prefetchNextBatchUrls({ ...buildFilterParams(), offset: offsetRef.current }).catch(() => {});
+        }
       })
       .catch((err: unknown) => {
         console.error("[filters] Failed to load more profiles:", err);
