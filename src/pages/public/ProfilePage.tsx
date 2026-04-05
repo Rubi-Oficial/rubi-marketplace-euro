@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { getSignedUrls } from "@/lib/storageUrls";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
 import { ProfileGallery } from "@/components/profile/ProfileGallery";
@@ -42,79 +42,106 @@ export default function ProfilePage() {
   const [videos, setVideos] = useState<MediaItem[]>([]);
   const [services, setServices] = useState<{ name: string; slug: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!slug) return;
 
     const load = async () => {
-      const { data: eligible } = await supabase
-        .from("eligible_profiles")
-        .select("*")
-        .eq("slug", slug)
-        .maybeSingle();
+      try {
+        setError(null);
 
-      if (!eligible) { setLoading(false); return; }
+        const { data: eligible, error: eligibleErr } = await supabase
+          .from("eligible_profiles")
+          .select("*")
+          .eq("slug", slug)
+          .maybeSingle();
 
-      // Fetch contact details via secure RPC
-      const { data: contactData } = await supabase.rpc("get_profile_contact", { p_profile_id: eligible.id });
-      const contact = contactData as { whatsapp: string | null; telegram: string | null } | null;
+        if (eligibleErr) {
+          console.error("[ProfilePage] Failed to fetch profile:", eligibleErr.message);
+          setError("Não foi possível carregar o perfil. Tente novamente.");
+          setLoading(false);
+          return;
+        }
 
-      setProfile({
-        ...eligible,
-        whatsapp: contact?.whatsapp ?? null,
-        telegram: contact?.telegram ?? null,
-      } as unknown as PublicProfile);
+        if (!eligible) { setLoading(false); return; }
 
-      const { data: imgData } = await supabase
-        .from("profile_images")
-        .select("id, storage_path, sort_order")
-        .eq("profile_id", eligible.id)
-        .eq("moderation_status", "approved")
-        .order("sort_order");
+        // Fetch contact details via secure RPC
+        const { data: contactData } = await supabase.rpc("get_profile_contact", { p_profile_id: eligible.id });
+        const contact = contactData as { whatsapp: string | null; telegram: string | null } | null;
 
-      if (imgData) {
-        const imgPaths = imgData.map((img) => img.storage_path);
-        const imgUrls = await getSignedUrls(imgPaths);
-        setImages(imgData.map((img) => ({
-          ...img,
-          url: imgUrls[img.storage_path] || "",
-        })));
-      }
+        setProfile({
+          ...eligible,
+          whatsapp: contact?.whatsapp ?? null,
+          telegram: contact?.telegram ?? null,
+        } as unknown as PublicProfile);
 
-      const { data: vidData } = await supabase
-        .from("profile_videos")
-        .select("id, storage_path, sort_order")
-        .eq("profile_id", eligible.id)
-        .eq("moderation_status", "approved")
-        .order("sort_order");
-
-      if (vidData) {
-        const vidPaths = vidData.map((v) => v.storage_path);
-        const vidUrls = await getSignedUrls(vidPaths);
-        setVideos(vidData.map((v) => ({
-          ...v,
-          url: vidUrls[v.storage_path] || "",
-        })));
-      }
-
-      const { data: psData } = await supabase
-        .from("profile_services")
-        .select("service_id")
-        .eq("profile_id", eligible.id);
-
-      if (psData && psData.length > 0) {
-        const serviceIds = psData.map((r: any) => r.service_id);
-        const { data: svcData } = await supabase
-          .from("services")
-          .select("name, slug")
-          .in("id", serviceIds)
-          .eq("is_active", true)
+        // Fetch images
+        const { data: imgData, error: imgErr } = await supabase
+          .from("profile_images")
+          .select("id, storage_path, sort_order")
+          .eq("profile_id", eligible.id)
+          .eq("moderation_status", "approved")
           .order("sort_order");
-        if (svcData) setServices(svcData);
-      }
 
-      await supabase.from("leads").insert({ profile_id: eligible.id, source: "profile_view" });
-      setLoading(false);
+        if (imgErr) {
+          console.error("[ProfilePage] Failed to fetch images:", imgErr.message);
+        } else if (imgData) {
+          const imgPaths = imgData.map((img) => img.storage_path);
+          const imgUrls = await getSignedUrls(imgPaths);
+          setImages(imgData.map((img) => ({
+            ...img,
+            url: imgUrls[img.storage_path] || "",
+          })));
+        }
+
+        // Fetch videos
+        const { data: vidData, error: vidErr } = await supabase
+          .from("profile_videos")
+          .select("id, storage_path, sort_order")
+          .eq("profile_id", eligible.id)
+          .eq("moderation_status", "approved")
+          .order("sort_order");
+
+        if (vidErr) {
+          console.error("[ProfilePage] Failed to fetch videos:", vidErr.message);
+        } else if (vidData) {
+          const vidPaths = vidData.map((v) => v.storage_path);
+          const vidUrls = await getSignedUrls(vidPaths);
+          setVideos(vidData.map((v) => ({
+            ...v,
+            url: vidUrls[v.storage_path] || "",
+          })));
+        }
+
+        // Fetch services
+        const { data: psData } = await supabase
+          .from("profile_services")
+          .select("service_id")
+          .eq("profile_id", eligible.id);
+
+        if (psData && psData.length > 0) {
+          const serviceIds = psData.map((r: any) => r.service_id);
+          const { data: svcData } = await supabase
+            .from("services")
+            .select("name, slug")
+            .in("id", serviceIds)
+            .eq("is_active", true)
+            .order("sort_order");
+          if (svcData) setServices(svcData);
+        }
+
+        // Track lead (non-critical, fire and forget)
+        supabase.from("leads").insert({ profile_id: eligible.id, source: "profile_view" }).then(({ error: leadErr }) => {
+          if (leadErr) console.warn("[ProfilePage] Lead insert failed:", leadErr.message);
+        });
+
+        setLoading(false);
+      } catch (err) {
+        console.error("[ProfilePage] Unexpected error:", err);
+        setError("Ocorreu um erro inesperado. Tente novamente.");
+        setLoading(false);
+      }
     };
 
     load();
@@ -143,6 +170,24 @@ export default function ProfilePage() {
   });
 
   if (loading) return <ProfileSkeleton />;
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-20 text-center animate-fade-in">
+        <AlertTriangle className="mx-auto h-10 w-10 text-destructive mb-3" />
+        <h1 className="font-display text-2xl font-bold text-foreground">Erro ao carregar</h1>
+        <p className="mt-2 text-muted-foreground">{error}</p>
+        <div className="flex items-center justify-center gap-3 mt-6">
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            Tentar novamente
+          </Button>
+          <Button variant="ghost" asChild>
+            <Link to="/buscar"><ArrowLeft className="mr-1.5 h-4 w-4" /> Voltar</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (!profile) {
     return (

@@ -124,73 +124,135 @@ export default function EscortProfile() {
       .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   };
 
-  const handleSave = async (submitForReview = false) => {
-    if (!user || !profileId) return;
-    setSaving(true);
+  const validateForm = (): string | null => {
+    const name = form.display_name.trim();
+    if (name.length < 2) return "O nome deve ter pelo menos 2 caracteres.";
+    if (name.length > 60) return "O nome deve ter no máximo 60 caracteres.";
 
-    const newSlug = generateSlug(form.display_name, form.city);
-    const payload: any = {
-      display_name: form.display_name.trim(),
-      age: form.age ? parseInt(form.age) : null,
-      city: form.city || null,
-      city_slug: form.city_slug || null,
-      country: form.country || null,
-      country_slug: form.country || null,
-      category: form.category || null,
-      bio: form.bio.trim() || null,
-      languages: form.languages ? form.languages.split(",").map((l) => l.trim()).filter(Boolean) : null,
-      pricing_from: form.pricing_from ? parseFloat(form.pricing_from) : null,
-      whatsapp: form.whatsapp.trim() || null,
-      telegram: form.telegram.trim() || null,
-      slug: newSlug || null,
-      ...(submitForReview ? { status: "pending_review" as const } : {}),
-    };
-
-    const { error } = await supabase.from("profiles").update(payload).eq("id", profileId);
-
-    if (!error) {
-      await supabase.from("profile_services").delete().eq("profile_id", profileId);
-      if (selectedServices.length > 0) {
-        await supabase.from("profile_services").insert(
-          selectedServices.map((sid) => ({ profile_id: profileId, service_id: sid }))
-        );
-      }
+    if (form.age) {
+      const age = parseInt(form.age);
+      if (isNaN(age) || age < 18 || age > 99) return "A idade deve estar entre 18 e 99.";
     }
 
-    setSaving(false);
+    if (form.pricing_from) {
+      const price = parseFloat(form.pricing_from);
+      if (isNaN(price) || price < 0 || price > 99999) return "O preço deve estar entre 0 e 99.999€.";
+    }
 
-    if (error) {
-      toast.error("Erro ao guardar: " + error.message);
+    if (form.whatsapp && form.whatsapp.trim().length > 0) {
+      const cleaned = form.whatsapp.trim();
+      if (cleaned.length > 20) return "O número de WhatsApp é inválido.";
+    }
+
+    if (form.bio && form.bio.length > 1000) return "A bio deve ter no máximo 1000 caracteres.";
+
+    return null;
+  };
+
+  const handleSave = async (submitForReview = false) => {
+    if (!user || !profileId) return;
+
+    const validationError = validateForm();
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
 
-    if (submitForReview) {
-      setStatus("pending_review");
-      toast.success("Perfil enviado para revisão!");
-    } else {
-      setSlug(newSlug);
-      toast.success("Alterações guardadas!");
+    setSaving(true);
+
+    try {
+      const newSlug = generateSlug(form.display_name, form.city);
+      const payload: any = {
+        display_name: form.display_name.trim(),
+        age: form.age ? parseInt(form.age) : null,
+        city: form.city || null,
+        city_slug: form.city_slug || null,
+        country: form.country || null,
+        country_slug: form.country || null,
+        category: form.category || null,
+        bio: form.bio.trim() || null,
+        languages: form.languages ? form.languages.split(",").map((l) => l.trim()).filter(Boolean) : null,
+        pricing_from: form.pricing_from ? parseFloat(form.pricing_from) : null,
+        whatsapp: form.whatsapp.trim() || null,
+        telegram: form.telegram.trim() || null,
+        slug: newSlug || null,
+        ...(submitForReview ? { status: "pending_review" as const } : {}),
+      };
+
+      const { error } = await supabase.from("profiles").update(payload).eq("id", profileId);
+
+      if (!error) {
+        const { error: delErr } = await supabase.from("profile_services").delete().eq("profile_id", profileId);
+        if (delErr) console.error("[EscortProfile] Failed to delete services:", delErr.message);
+
+        if (selectedServices.length > 0) {
+          const { error: insErr } = await supabase.from("profile_services").insert(
+            selectedServices.map((sid) => ({ profile_id: profileId, service_id: sid }))
+          );
+          if (insErr) console.error("[EscortProfile] Failed to insert services:", insErr.message);
+        }
+      }
+
+      setSaving(false);
+
+      if (error) {
+        toast.error("Não foi possível guardar as alterações. Tente novamente.");
+        console.error("[EscortProfile] Save error:", error.message);
+        return;
+      }
+
+      if (submitForReview) {
+        setStatus("pending_review");
+        toast.success("Perfil enviado para revisão!");
+      } else {
+        setSlug(newSlug);
+        toast.success("Alterações guardadas!");
+      }
+    } catch (err) {
+      console.error("[EscortProfile] Unexpected save error:", err);
+      toast.error("Ocorreu um erro inesperado. Tente novamente.");
+      setSaving(false);
     }
   };
 
   const handlePause = async () => {
     if (!profileId) return;
     setSaving(true);
-    const { error } = await supabase.from("profiles").update({ status: "paused" }).eq("id", profileId);
-    setSaving(false);
-    if (error) { toast.error("Erro ao pausar"); return; }
-    setStatus("paused");
-    toast.success("Perfil despublicado.");
+    try {
+      const { error } = await supabase.from("profiles").update({ status: "paused" }).eq("id", profileId);
+      if (error) {
+        console.error("[EscortProfile] Pause error:", error.message);
+        toast.error("Não foi possível pausar o perfil. Tente novamente.");
+        return;
+      }
+      setStatus("paused");
+      toast.success("Perfil despublicado.");
+    } catch (err) {
+      console.error("[EscortProfile] Unexpected pause error:", err);
+      toast.error("Ocorreu um erro inesperado.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleReactivate = async () => {
     if (!profileId) return;
     setSaving(true);
-    const { error } = await supabase.rpc("reactivate_profile", { _profile_id: profileId });
-    setSaving(false);
-    if (error) { toast.error("Erro ao reativar"); return; }
-    setStatus("approved");
-    toast.success("Perfil reativado!");
+    try {
+      const { error } = await supabase.rpc("reactivate_profile", { _profile_id: profileId });
+      if (error) {
+        console.error("[EscortProfile] Reactivate error:", error.message);
+        toast.error("Não foi possível reativar o perfil. Tente novamente.");
+        return;
+      }
+      setStatus("approved");
+      toast.success("Perfil reativado!");
+    } catch (err) {
+      console.error("[EscortProfile] Unexpected reactivate error:", err);
+      toast.error("Ocorreu um erro inesperado.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
