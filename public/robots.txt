@@ -17,11 +17,14 @@ Disallow: /app
 Disallow: /cliente
 Disallow: /login
 Disallow: /cadastro
+Disallow: /api/
 
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 2
 
 Sitemap: https://rubigirls.fun/functions/v1/sitemap
