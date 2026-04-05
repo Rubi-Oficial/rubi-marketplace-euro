@@ -5,13 +5,13 @@ export type CategoryDefinition = {
 };
 
 export const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
-  { key: "cat.women", slug: "women", dbValue: "female" },
-  { key: "cat.men", slug: "men", dbValue: "male" },
-  { key: "cat.couples", slug: "couples", dbValue: "couple" },
-  { key: "cat.shemales", slug: "shemales", dbValue: "trans" },
-  { key: "cat.gay", slug: "gay", dbValue: "gay" },
-  { key: "cat.virtual_sex", slug: "virtual-sex", dbValue: "virtual" },
-  { key: "cat.videos", slug: "videos", dbValue: "videos" },
+  { key: "cat.women", slug: "women", dbValue: "Women" },
+  { key: "cat.men", slug: "men", dbValue: "Men" },
+  { key: "cat.couples", slug: "couples", dbValue: "Couples" },
+  { key: "cat.shemales", slug: "shemales", dbValue: "Trans" },
+  { key: "cat.gay", slug: "gay", dbValue: "Gay" },
+  { key: "cat.virtual_sex", slug: "virtual-sex", dbValue: "Virtual" },
+  { key: "cat.videos", slug: "videos", dbValue: "Videos" },
 ];
 
 export const CATEGORY_SLUGS = CATEGORY_DEFINITIONS.map((category) => category.slug);
