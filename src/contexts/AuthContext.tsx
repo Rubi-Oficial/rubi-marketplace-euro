@@ -43,14 +43,22 @@ export function getRolePrefix(role: AppRole | null): string {
 }
 
 async function fetchUserRole(userId: string): Promise<AppRole | null> {
-  const { data, error } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", userId)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", userId)
+      .single();
 
-  if (error || !data) return null;
-  return (data.role as AppRole) ?? null;
+    if (error) {
+      console.error("[AuthContext] Failed to fetch user role:", error.message);
+      return null;
+    }
+    return (data?.role as AppRole) ?? null;
+  } catch (err) {
+    console.error("[AuthContext] Unexpected error fetching role:", err);
+    return null;
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -69,16 +77,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newSession?.user ?? null);
 
         if (newSession?.user) {
-          // Skip if role already fetched for this user (avoids duplicate on mount)
           if (roleFetchedForUser.current === newSession.user.id) {
             setLoading(false);
             return;
           }
           roleFetchedForUser.current = newSession.user.id;
-          fetchUserRole(newSession.user.id).then((role) => {
-            setUserRole(role);
-            setLoading(false);
-          });
+          const role = await fetchUserRole(newSession.user.id);
+          setUserRole(role);
+          setLoading(false);
         } else {
           roleFetchedForUser.current = null;
           setUserRole(null);
@@ -102,17 +108,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
       setLoading(false);
+    }).catch((err) => {
+      console.error("[AuthContext] Failed to get session:", err);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setUserRole(null);
-    roleFetchedForUser.current = null;
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("[AuthContext] Sign out error:", err);
+    } finally {
+      setUser(null);
+      setSession(null);
+      setUserRole(null);
+      roleFetchedForUser.current = null;
+    }
   }, []);
 
   const getDashboardPath = useCallback(() => {

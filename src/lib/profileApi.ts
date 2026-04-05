@@ -36,111 +36,147 @@ export async function fetchEligibleProfiles(filters?: {
   limit?: number;
   offset?: number;
 }): Promise<EligibleProfile[]> {
-  const limit = Math.min(Math.max(filters?.limit ?? 50, 1), 100);
-  const offset = Math.max(filters?.offset ?? 0, 0);
+  try {
+    const limit = Math.min(Math.max(filters?.limit ?? 50, 1), 100);
+    const offset = Math.max(filters?.offset ?? 0, 0);
 
-  let serviceProfileIds: string[] | null = null;
-  if (filters?.service_slug) {
-    const { data: serviceData } = await supabase
-      .from("services")
-      .select("id")
-      .eq("slug", filters.service_slug)
-      .single();
+    let serviceProfileIds: string[] | null = null;
+    if (filters?.service_slug) {
+      const { data: serviceData, error: svcErr } = await supabase
+        .from("services")
+        .select("id")
+        .eq("slug", filters.service_slug)
+        .single();
 
-    if (!serviceData) return [];
+      if (svcErr || !serviceData) return [];
 
-    const { data: profileServiceRows } = await supabase
-      .from("profile_services")
-      .select("profile_id")
-      .eq("service_id", serviceData.id);
+      const { data: profileServiceRows, error: psErr } = await supabase
+        .from("profile_services")
+        .select("profile_id")
+        .eq("service_id", serviceData.id);
 
-    serviceProfileIds = (profileServiceRows || [])
-      .map((row: ProfileServiceRow) => row.profile_id)
-      .filter(Boolean);
+      if (psErr) {
+        console.error("[profileApi] Failed to fetch profile_services:", psErr.message);
+        return [];
+      }
 
-    if (serviceProfileIds.length === 0) return [];
-  }
+      serviceProfileIds = (profileServiceRows || [])
+        .map((row: ProfileServiceRow) => row.profile_id)
+        .filter(Boolean);
 
-  let query = supabase
-    .from("eligible_profiles")
-    .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, has_whatsapp, created_at")
-    .order("is_featured", { ascending: false })
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false });
-
-  if (serviceProfileIds) query = query.in("id", serviceProfileIds);
-  if (filters?.country) query = query.ilike("country", filters.country);
-  if (filters?.city_slugs && filters.city_slugs.length > 0) query = query.in("city_slug", filters.city_slugs);
-
-  if (filters?.city_slug) {
-    query = query.eq("city_slug", filters.city_slug);
-  } else if (filters?.city) {
-    query = query.ilike("city", filters.city);
-  }
-  if (filters?.category) query = query.ilike("category", filters.category);
-  if (filters?.gender) query = query.ilike("gender", filters.gender);
-  if (filters?.search) {
-    // Sanitize search input: remove PostgREST special characters to prevent filter injection
-    const sanitized = filters.search
-      .replace(/[%_\\(),."']/g, "")
-      .trim()
-      .slice(0, 100);
-    if (sanitized.length > 0) {
-      query = query.or(
-        `display_name.ilike.%${sanitized}%,city.ilike.%${sanitized}%,category.ilike.%${sanitized}%`
-      );
+      if (serviceProfileIds.length === 0) return [];
     }
+
+    let query = supabase
+      .from("eligible_profiles")
+      .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, has_whatsapp, created_at")
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false });
+
+    if (serviceProfileIds) query = query.in("id", serviceProfileIds);
+    if (filters?.country) query = query.ilike("country", filters.country);
+    if (filters?.city_slugs && filters.city_slugs.length > 0) query = query.in("city_slug", filters.city_slugs);
+
+    if (filters?.city_slug) {
+      query = query.eq("city_slug", filters.city_slug);
+    } else if (filters?.city) {
+      query = query.ilike("city", filters.city);
+    }
+    if (filters?.category) query = query.ilike("category", filters.category);
+    if (filters?.gender) query = query.ilike("gender", filters.gender);
+    if (filters?.search) {
+      // Sanitize search input: remove PostgREST special characters to prevent filter injection
+      const sanitized = filters.search
+        .replace(/[%_\\(),."']/g, "")
+        .trim()
+        .slice(0, 100);
+      if (sanitized.length > 0) {
+        query = query.or(
+          `display_name.ilike.%${sanitized}%,city.ilike.%${sanitized}%,category.ilike.%${sanitized}%`
+        );
+      }
+    }
+
+    const { data: profiles, error: profilesErr } = await query.range(offset, offset + limit - 1);
+    if (profilesErr) {
+      console.error("[profileApi] Failed to fetch profiles:", profilesErr.message);
+      return [];
+    }
+    if (!profiles || profiles.length === 0) return [];
+
+    const filteredProfileIds = (profiles as EligibleProfileRow[]).map((p) => p.id).filter(Boolean) as string[];
+
+    const { data: images, error: imgErr } = await supabase
+      .from("profile_images").select("profile_id, storage_path")
+      .in("profile_id", filteredProfileIds).eq("moderation_status", "approved")
+      .order("sort_order", { ascending: true });
+
+    if (imgErr) {
+      console.error("[profileApi] Failed to fetch images:", imgErr.message);
+    }
+
+    const imgRows = (images ?? []) as ProfileImageRow[];
+    const allPaths = imgRows.map((img) => img.storage_path);
+    const signedUrlMap = await getSignedUrls(allPaths);
+
+    const imageMap: Record<string, string[]> = {};
+    imgRows.forEach((img) => {
+      if (!imageMap[img.profile_id]) imageMap[img.profile_id] = [];
+      const url = signedUrlMap[img.storage_path];
+      if (url) imageMap[img.profile_id].push(url);
+    });
+
+    const profileMap = new Map((profiles as EligibleProfileRow[]).map((p) => [p.id, p]));
+
+    return filteredProfileIds.map((id) => {
+      const p = profileMap.get(id)!;
+      return {
+        id: p.id!, display_name: p.display_name ?? "", age: p.age ?? null, gender: p.gender ?? null,
+        city: p.city ?? null, city_slug: p.city_slug ?? null, category: p.category ?? null,
+        slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
+        is_featured: p.is_featured ?? false,
+        highlight_tier: "standard",
+        highlight_expires_at: null,
+        image_urls: imageMap[p.id!] || [],
+        bio: p.bio ?? null, has_whatsapp: p.has_whatsapp ?? false,
+      };
+    });
+  } catch (err) {
+    console.error("[profileApi] Unexpected error in fetchEligibleProfiles:", err);
+    return [];
   }
-
-  const { data: profiles } = await query.range(offset, offset + limit - 1);
-  if (!profiles || profiles.length === 0) return [];
-
-  const filteredProfileIds = (profiles as EligibleProfileRow[]).map((p) => p.id).filter(Boolean) as string[];
-
-  const { data: images } = await supabase
-    .from("profile_images").select("profile_id, storage_path")
-    .in("profile_id", filteredProfileIds).eq("moderation_status", "approved")
-    .order("sort_order", { ascending: true });
-
-  const imgRows = (images ?? []) as ProfileImageRow[];
-  const allPaths = imgRows.map((img) => img.storage_path);
-  const signedUrlMap = await getSignedUrls(allPaths);
-
-  const imageMap: Record<string, string[]> = {};
-  imgRows.forEach((img) => {
-    if (!imageMap[img.profile_id]) imageMap[img.profile_id] = [];
-    const url = signedUrlMap[img.storage_path];
-    if (url) imageMap[img.profile_id].push(url);
-  });
-
-  const profileMap = new Map((profiles as EligibleProfileRow[]).map((p) => [p.id, p]));
-
-  return filteredProfileIds.map((id) => {
-    const p = profileMap.get(id)!;
-    return {
-      id: p.id!, display_name: p.display_name ?? "", age: p.age ?? null, gender: p.gender ?? null,
-      city: p.city ?? null, city_slug: p.city_slug ?? null, category: p.category ?? null,
-      slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
-      is_featured: p.is_featured ?? false,
-      highlight_tier: "standard",
-      highlight_expires_at: null,
-      image_urls: imageMap[p.id!] || [],
-      bio: p.bio ?? null, has_whatsapp: p.has_whatsapp ?? false,
-    };
-  });
 }
 
 export async function fetchFilterOptions() {
-  const { data: profiles } = await supabase
-    .from("eligible_profiles").select("city, city_slug, category");
-  const rows = (profiles ?? []) as Pick<EligibleProfileRow, "city" | "category">[];
-  const cities = [...new Set(rows.map((p) => p.city).filter(Boolean))] as string[];
-  const categories = [...new Set(rows.map((p) => p.category).filter(Boolean))] as string[];
-  return { cities: cities.sort(), categories: categories.sort() };
+  try {
+    const { data: profiles, error } = await supabase
+      .from("eligible_profiles").select("city, city_slug, category");
+    if (error) {
+      console.error("[profileApi] Failed to fetch filter options:", error.message);
+      return { cities: [], categories: [] };
+    }
+    const rows = (profiles ?? []) as Pick<EligibleProfileRow, "city" | "category">[];
+    const cities = [...new Set(rows.map((p) => p.city).filter(Boolean))] as string[];
+    const categories = [...new Set(rows.map((p) => p.category).filter(Boolean))] as string[];
+    return { cities: cities.sort(), categories: categories.sort() };
+  } catch (err) {
+    console.error("[profileApi] Unexpected error in fetchFilterOptions:", err);
+    return { cities: [], categories: [] };
+  }
 }
 
 export async function fetchServices() {
-  const { data } = await supabase
-    .from("services").select("id, name, slug").eq("is_active", true).order("sort_order", { ascending: true });
-  return (data || []) as { id: string; name: string; slug: string }[];
+  try {
+    const { data, error } = await supabase
+      .from("services").select("id, name, slug").eq("is_active", true).order("sort_order", { ascending: true });
+    if (error) {
+      console.error("[profileApi] Failed to fetch services:", error.message);
+      return [];
+    }
+    return (data || []) as { id: string; name: string; slug: string }[];
+  } catch (err) {
+    console.error("[profileApi] Unexpected error in fetchServices:", err);
+    return [];
+  }
 }
