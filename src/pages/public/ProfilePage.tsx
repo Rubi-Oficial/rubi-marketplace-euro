@@ -225,12 +225,25 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">
-      <Link
-        to="/buscar"
-        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-3 transition-colors group"
-      >
-        <ArrowLeft className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" /> {t("profile.back")}
-      </Link>
+      <nav aria-label="Breadcrumb" className="mb-3 text-xs text-muted-foreground">
+        <ol className="flex items-center gap-1.5 flex-wrap">
+          <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
+          {profile.category && (
+            <>
+              <li className="text-border">/</li>
+              <li><Link to={`/categoria/${profile.category.toLowerCase().replace(/\s+/g, "-")}`} className="hover:text-foreground transition-colors">{profile.category}</Link></li>
+            </>
+          )}
+          {profile.city && profile.city_slug && (
+            <>
+              <li className="text-border">/</li>
+              <li><Link to={`/cidade/${profile.city_slug}`} className="hover:text-foreground transition-colors">{profile.city}</Link></li>
+            </>
+          )}
+          <li className="text-border">/</li>
+          <li className="text-foreground">{profile.display_name}</li>
+        </ol>
+      </nav>
 
       <div className="flex items-center gap-1.5 flex-wrap mb-5">
         {profile.category && (
