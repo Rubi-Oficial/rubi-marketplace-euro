@@ -1,11 +1,14 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import Navbar from "@/components/shared/Navbar";
+import PageTransition from "@/components/shared/PageTransition";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
 import logoRubiGirls from "@/assets/logo-rubi-girls.png";
 
 export default function PublicLayout() {
   const { t } = useLanguage();
+  const location = useLocation();
 
   return (
     <div className="min-h-screen bg-background">
@@ -18,7 +21,11 @@ export default function PublicLayout() {
 
       <div className="pt-[6.5rem]">
         <main id="main-content" tabIndex={-1}>
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <PageTransition key={location.pathname}>
+              <Outlet />
+            </PageTransition>
+          </AnimatePresence>
         </main>
       </div>
 
