@@ -218,21 +218,41 @@ export default function EscortProfile() {
   const handlePause = async () => {
     if (!profileId) return;
     setSaving(true);
-    const { error } = await supabase.from("profiles").update({ status: "paused" }).eq("id", profileId);
-    setSaving(false);
-    if (error) { toast.error("Erro ao pausar"); return; }
-    setStatus("paused");
-    toast.success("Perfil despublicado.");
+    try {
+      const { error } = await supabase.from("profiles").update({ status: "paused" }).eq("id", profileId);
+      if (error) {
+        console.error("[EscortProfile] Pause error:", error.message);
+        toast.error("Não foi possível pausar o perfil. Tente novamente.");
+        return;
+      }
+      setStatus("paused");
+      toast.success("Perfil despublicado.");
+    } catch (err) {
+      console.error("[EscortProfile] Unexpected pause error:", err);
+      toast.error("Ocorreu um erro inesperado.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleReactivate = async () => {
     if (!profileId) return;
     setSaving(true);
-    const { error } = await supabase.rpc("reactivate_profile", { _profile_id: profileId });
-    setSaving(false);
-    if (error) { toast.error("Erro ao reativar"); return; }
-    setStatus("approved");
-    toast.success("Perfil reativado!");
+    try {
+      const { error } = await supabase.rpc("reactivate_profile", { _profile_id: profileId });
+      if (error) {
+        console.error("[EscortProfile] Reactivate error:", error.message);
+        toast.error("Não foi possível reativar o perfil. Tente novamente.");
+        return;
+      }
+      setStatus("approved");
+      toast.success("Perfil reativado!");
+    } catch (err) {
+      console.error("[EscortProfile] Unexpected reactivate error:", err);
+      toast.error("Ocorreu um erro inesperado.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
