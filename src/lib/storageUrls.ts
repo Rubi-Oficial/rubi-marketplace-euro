@@ -3,18 +3,34 @@ import { supabase } from "@/integrations/supabase/client";
 const SIGNED_URL_EXPIRY = 3600; // 1 hour
 const BUCKET = "profile-images";
 
-// In-memory cache for signed URLs (avoids redundant API calls during same session)
+// In-memory LRU cache for signed URLs (avoids redundant API calls during same session)
+const MAX_CACHE_SIZE = 500;
 const urlCache = new Map<string, { url: string; expiresAt: number }>();
 const CACHE_TTL = 50 * 60 * 1000; // 50 minutes (before the 1h expiry)
 
 function getCached(path: string): string | null {
   const entry = urlCache.get(path);
-  if (entry && Date.now() < entry.expiresAt) return entry.url;
-  if (entry) urlCache.delete(path);
-  return null;
+  if (!entry) return null;
+  if (Date.now() >= entry.expiresAt) {
+    urlCache.delete(path);
+    return null;
+  }
+  // Move to end for LRU ordering (Map preserves insertion order)
+  urlCache.delete(path);
+  urlCache.set(path, entry);
+  return entry.url;
 }
 
 function setCache(path: string, url: string) {
+  // Evict oldest entries if at capacity
+  if (urlCache.size >= MAX_CACHE_SIZE) {
+    const overflow = urlCache.size - MAX_CACHE_SIZE + 1;
+    const iter = urlCache.keys();
+    for (let i = 0; i < overflow; i++) {
+      const oldest = iter.next().value;
+      if (oldest) urlCache.delete(oldest);
+    }
+  }
   urlCache.set(path, { url, expiresAt: Date.now() + CACHE_TTL });
 }
 
