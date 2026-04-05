@@ -8,7 +8,7 @@ import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
 import { ProfileGallery } from "@/components/profile/ProfileGallery";
 import { ProfileInfo } from "@/components/profile/ProfileInfo";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { usePageMeta } from "@/hooks/usePageMeta";
+import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 
 interface PublicProfile {
   id: string;
@@ -151,12 +151,32 @@ export default function ProfilePage() {
     if (!profile) return undefined;
     return {
       "@context": "https://schema.org",
-      "@type": "Person",
+      "@type": "ProfilePage",
       name: profile.display_name,
-      address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "NL" } : undefined,
-      image: images[0]?.url,
+      url: `${SITE_URL}/perfil/${slug}`,
+      mainEntity: {
+        "@type": "Person",
+        name: profile.display_name,
+        address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "NL" } : undefined,
+        image: images[0]?.url,
+      },
     };
-  }, [profile, images]);
+  }, [profile, images, slug]);
+
+  const breadcrumbs = useMemo(() => {
+    const crumbs = [{ name: "Home", url: SITE_URL }];
+    if (profile?.category) {
+      const catSlug = profile.category.toLowerCase().replace(/\s+/g, "-");
+      crumbs.push({ name: profile.category, url: `${SITE_URL}/categoria/${catSlug}` });
+    }
+    if (profile?.city && profile?.city_slug) {
+      crumbs.push({ name: profile.city, url: `${SITE_URL}/cidade/${profile.city_slug}` });
+    }
+    if (profile) {
+      crumbs.push({ name: profile.display_name, url: `${SITE_URL}/perfil/${slug}` });
+    }
+    return crumbs;
+  }, [profile, slug]);
 
   usePageMeta({
     title: profile ? `${profile.display_name} — ${profile.city || "Europe"}` : "Profile",
@@ -165,8 +185,10 @@ export default function ProfilePage() {
       : "Profile on Rubi Girls",
     path: `/perfil/${slug}`,
     image: images[0]?.url,
+    imageAlt: profile ? `${profile.display_name} profile photo` : undefined,
     type: "profile",
     jsonLd: profileJsonLd,
+    breadcrumbs,
   });
 
   if (loading) return <ProfileSkeleton />;
