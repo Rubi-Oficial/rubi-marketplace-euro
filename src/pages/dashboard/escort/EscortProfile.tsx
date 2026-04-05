@@ -118,9 +118,11 @@ export default function EscortProfile() {
     );
   };
 
-  const generateSlug = (name: string) =>
-    name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  const generateSlug = (name: string, city?: string) => {
+    const base = city ? `${name}-${city}` : name;
+    return base.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  };
 
   const handleSave = async (submitForReview = false) => {
     if (!user || !profileId) return;

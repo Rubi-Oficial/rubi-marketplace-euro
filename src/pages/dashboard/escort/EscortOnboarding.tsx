@@ -67,7 +67,8 @@ export default function EscortOnboarding() {
   );
 
   const buildPayload = () => {
-    const slug = form.display_name
+    const base = form.city ? `${form.display_name}-${form.city}` : form.display_name;
+    const slug = base
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
