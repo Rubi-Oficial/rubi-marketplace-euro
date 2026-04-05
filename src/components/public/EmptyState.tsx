@@ -29,45 +29,49 @@ export function EmptyState({
   const { t } = useLanguage();
 
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-border/50 bg-card p-10 md:p-16 text-center shadow-sm">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-        <SearchX className="h-6 w-6 text-muted-foreground" />
+    <div
+      className="flex flex-col items-center justify-center rounded-2xl border border-border/50 bg-card p-10 md:p-16 text-center shadow-sm"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
+        <SearchX className="h-7 w-7 text-muted-foreground" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-foreground font-display">
         {hasFilters ? t("landing.empty_title") : t("search.no_filters")}
       </h3>
-      <p className="mt-1.5 text-sm text-muted-foreground max-w-md">
+      <p className="mt-2 text-sm text-muted-foreground max-w-md leading-relaxed">
         {hasFilters ? t("landing.empty_desc") : t("landing.cta_desc")}
       </p>
 
       {hasFilters && (
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
           {(countryFilter || cityFilter) && onRemoveLocation && (
-            <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-full text-xs" onClick={onRemoveLocation}>
+            <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-full text-xs" onClick={onRemoveLocation}>
               <X className="h-3 w-3" />
               {t("landing.empty_remove_location")}
             </Button>
           )}
           {serviceFilter && onRemoveService && (
-            <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-full text-xs" onClick={onRemoveService}>
+            <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-full text-xs" onClick={onRemoveService}>
               <X className="h-3 w-3" />
               {t("landing.empty_remove_service")}
             </Button>
           )}
           {categoryFilter && onRemoveCategory && (
-            <Button variant="outline" size="sm" className="h-8 gap-1.5 rounded-full text-xs" onClick={onRemoveCategory}>
+            <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-full text-xs" onClick={onRemoveCategory}>
               <X className="h-3 w-3" />
               {t("landing.empty_remove_category")}
             </Button>
           )}
-          <Button variant="premium" size="sm" className="h-8 rounded-full text-xs" onClick={onClearAll}>
+          <Button variant="premium" size="sm" className="h-9 rounded-full text-xs" onClick={onClearAll}>
             {t("landing.empty_browse_all")}
           </Button>
         </div>
       )}
 
       {!hasFilters && (
-        <Button variant="premium" size="sm" className="mt-5" asChild>
+        <Button variant="premium" size="sm" className="mt-6 rounded-full" asChild>
           <Link to="/cadastro?role=professional">
             {t("landing.cta_button")} <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
           </Link>
