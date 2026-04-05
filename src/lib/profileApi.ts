@@ -148,6 +148,59 @@ export async function fetchEligibleProfiles(filters?: {
   }
 }
 
+/**
+ * Prefetch signed URLs for the next batch of profiles (warms the cache).
+ * Call this after loading a batch so signed URLs are ready before the user scrolls.
+ */
+export async function prefetchNextBatchUrls(filters?: {
+  country?: string;
+  city?: string;
+  city_slug?: string;
+  city_slugs?: string[];
+  category?: string;
+  gender?: string;
+  search?: string;
+  service_slug?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<void> {
+  try {
+    const limit = Math.min(Math.max(filters?.limit ?? 50, 1), 100);
+    const offset = Math.max(filters?.offset ?? 0, 0);
+
+    let query = supabase
+      .from("eligible_profiles")
+      .select("id")
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (filters?.country) query = query.ilike("country", filters.country);
+    if (filters?.city_slugs && filters.city_slugs.length > 0) query = query.in("city_slug", filters.city_slugs);
+    if (filters?.city_slug) query = query.eq("city_slug", filters.city_slug);
+    if (filters?.category) query = query.ilike("category", filters.category);
+
+    const { data: profiles } = await query;
+    if (!profiles || profiles.length === 0) return;
+
+    const ids = profiles.map((p) => p.id).filter(Boolean) as string[];
+
+    const { data: images } = await supabase
+      .from("profile_images")
+      .select("storage_path")
+      .in("profile_id", ids)
+      .eq("moderation_status", "approved");
+
+    if (!images || images.length === 0) return;
+
+    // Just warm the signed URL cache — result is discarded
+    await getSignedUrls(images.map((img) => img.storage_path));
+  } catch {
+    // Prefetch is best-effort, never block UI
+  }
+}
+
 export async function fetchFilterOptions() {
   try {
     const { data: profiles, error } = await supabase

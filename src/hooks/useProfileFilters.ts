@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { fetchEligibleProfiles, fetchServices, type EligibleProfile } from "@/lib/profileApi";
+import { fetchEligibleProfiles, fetchServices, prefetchNextBatchUrls, type EligibleProfile } from "@/lib/profileApi";
 import { useLocations } from "@/hooks/useLocations";
 
 interface UseProfileFiltersOptions {
