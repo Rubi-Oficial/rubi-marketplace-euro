@@ -99,44 +99,68 @@ export default function EscortOnboarding() {
   const saveProgress = async () => {
     if (!user) return false;
     setSaving(true);
-    const payload = buildPayload();
 
-    let error;
-    let currentProfileId = profileId;
-    if (currentProfileId) {
-      ({ error } = await supabase
-        .from("profiles")
-        .update(payload)
-        .eq("id", currentProfileId));
-    } else {
-      const res = await supabase
-        .from("profiles")
-        .insert(payload)
-        .select("id")
-        .single();
-      error = res.error;
-      if (res.data) {
-        currentProfileId = res.data.id;
-        setProfileId(res.data.id);
+    try {
+      const payload = buildPayload();
+
+      // Validate essential fields
+      if (payload.display_name && payload.display_name.length > 60) {
+        toast.error("O nome deve ter no máximo 60 caracteres.");
+        setSaving(false);
+        return false;
       }
-    }
-
-    // Save services
-    if (!error && currentProfileId) {
-      await supabase.from("profile_services").delete().eq("profile_id", currentProfileId);
-      if (selectedServices.length > 0) {
-        await supabase.from("profile_services").insert(
-          selectedServices.map((sid) => ({ profile_id: currentProfileId!, service_id: sid }))
-        );
+      if (payload.age !== null && (payload.age < 18 || payload.age > 99)) {
+        toast.error("A idade deve estar entre 18 e 99.");
+        setSaving(false);
+        return false;
       }
-    }
 
-    setSaving(false);
-    if (error) {
-      toast.error("Error saving: " + error.message);
+      let error;
+      let currentProfileId = profileId;
+      if (currentProfileId) {
+        ({ error } = await supabase
+          .from("profiles")
+          .update(payload)
+          .eq("id", currentProfileId));
+      } else {
+        const res = await supabase
+          .from("profiles")
+          .insert(payload)
+          .select("id")
+          .single();
+        error = res.error;
+        if (res.data) {
+          currentProfileId = res.data.id;
+          setProfileId(res.data.id);
+        }
+      }
+
+      // Save services
+      if (!error && currentProfileId) {
+        const { error: delErr } = await supabase.from("profile_services").delete().eq("profile_id", currentProfileId);
+        if (delErr) console.error("[Onboarding] Failed to clear services:", delErr.message);
+
+        if (selectedServices.length > 0) {
+          const { error: insErr } = await supabase.from("profile_services").insert(
+            selectedServices.map((sid) => ({ profile_id: currentProfileId!, service_id: sid }))
+          );
+          if (insErr) console.error("[Onboarding] Failed to save services:", insErr.message);
+        }
+      }
+
+      setSaving(false);
+      if (error) {
+        console.error("[Onboarding] Save error:", error.message);
+        toast.error("Não foi possível guardar. Tente novamente.");
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.error("[Onboarding] Unexpected save error:", err);
+      toast.error("Ocorreu um erro inesperado. Tente novamente.");
+      setSaving(false);
       return false;
     }
-    return true;
   };
 
   const canAdvance = () => {
