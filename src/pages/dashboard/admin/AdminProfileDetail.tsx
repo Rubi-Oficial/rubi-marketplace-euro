@@ -4,8 +4,9 @@ import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/imageCompression";
 import { getSignedUrls } from "@/lib/storageUrls";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { DetailField } from "@/components/shared/DetailField";
+import { EditField } from "@/components/shared/DetailField";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -628,25 +629,8 @@ export default function AdminProfileDetail() {
   );
 }
 
-/* ───────── sub-components ───────── */
-
-function Detail({ label, value, icon }: { label: string; value?: string | null; icon?: React.ReactNode }) {
-  return (
-    <div>
-      <span className="text-muted-foreground text-xs flex items-center gap-1">{icon}{label}</span>
-      <p className="text-foreground text-sm font-medium">{value || "—"}</p>
-    </div>
-  );
-}
-
-function EditField({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
-  return (
-    <div>
-      <label className="text-xs text-muted-foreground">{label}</label>
-      <Input className="h-9 text-sm mt-1" type={type} value={value} onChange={e => onChange(e.target.value)} />
-    </div>
-  );
-}
+/* Detail is now imported as DetailField from shared/DetailField */
+const Detail = DetailField;
 
 /* ── DnD Media Grid ── */
 function DndMediaGrid({ items, onReorder, type, onModerate, onDelete }: {

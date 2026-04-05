@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState, forwardRef } from "react";
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -7,120 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { StatCard } from "@/components/shared/StatCard";
+import { QuickLink } from "@/components/shared/StatCard";
+import { useEscortDashboardData } from "@/hooks/useEscortDashboardData";
 import {
   FileText, Image, CreditCard, BarChart3, Eye, Copy, Link2,
   MousePointerClick, UserPlus, DollarSign, Clock, CheckCircle2, Send,
   AlertCircle, Pause, Play, Sparkles, Zap,
 } from "lucide-react";
 
-/* ── Data hook ── */
-interface ProfileData {
-  id: string;
-  slug?: string | null;
-  display_name?: string | null;
-  status?: string | null;
-  city?: string | null;
-  category?: string | null;
-  highlight_tier?: string | null;
-  highlight_expires_at?: string | null;
-  [key: string]: unknown;
-}
-
-interface SubscriptionRow {
-  status: string;
-  expires_at: string | null;
-  plans: { name: string } | null;
-}
-
-interface DashboardData {
-  profile: ProfileData | null;
-  photoStats: { approved: number; pending: number; total: number };
-  subStatus: string | null;
-  subPlanName: string | null;
-  subExpiresAt: string | null;
-  leads: number;
-  referralCode: string | null;
-  clicks: number;
-  signups: number;
-  commissionPending: number;
-  commissionApproved: number;
-}
-
-function useDashboardData() {
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<DashboardData>({
-    profile: null,
-    photoStats: { approved: 0, pending: 0, total: 0 },
-    subStatus: null, subPlanName: null, subExpiresAt: null,
-    leads: 0, referralCode: null, clicks: 0, signups: 0,
-    commissionPending: 0, commissionApproved: 0,
-  });
-
-  useEffect(() => {
-    if (!user) return;
-    const load = async () => {
-      try {
-        const [userRes, profileRes, subRes, clicksRes, signupsRes, conversionsRes] = await Promise.all([
-          supabase.from("users").select("referral_code").eq("id", user.id).single(),
-          supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
-          supabase.from("subscriptions").select("status, expires_at, plan_id, plans(name)")
-            .eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-          supabase.from("referral_clicks").select("id", { count: "exact", head: true }).eq("referrer_user_id", user.id),
-          supabase.from("users").select("id", { count: "exact", head: true }).eq("referred_by_user_id", user.id),
-          supabase.from("referral_conversions").select("commission_amount, status").eq("referrer_user_id", user.id),
-        ]);
-
-        const profile = profileRes.data;
-        let photoStats = { approved: 0, pending: 0, total: 0 };
-        let leadsCount = 0;
-
-        if (profile) {
-          const [imgsRes, leadsRes] = await Promise.all([
-            supabase.from("profile_images").select("moderation_status").eq("profile_id", profile.id),
-            supabase.from("leads").select("id", { count: "exact", head: true }).eq("profile_id", profile.id),
-          ]);
-          const imgs = (imgsRes.data || []) as { moderation_status: string | null }[];
-          photoStats = {
-            total: imgs.length,
-            approved: imgs.filter((i) => i.moderation_status === "approved").length,
-            pending: imgs.filter((i) => i.moderation_status === "pending").length,
-          };
-          leadsCount = leadsRes.count ?? 0;
-        }
-
-        const subRow = subRes.data as SubscriptionRow | null;
-        const conversions = (conversionsRes.data || []) as { commission_amount: number | string; status: string }[];
-        setData({
-          profile: profile as ProfileData | null,
-          photoStats,
-          subStatus: subRow?.status || null,
-          subPlanName: subRow?.plans?.name || null,
-          subExpiresAt: subRow?.expires_at || null,
-          leads: leadsCount,
-          referralCode: userRes.data?.referral_code ?? null,
-          clicks: clicksRes.count ?? 0,
-          signups: signupsRes.count ?? 0,
-          commissionPending: conversions.filter((c) => c.status === "pending").reduce((s, c) => s + Number(c.commission_amount), 0),
-          commissionApproved: conversions.filter((c) => c.status === "approved").reduce((s, c) => s + Number(c.commission_amount), 0),
-        });
-      } catch (err) {
-        console.error("[escort-dashboard] Failed to load data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [user]);
-
-  return { ...data, loading };
-}
-
 const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
 
 /* ── Main component ── */
 const EscortDashboard = forwardRef<HTMLDivElement>(function EscortDashboard(_props, ref) {
-  const d = useDashboardData();
+  const d = useEscortDashboardData();
   const { user } = useAuth();
   const { t } = useLanguage();
 
@@ -365,7 +265,7 @@ const EscortDashboard = forwardRef<HTMLDivElement>(function EscortDashboard(_pro
         const isActiveTier =
           (tier === "premium" || tier === "exclusive") &&
           expiresAt &&
-          new Date(expiresAt) > new Date();
+          new Date(expiresAt as string) > new Date();
 
         if (!isActiveTier) return null;
 
@@ -386,7 +286,7 @@ const EscortDashboard = forwardRef<HTMLDivElement>(function EscortDashboard(_pro
                     Destaque {label} ativo
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Válido até {new Date(expiresAt!).toLocaleDateString("pt-BR")}
+                    Válido até {new Date(expiresAt as string).toLocaleDateString("pt-BR")}
                   </p>
                 </div>
               </div>
@@ -421,10 +321,10 @@ const EscortDashboard = forwardRef<HTMLDivElement>(function EscortDashboard(_pro
           )}
         </div>
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <SmallStat icon={<MousePointerClick className="h-4 w-4" />} label={t("escort.clicks")} value={d.clicks.toString()} />
-          <SmallStat icon={<UserPlus className="h-4 w-4" />} label={t("escort.signups")} value={d.signups.toString()} />
-          <SmallStat icon={<DollarSign className="h-4 w-4" />} label={t("escort.estimated_commission")} value={fmt(d.commissionPending)} />
-          <SmallStat icon={<CheckCircle2 className="h-4 w-4" />} label={t("escort.approved_commission")} value={fmt(d.commissionApproved)} />
+          <StatCard icon={<MousePointerClick className="h-4 w-4" />} label={t("escort.clicks")} value={d.clicks.toString()} />
+          <StatCard icon={<UserPlus className="h-4 w-4" />} label={t("escort.signups")} value={d.signups.toString()} />
+          <StatCard icon={<DollarSign className="h-4 w-4" />} label={t("escort.estimated_commission")} value={fmt(d.commissionPending)} />
+          <StatCard icon={<CheckCircle2 className="h-4 w-4" />} label={t("escort.approved_commission")} value={fmt(d.commissionApproved)} />
         </div>
       </div>
 
@@ -444,27 +344,3 @@ const EscortDashboard = forwardRef<HTMLDivElement>(function EscortDashboard(_pro
 });
 
 export default EscortDashboard;
-
-function SmallStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-border bg-card p-5">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        {icon}
-        <p className="text-sm">{label}</p>
-      </div>
-      <p className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground">{value}</p>
-    </div>
-  );
-}
-
-function QuickLink({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {
-  return (
-    <Link
-      to={to}
-      className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/40"
-    >
-      {icon}
-      <span className="text-sm font-medium text-foreground">{label}</span>
-    </Link>
-  );
-}

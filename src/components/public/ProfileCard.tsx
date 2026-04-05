@@ -1,76 +1,29 @@
-import { forwardRef, useState, useEffect, useCallback, useRef } from "react";
+import { forwardRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, Sparkles, ChevronLeft, ChevronRight, Euro, Heart, ArrowRight, MessageCircle, User } from "lucide-react";
+import { MapPin, Euro, Heart, ArrowRight, MessageCircle } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { ImageCarousel } from "@/components/profile/ImageCarousel";
+import { TierBadge } from "@/components/profile/TierBadge";
 import type { EligibleProfile } from "@/lib/profileApi";
 
 // Re-export for backward compatibility
 export type { EligibleProfile } from "@/lib/profileApi";
 export { fetchEligibleProfiles, fetchFilterOptions, fetchServices } from "@/lib/profileApi";
 
-const ROTATION_INTERVAL = 5000;
-const PAUSE_AFTER_MANUAL = 10000;
 const BIO_MAX_LENGTH = 150;
-
-/* ── Progressive image with blur-up ── */
-function ProgressiveImage({ src, alt, eager }: { src: string; alt: string; eager?: boolean }) {
-  const [loaded, setLoaded] = useState(false);
-  return (
-    <>
-      <img
-        src={src}
-        alt={alt}
-        loading={eager ? "eager" : "lazy"}
-        decoding="async"
-        onLoad={() => setLoaded(true)}
-        className={cn(
-          "absolute inset-0 h-full w-full object-cover transition-all duration-500",
-          loaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-md scale-105"
-        )}
-      />
-      {!loaded && (
-        <div className="absolute inset-0 bg-muted animate-pulse" />
-      )}
-    </>
-  );
-}
-
-/* ── Placeholder for profiles with no photos ── */
-function ProfilePlaceholder({ name }: { name: string }) {
-  const initials = name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
-  return (
-    <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-muted via-muted/80 to-muted/60">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 mb-3">
-        <User className="h-10 w-10 text-primary/40" />
-      </div>
-      <span className="text-lg font-display font-bold text-muted-foreground/50 tracking-wider">
-        {initials}
-      </span>
-    </div>
-  );
-}
 
 export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile }>(({ profile }, ref) => {
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
   const urls = profile.image_urls;
-  const hasMultiple = urls.length > 1;
-  const [activeIdx, setActiveIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
   const { isFavorited, toggleFavorite, isToggling } = useFavorites();
   const favorited = isFavorited(profile.id);
-  const pausedUntilRef = useRef(0);
   const [whatsappLoading, setWhatsappLoading] = useState(false);
 
   const truncatedBio = profile.bio
@@ -78,46 +31,6 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
       ? profile.bio.slice(0, BIO_MAX_LENGTH).trimEnd() + "…"
       : profile.bio
     : null;
-
-  useEffect(() => {
-    if (!hasMultiple) return;
-    const id = setInterval(() => {
-      if (hovered) return;
-      if (Date.now() < pausedUntilRef.current) return;
-      setActiveIdx((i) => (i + 1) % urls.length);
-    }, ROTATION_INTERVAL);
-    return () => clearInterval(id);
-  }, [hasMultiple, hovered, urls.length]);
-
-  const goTo = useCallback(
-    (idx: number, e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setActiveIdx(idx);
-      pausedUntilRef.current = Date.now() + PAUSE_AFTER_MANUAL;
-    },
-    []
-  );
-
-  const goPrev = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setActiveIdx((i) => (i - 1 + urls.length) % urls.length);
-      pausedUntilRef.current = Date.now() + PAUSE_AFTER_MANUAL;
-    },
-    [urls.length]
-  );
-
-  const goNext = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setActiveIdx((i) => (i + 1) % urls.length);
-      pausedUntilRef.current = Date.now() + PAUSE_AFTER_MANUAL;
-    },
-    [urls.length]
-  );
 
   const handleWhatsApp = useCallback(
     async (e: React.MouseEvent) => {
@@ -158,98 +71,13 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
     >
       {/* Image section */}
       <div className="relative h-[340px] sm:h-[380px] overflow-hidden bg-muted">
-        {urls.length > 0 ? (
-          urls.map((url, idx) => (
-            <div
-              key={url}
-              className={cn(
-                "absolute inset-0 transition-opacity duration-700",
-                idx === activeIdx ? "opacity-100 z-[1]" : "opacity-0 z-0"
-              )}
-            >
-              {/* Only render images near activeIdx for performance */}
-              {(idx === activeIdx || idx === (activeIdx + 1) % urls.length || idx === (activeIdx - 1 + urls.length) % urls.length) && (
-                <ProgressiveImage
-                  src={url}
-                  alt={`${profile.display_name} — ${idx + 1}`}
-                  eager={idx === 0}
-                />
-              )}
-            </div>
-          ))
-        ) : (
-          <ProfilePlaceholder name={profile.display_name || "?"} />
-        )}
+        <ImageCarousel urls={urls} displayName={profile.display_name} hovered={hovered} />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-        {hasMultiple && (
-          <>
-            <button
-              onClick={goPrev}
-              className="absolute left-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white/90 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-black/60 active:scale-95"
-              aria-label="Previous"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <button
-              onClick={goNext}
-              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white/90 opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-black/60 active:scale-95"
-              aria-label="Next"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </>
-        )}
-
-        {hasMultiple && (
-          <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-1.5 z-10">
-            {urls.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={(e) => goTo(idx, e)}
-                className={`rounded-full transition-all duration-300 ${
-                  idx === activeIdx
-                    ? "h-2.5 w-2.5 bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.6)]"
-                    : "h-1.5 w-1.5 bg-white/50 hover:bg-white/80"
-                }`}
-                aria-label={`Image ${idx + 1}`}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Tier badge — exclusive > premium > featured (legacy) */}
-        {(() => {
-          const isActive =
-            profile.highlight_expires_at &&
-            new Date(profile.highlight_expires_at) > new Date();
-          if (profile.highlight_tier === "exclusive" && isActive) {
-            return (
-              <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-md">
-                <Sparkles className="h-2.5 w-2.5" />
-                Exclusive
-              </div>
-            );
-          }
-          if (profile.highlight_tier === "premium" && isActive) {
-            return (
-              <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-500 to-violet-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-md">
-                <Sparkles className="h-2.5 w-2.5" />
-                Premium
-              </div>
-            );
-          }
-          if (profile.is_featured) {
-            return (
-              <div className="absolute top-3 left-3 flex items-center gap-1 rounded-full gold-gradient px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-md">
-                <Sparkles className="h-2.5 w-2.5" />
-                {t("common.featured")}
-              </div>
-            );
-          }
-          return null;
-        })()}
+        <TierBadge
+          highlight_tier={profile.highlight_tier}
+          highlight_expires_at={profile.highlight_expires_at}
+          is_featured={profile.is_featured}
+        />
 
         {profile.category && (
           <div className="absolute top-3 right-3 rounded-full bg-black/50 backdrop-blur-sm px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90">
