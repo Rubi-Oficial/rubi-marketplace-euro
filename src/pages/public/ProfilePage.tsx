@@ -66,60 +66,60 @@ export default function ProfilePage() {
 
         if (!eligible) { setLoading(false); return; }
 
-        // Fetch contact details via secure RPC
-        const { data: contactData } = await supabase.rpc("get_profile_contact", { p_profile_id: eligible.id });
-        const contact = contactData as { whatsapp: string | null; telegram: string | null } | null;
+        // Parallel fetches: contact, images, videos, services
+        const [contactResult, imgResult, vidResult, psResult] = await Promise.all([
+          supabase.rpc("get_profile_contact", { p_profile_id: eligible.id }),
+          supabase
+            .from("profile_images")
+            .select("id, storage_path, sort_order")
+            .eq("profile_id", eligible.id)
+            .eq("moderation_status", "approved")
+            .order("sort_order"),
+          supabase
+            .from("profile_videos")
+            .select("id, storage_path, sort_order")
+            .eq("profile_id", eligible.id)
+            .eq("moderation_status", "approved")
+            .order("sort_order"),
+          supabase
+            .from("profile_services")
+            .select("service_id")
+            .eq("profile_id", eligible.id),
+        ]);
 
+        // Set profile with contact info
+        const contact = contactResult.data as { whatsapp: string | null; telegram: string | null } | null;
         setProfile({
           ...eligible,
           whatsapp: contact?.whatsapp ?? null,
           telegram: contact?.telegram ?? null,
         } as unknown as PublicProfile);
 
-        // Fetch images
-        const { data: imgData, error: imgErr } = await supabase
-          .from("profile_images")
-          .select("id, storage_path, sort_order")
-          .eq("profile_id", eligible.id)
-          .eq("moderation_status", "approved")
-          .order("sort_order");
+        // Process images + videos signed URLs in a single batch
+        const allPaths: string[] = [];
+        const imgData = imgResult.data ?? [];
+        const vidData = vidResult.data ?? [];
 
-        if (imgErr) {
-          console.error("[ProfilePage] Failed to fetch images:", imgErr.message);
-        } else if (imgData) {
-          const imgPaths = imgData.map((img) => img.storage_path);
-          const imgUrls = await getSignedUrls(imgPaths);
-          setImages(imgData.map((img) => ({
-            ...img,
-            url: imgUrls[img.storage_path] || "",
-          })));
-        }
+        if (imgResult.error) console.error("[ProfilePage] Failed to fetch images:", imgResult.error.message);
+        if (vidResult.error) console.error("[ProfilePage] Failed to fetch videos:", vidResult.error.message);
 
-        // Fetch videos
-        const { data: vidData, error: vidErr } = await supabase
-          .from("profile_videos")
-          .select("id, storage_path, sort_order")
-          .eq("profile_id", eligible.id)
-          .eq("moderation_status", "approved")
-          .order("sort_order");
+        imgData.forEach((img) => allPaths.push(img.storage_path));
+        vidData.forEach((v) => allPaths.push(v.storage_path));
 
-        if (vidErr) {
-          console.error("[ProfilePage] Failed to fetch videos:", vidErr.message);
-        } else if (vidData) {
-          const vidPaths = vidData.map((v) => v.storage_path);
-          const vidUrls = await getSignedUrls(vidPaths);
-          setVideos(vidData.map((v) => ({
-            ...v,
-            url: vidUrls[v.storage_path] || "",
-          })));
-        }
+        const signedMap = allPaths.length > 0 ? await getSignedUrls(allPaths) : {};
 
-        // Fetch services
-        const { data: psData } = await supabase
-          .from("profile_services")
-          .select("service_id")
-          .eq("profile_id", eligible.id);
+        setImages(imgData.map((img) => ({
+          ...img,
+          url: signedMap[img.storage_path] || "",
+        })));
 
+        setVideos(vidData.map((v) => ({
+          ...v,
+          url: signedMap[v.storage_path] || "",
+        })));
+
+        // Fetch service names if profile has services
+        const psData = psResult.data;
         if (psData && psData.length > 0) {
           const serviceIds = psData.map((r: any) => r.service_id);
           const { data: svcData } = await supabase

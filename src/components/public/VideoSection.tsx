@@ -2,6 +2,7 @@ import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { MapPin, Play } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { getSignedUrls } from "@/lib/storageUrls";
 import { useEffect, useState, useRef } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
 
@@ -28,58 +29,68 @@ export async function fetchProfileVideos(filters?: {
   city_slug?: string;
   service_slug?: string;
 }): Promise<ProfileVideo[]> {
-  let profileQuery = supabase
-    .from("eligible_profiles")
-    .select("id, display_name, city, city_slug, slug");
+  try {
+    let profileQuery = supabase
+      .from("eligible_profiles")
+      .select("id, display_name, city, city_slug, slug");
 
-  if (filters?.city_slug) profileQuery = profileQuery.eq("city_slug", filters.city_slug);
+    if (filters?.city_slug) profileQuery = profileQuery.eq("city_slug", filters.city_slug);
 
-  const { data: profiles } = await profileQuery.limit(50);
-  if (!profiles || profiles.length === 0) return [];
+    const { data: profiles } = await profileQuery.limit(50);
+    if (!profiles || profiles.length === 0) return [];
 
-  let profileIds = profiles.map((p: any) => p.id).filter(Boolean) as string[];
+    let profileIds = profiles.map((p: any) => p.id).filter(Boolean) as string[];
 
-  if (filters?.service_slug && profileIds.length > 0) {
-    const { data: svcData } = await supabase
-      .from("services").select("id").eq("slug", filters.service_slug).single();
-    if (svcData) {
-      const { data: psData } = await supabase
-        .from("profile_services")
-        .select("profile_id")
-        .eq("service_id", svcData.id)
-        .in("profile_id", profileIds);
-      if (psData) profileIds = psData.map((ps: any) => ps.profile_id);
-      else return [];
+    if (filters?.service_slug && profileIds.length > 0) {
+      const { data: svcData } = await supabase
+        .from("services").select("id").eq("slug", filters.service_slug).single();
+      if (svcData) {
+        const { data: psData } = await supabase
+          .from("profile_services")
+          .select("profile_id")
+          .eq("service_id", svcData.id)
+          .in("profile_id", profileIds);
+        if (psData) profileIds = psData.map((ps: any) => ps.profile_id);
+        else return [];
+      }
     }
+
+    if (profileIds.length === 0) return [];
+
+    const { data: videos } = await supabase
+      .from("profile_videos")
+      .select("id, profile_id, storage_path, thumbnail_path, duration_seconds")
+      .eq("moderation_status", "approved")
+      .in("profile_id", profileIds)
+      .order("sort_order", { ascending: true });
+
+    if (!videos || videos.length === 0) return [];
+
+    // Collect all paths to sign in a single batch
+    const allPaths: string[] = [];
+    for (const v of videos) {
+      allPaths.push(v.storage_path);
+      if (v.thumbnail_path) allPaths.push(v.thumbnail_path);
+    }
+
+    const signedMap = await getSignedUrls(allPaths);
+    const profileMap = new Map(profiles.map((p: any) => [p.id, p]));
+
+    return videos.map((v: any) => {
+      const profile = profileMap.get(v.profile_id) || {};
+      return {
+        ...v,
+        display_name: (profile as any).display_name || "Unknown",
+        city: (profile as any).city || null,
+        slug: (profile as any).slug || null,
+        video_url: signedMap[v.storage_path] || "",
+        thumb_url: v.thumbnail_path ? signedMap[v.thumbnail_path] || null : null,
+      };
+    }).filter((v: ProfileVideo) => v.video_url); // exclude videos without valid signed URL
+  } catch (err) {
+    console.error("[VideoSection] Unexpected error fetching videos:", err);
+    return [];
   }
-
-  if (profileIds.length === 0) return [];
-
-  const { data: videos } = await supabase
-    .from("profile_videos")
-    .select("id, profile_id, storage_path, thumbnail_path, duration_seconds")
-    .eq("moderation_status", "approved")
-    .in("profile_id", profileIds)
-    .order("sort_order", { ascending: true });
-
-  if (!videos || videos.length === 0) return [];
-
-  const profileMap = new Map(profiles.map((p: any) => [p.id, p]));
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-
-  return videos.map((v: any) => {
-    const profile = profileMap.get(v.profile_id) || {};
-    return {
-      ...v,
-      display_name: (profile as any).display_name || "Unknown",
-      city: (profile as any).city || null,
-      slug: (profile as any).slug || null,
-      video_url: `${supabaseUrl}/storage/v1/object/public/profile-images/${v.storage_path}`,
-      thumb_url: v.thumbnail_path
-        ? `${supabaseUrl}/storage/v1/object/public/profile-images/${v.thumbnail_path}`
-        : null,
-    };
-  });
 }
 
 const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }, _ref) => {
