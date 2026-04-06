@@ -28,7 +28,7 @@ export default function ClientFavorites() {
 
       const { data: profileData } = await supabase
         .from("eligible_profiles")
-        .select("id, display_name, age, city, city_slug, category, slug, pricing_from, is_featured, bio, has_whatsapp")
+        .select("id, display_name, age, city, city_slug, category, slug, pricing_from, is_featured, bio, has_whatsapp, highlight_tier, highlight_expires_at")
         .in("id", ids);
 
       if (!profileData?.length) return [];
@@ -61,7 +61,10 @@ export default function ClientFavorites() {
             city: p.city ?? null, city_slug: p.city_slug ?? null, category: p.category ?? null,
             gender: p.gender ?? null,
             slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
-            is_featured: p.is_featured ?? false, image_urls: imageMap[p.id!] || [],
+            is_featured: p.is_featured ?? false,
+            highlight_tier: (p as any).highlight_tier ?? "standard",
+            highlight_expires_at: (p as any).highlight_expires_at ?? null,
+            image_urls: imageMap[p.id!] || [],
             bio: p.bio ?? null, has_whatsapp: p.has_whatsapp ?? false,
           } as EligibleProfile;
         })
