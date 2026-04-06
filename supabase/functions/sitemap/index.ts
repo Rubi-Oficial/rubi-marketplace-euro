@@ -73,14 +73,15 @@ Deno.serve(async (req) => {
 `;
     }
 
-    // City pages
+    // City pages — featured cities get higher priority
     if (cities) {
       for (const city of cities) {
+        const priority = city.is_featured ? "0.9" : "0.7";
         xml += `  <url>
     <loc>${SITE_URL}/cidade/${city.slug}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.7</priority>
+    <priority>${priority}</priority>
   </url>
 `;
       }

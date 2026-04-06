@@ -1,11 +1,14 @@
 import { useParams, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLocations } from "@/hooks/useLocations";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
+
+// Cities with custom microcopy keys
+const CITY_OVERRIDES = new Set(["barcelona", "madrid"]);
 
 export default function CityPage() {
   const { t } = useLanguage();
@@ -20,6 +23,19 @@ export default function CityPage() {
   const cityName = cityObj?.name || slug?.replace(/-/g, " ") || "";
   const countryObj = cityObj ? countries.find((c) => c.id === cityObj.country_id) : null;
 
+  // Resolve city-specific or default translation keys
+  const hasOverride = slug ? CITY_OVERRIDES.has(slug) : false;
+  const metaTitle = hasOverride
+    ? t(`city.meta_title_${slug}`)
+    : t("city.meta_title_default", { city: cityName });
+  const metaDesc = hasOverride
+    ? t(`city.meta_desc_${slug}`)
+    : t("city.meta_desc_default", { city: cityName });
+  const introText = hasOverride
+    ? t(`city.intro_${slug}`)
+    : t("city.intro_default", { city: cityName });
+  const h1Text = t("city.h1_default", { city: cityName });
+
   useEffect(() => { fetchServices().then(setServices); }, []);
 
   useEffect(() => {
@@ -32,8 +48,8 @@ export default function CityPage() {
   }, [slug, activeService]);
 
   usePageMeta({
-    title: `Professionals in ${cityName}`,
-    description: `Find verified professionals in ${cityName}${countryObj ? `, ${countryObj.name}` : ""}. Browse profiles with photos and direct contact.`,
+    title: metaTitle,
+    description: metaDesc,
     path: `/cidade/${slug}`,
     breadcrumbs: [
       { name: "Home", url: SITE_URL },
@@ -43,8 +59,8 @@ export default function CityPage() {
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      name: `Professionals in ${cityName}`,
-      description: `Verified profiles in ${cityName}`,
+      name: h1Text,
+      description: metaDesc,
       url: `${SITE_URL}/cidade/${slug}`,
       about: {
         "@type": "City",
@@ -71,11 +87,14 @@ export default function CityPage() {
       </nav>
 
       <div className="mb-4">
-        <h1 className="font-display text-xl font-bold text-foreground capitalize sm:text-2xl">{cityName}</h1>
+        <h1 className="font-display text-xl font-bold text-foreground sm:text-2xl">{h1Text}</h1>
         {countryObj && (
           <p className="text-xs text-muted-foreground mt-0.5">{countryObj.name}</p>
         )}
-        <p className="mt-0.5 text-xs text-muted-foreground">
+        <p className="mt-1.5 text-sm text-muted-foreground max-w-2xl">
+          {introText}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
           {loading ? t("search.loading") : `${profiles.length} ${t("category.profiles")}`}
         </p>
       </div>
