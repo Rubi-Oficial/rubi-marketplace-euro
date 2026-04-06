@@ -10,6 +10,7 @@ import StepDetails from "@/components/onboarding/StepDetails";
 import StepDescription from "@/components/onboarding/StepDescription";
 import StepReview from "@/components/onboarding/StepReview";
 import { type ProfileDraft, INITIAL_DRAFT } from "@/components/onboarding/types";
+import { useLocations } from "@/hooks/useLocations";
 
 const STEPS: StepConfig[] = [
   { label: "Basic Info" },
