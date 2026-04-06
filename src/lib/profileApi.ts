@@ -69,7 +69,9 @@ export async function fetchEligibleProfiles(filters?: {
 
     let query = supabase
       .from("eligible_profiles")
-      .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, has_whatsapp, created_at")
+      .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, highlight_tier, highlight_expires_at, bio, has_whatsapp, tier_rank, effective_sort_key, created_at")
+      .order("tier_rank", { ascending: false })
+      .order("effective_sort_key", { ascending: false })
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .order("id", { ascending: false });
@@ -136,8 +138,8 @@ export async function fetchEligibleProfiles(filters?: {
         city: p.city ?? null, city_slug: p.city_slug ?? null, category: p.category ?? null,
         slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
         is_featured: p.is_featured ?? false,
-        highlight_tier: "standard",
-        highlight_expires_at: null,
+        highlight_tier: p.highlight_tier ?? "standard",
+        highlight_expires_at: p.highlight_expires_at ?? null,
         image_urls: imageMap[p.id!] || [],
         bio: p.bio ?? null, has_whatsapp: p.has_whatsapp ?? false,
       };
@@ -171,6 +173,8 @@ export async function prefetchNextBatchUrls(filters?: {
     let query = supabase
       .from("eligible_profiles")
       .select("id")
+      .order("tier_rank", { ascending: false })
+      .order("effective_sort_key", { ascending: false })
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })

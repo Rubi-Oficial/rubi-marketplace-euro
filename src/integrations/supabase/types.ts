@@ -186,6 +186,82 @@ export type Database = {
         }
         Relationships: []
       }
+      highlight_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          profile_id: string
+          sort_key: number | null
+          source: string | null
+          tier: string
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          profile_id: string
+          sort_key?: number | null
+          source?: string | null
+          tier: string
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          profile_id?: string
+          sort_key?: number | null
+          source?: string | null
+          tier?: string
+          user_id?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "highlight_events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "eligible_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "highlight_events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "highlight_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      highlight_tier_counters: {
+        Row: {
+          next_bottom_key: number
+          next_top_key: number
+          tier: string
+        }
+        Insert: {
+          next_bottom_key?: number
+          next_top_key?: number
+          tier: string
+        }
+        Update: {
+          next_bottom_key?: number
+          next_top_key?: number
+          tier?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           created_at: string
@@ -405,6 +481,7 @@ export type Database = {
           featured_until: string | null
           gender: string | null
           highlight_expires_at: string | null
+          highlight_sort_key: number
           highlight_tier: string | null
           id: string
           is_featured: boolean
@@ -430,6 +507,7 @@ export type Database = {
           featured_until?: string | null
           gender?: string | null
           highlight_expires_at?: string | null
+          highlight_sort_key?: number
           highlight_tier?: string | null
           id?: string
           is_featured?: boolean
@@ -455,6 +533,7 @@ export type Database = {
           featured_until?: string | null
           gender?: string | null
           highlight_expires_at?: string | null
+          highlight_sort_key?: number
           highlight_tier?: string | null
           id?: string
           is_featured?: boolean
@@ -847,13 +926,19 @@ export type Database = {
           created_at: string | null
           display_name: string | null
           featured_until: string | null
+          effective_sort_key: number | null
           gender: string | null
+          has_telegram: boolean | null
           has_whatsapp: boolean | null
           id: string | null
           is_featured: boolean | null
+          highlight_expires_at: string | null
+          highlight_sort_key: number | null
+          highlight_tier: string | null
           languages: string[] | null
           pricing_from: number | null
           slug: string | null
+          tier_rank: number | null
           updated_at: string | null
         }
         Insert: {
@@ -866,13 +951,19 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           featured_until?: string | null
+          effective_sort_key?: never
           gender?: string | null
+          has_telegram?: never
           has_whatsapp?: never
           id?: string | null
           is_featured?: boolean | null
+          highlight_expires_at?: string | null
+          highlight_sort_key?: number | null
+          highlight_tier?: string | null
           languages?: string[] | null
           pricing_from?: number | null
           slug?: string | null
+          tier_rank?: never
           updated_at?: string | null
         }
         Update: {
@@ -885,13 +976,19 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           featured_until?: string | null
+          effective_sort_key?: never
           gender?: string | null
+          has_telegram?: never
           has_whatsapp?: never
           id?: string | null
           is_featured?: boolean | null
+          highlight_expires_at?: string | null
+          highlight_sort_key?: number | null
+          highlight_tier?: string | null
           languages?: string[] | null
           pricing_from?: number | null
           slug?: string | null
+          tier_rank?: never
           updated_at?: string | null
         }
         Relationships: []
@@ -902,13 +999,18 @@ export type Database = {
         Args: {
           p_days: number
           p_profile_id: string
-          p_source: string
+          p_source?: string
+          p_target_expires_at?: string
           p_tier: string
         }
         Returns: undefined
       }
       apply_boost: {
-        Args: { p_profile_id: string; p_source: string }
+        Args: { p_profile_id: string; p_source?: string }
+        Returns: undefined
+      }
+      expire_highlight: {
+        Args: { p_profile_id: string; p_source?: string }
         Returns: undefined
       }
       get_access_analytics: { Args: never; Returns: Json }
