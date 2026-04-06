@@ -100,6 +100,19 @@ Deno.serve(async (req) => {
 
         // ── Regular subscription plan ────────────────────────────────────────
 
+        // Fetch subscription details from Stripe to get expires_at immediately
+        let expiresAt: string | null = null;
+        if (session.subscription) {
+          try {
+            const stripeSub = await stripe.subscriptions.retrieve(session.subscription as string);
+            if (stripeSub.current_period_end) {
+              expiresAt = new Date(stripeSub.current_period_end * 1000).toISOString();
+            }
+          } catch (subFetchErr) {
+            console.warn(`[stripe-webhook] Could not fetch subscription period end:`, subFetchErr);
+          }
+        }
+
         // Update subscription record
         const { data: sub, error: subError } = await supabase
           .from("subscriptions")
@@ -108,6 +121,7 @@ Deno.serve(async (req) => {
             stripe_customer_id: session.customer as string,
             stripe_subscription_id: session.subscription as string,
             starts_at: new Date().toISOString(),
+            expires_at: expiresAt,
           })
           .eq("stripe_checkout_session_id", session.id)
           .select("id, plan_id")
