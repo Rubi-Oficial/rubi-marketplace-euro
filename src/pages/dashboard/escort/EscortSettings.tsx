@@ -29,9 +29,6 @@ export default function EscortSettings() {
           setFullName(data.full_name || "");
           setPhone(data.phone || "");
         }
-      })
-      .catch((err) => {
-        console.error("[EscortSettings] Unexpected error:", err);
       });
   }, [user]);
 

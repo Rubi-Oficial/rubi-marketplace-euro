@@ -35,9 +35,6 @@ export default function ClientSettings() {
           setFullName(data.full_name || "");
           setPhone(data.phone || "");
         }
-      })
-      .catch((err) => {
-        console.error("[ClientSettings] Unexpected error:", err);
       });
   }, [user]);
 
