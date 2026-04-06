@@ -146,15 +146,10 @@ Deno.serve(async (req) => {
     let session: any;
 
     if (isBoost) {
-      // One-time payment for boost
-      session = await stripe.checkout.sessions.create({
-        mode: "payment",
-        payment_method_types: ["card"],
-        customer: customerId,
-        customer_email: customerId ? undefined : user.email!,
-        metadata: { user_id: user.id, plan_id: plan.id, highlight_type: "boost" },
-        line_items: [
-          {
+      // One-time payment for boost — use fixed price if available, fallback to price_data
+      const boostLineItem = plan.stripe_price_id
+        ? { price: plan.stripe_price_id, quantity: 1 }
+        : {
             price_data: {
               currency: "eur",
               product_data: {
@@ -164,24 +159,23 @@ Deno.serve(async (req) => {
               unit_amount: Math.round(plan.price * 100),
             },
             quantity: 1,
-          },
-        ],
+          };
+
+      session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        payment_method_types: ["card"],
+        customer: customerId,
+        customer_email: customerId ? undefined : user.email!,
+        metadata: { user_id: user.id, plan_id: plan.id, highlight_type: "boost" },
+        line_items: [boostLineItem],
         success_url: `${appUrl}/app/plano?status=boost_success`,
         cancel_url:  `${appUrl}/app/plano?status=canceled`,
       });
     } else {
-      // Recurring subscription plan
-      const interval = "month";
-      const intervalCount = plan.billing_period === "quarterly" ? 3 : 1;
-
-      session = await stripe.checkout.sessions.create({
-        mode: "subscription",
-        payment_method_types: ["card"],
-        customer: customerId,
-        customer_email: customerId ? undefined : user.email!,
-        metadata: { user_id: user.id, plan_id: plan.id, highlight_type: "plan" },
-        line_items: [
-          {
+      // Recurring subscription plan — use fixed price if available, fallback to price_data
+      const subLineItem = plan.stripe_price_id
+        ? { price: plan.stripe_price_id, quantity: 1 }
+        : {
             price_data: {
               currency: "eur",
               product_data: {
@@ -189,11 +183,21 @@ Deno.serve(async (req) => {
                 description: `${plan.billing_period === "quarterly" ? "Quarterly" : "Monthly"} subscription`,
               },
               unit_amount: Math.round(plan.price * 100),
-              recurring: { interval, interval_count: intervalCount },
+              recurring: {
+                interval: "month" as const,
+                interval_count: plan.billing_period === "quarterly" ? 3 : 1,
+              },
             },
             quantity: 1,
-          },
-        ],
+          };
+
+      session = await stripe.checkout.sessions.create({
+        mode: "subscription",
+        payment_method_types: ["card"],
+        customer: customerId,
+        customer_email: customerId ? undefined : user.email!,
+        metadata: { user_id: user.id, plan_id: plan.id, highlight_type: "plan" },
+        line_items: [subLineItem],
         success_url: `${appUrl}/app/plano?status=success`,
         cancel_url:  `${appUrl}/app/plano?status=canceled`,
       });
