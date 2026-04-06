@@ -81,7 +81,7 @@ export default function EscortOnboarding() {
       age: form.age ? parseInt(form.age) : null,
       city: form.city || null,
       city_slug: form.city_slug || null,
-      country: form.country_name || form.country || null,
+      country: form.country || null,
       country_slug: form.country || null,
       category: form.category || null,
       bio: form.bio.trim() || null,
