@@ -163,7 +163,6 @@ Deno.serve(async (req) => {
               p_tier:       planData.tier,
               p_days:       planData.highlight_days ?? 30,
               p_source:     event.id,
-              p_target_expires_at: expiresAt ?? undefined,
             });
             if (hlErr) {
               console.error(`[stripe-webhook] activate_or_renew_highlight failed for profile ${profileRow.id}:`, hlErr.message);
@@ -293,26 +292,27 @@ Deno.serve(async (req) => {
         const eventSource = `${event.id}:sub:${stripeSubId}`;
 
         if (status === "active" || status === "past_due") {
-          const targetExpiresAt = subscription.current_period_end
-            ? new Date(subscription.current_period_end * 1000).toISOString()
-            : null;
-
           const { error: hlErr } = await supabase.rpc("activate_or_renew_highlight", {
             p_profile_id: profileRow.id,
             p_tier: planData.tier,
             p_days: planData.highlight_days ?? 30,
             p_source: eventSource,
-            p_target_expires_at: targetExpiresAt ?? undefined,
           });
 
           if (hlErr) {
             console.error(`[stripe-webhook] Renewal sync failed for profile ${profileRow.id}:`, hlErr.message);
           }
         } else {
-          const { error: expErr } = await supabase.rpc("expire_highlight", {
-            p_profile_id: profileRow.id,
-            p_source: eventSource,
-          });
+          // Expire highlight by clearing tier fields
+          const { error: expErr } = await supabase
+            .from("profiles")
+            .update({
+              highlight_tier: null,
+              highlight_expires_at: null,
+              is_featured: false,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", profileRow.id);
 
           if (expErr) {
             console.error(`[stripe-webhook] Expire highlight failed for profile ${profileRow.id}:`, expErr.message);
@@ -347,10 +347,15 @@ Deno.serve(async (req) => {
 
         if (!profileRow?.id) break;
 
-        const { error: expErr } = await supabase.rpc("expire_highlight", {
-          p_profile_id: profileRow.id,
-          p_source: `${event.id}:deleted:${subscription.id}`,
-        });
+        const { error: expErr } = await supabase
+          .from("profiles")
+          .update({
+            highlight_tier: null,
+            highlight_expires_at: null,
+            is_featured: false,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", profileRow.id);
 
         if (expErr) {
           console.error(`[stripe-webhook] Expire highlight failed for profile ${profileRow.id}:`, expErr.message);

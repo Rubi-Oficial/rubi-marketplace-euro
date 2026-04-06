@@ -126,7 +126,7 @@ async function geoLookup(ip: string): Promise<GeoResult> {
   }
 }
 
-async function getCachedGeo(supabase: ReturnType<typeof createClient>, ipHash: string): Promise<GeoResult | null> {
+async function getCachedGeo(supabase: any, ipHash: string): Promise<GeoResult | null> {
   const { data, error } = await supabase
     .from("ip_geo_cache")
     .select("country_code, city_name")
@@ -142,7 +142,7 @@ async function getCachedGeo(supabase: ReturnType<typeof createClient>, ipHash: s
 }
 
 async function enrichGeoAsync(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   params: { visitIds: string[]; ipHash: string; ip: string },
 ) {
   const geo = await geoLookup(params.ip);
@@ -246,13 +246,12 @@ Deno.serve(async (req) => {
     }
 
     if (ip && ipHash && !cachedGeo && insertedVisits?.length) {
-      const visitIds = insertedVisits.map((visit) => visit.id).filter(Boolean);
+      const visitIds = insertedVisits.map((visit: any) => visit.id).filter(Boolean);
       if (visitIds.length > 0) {
-        EdgeRuntime.waitUntil(enrichGeoAsync(supabase, {
-          visitIds,
-          ipHash,
-          ip,
-        }));
+        // Fire-and-forget geo enrichment
+        enrichGeoAsync(supabase, { visitIds, ipHash, ip }).catch((err: unknown) =>
+          console.error("Geo enrichment failed:", err)
+        );
       }
     }
 

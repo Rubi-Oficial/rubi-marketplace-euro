@@ -69,9 +69,7 @@ export async function fetchEligibleProfiles(filters?: {
 
     let query = supabase
       .from("eligible_profiles")
-      .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, highlight_tier, highlight_expires_at, bio, has_whatsapp, tier_rank, effective_sort_key, created_at")
-      .order("tier_rank", { ascending: false })
-      .order("effective_sort_key", { ascending: false })
+      .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, has_whatsapp, created_at")
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .order("id", { ascending: false });
@@ -107,7 +105,7 @@ export async function fetchEligibleProfiles(filters?: {
     }
     if (!profiles || profiles.length === 0) return [];
 
-    const filteredProfileIds = (profiles as EligibleProfileRow[]).map((p) => p.id).filter(Boolean) as string[];
+    const filteredProfileIds = (profiles as unknown as EligibleProfileRow[]).map((p) => p.id).filter(Boolean) as string[];
 
     const { data: images, error: imgErr } = await supabase
       .from("profile_images").select("profile_id, storage_path")
@@ -129,17 +127,19 @@ export async function fetchEligibleProfiles(filters?: {
       if (url) imageMap[img.profile_id].push(url);
     });
 
-    const profileMap = new Map((profiles as EligibleProfileRow[]).map((p) => [p.id, p]));
+    const profileMap = new Map((profiles as unknown as EligibleProfileRow[]).map((p) => [p.id, p]));
 
     return filteredProfileIds.map((id) => {
       const p = profileMap.get(id)!;
+      // deno-lint-ignore no-explicit-any
+      const pAny = p as any;
       return {
         id: p.id!, display_name: p.display_name ?? "", age: p.age ?? null, gender: p.gender ?? null,
         city: p.city ?? null, city_slug: p.city_slug ?? null, category: p.category ?? null,
         slug: p.slug ?? null, pricing_from: p.pricing_from ?? null,
         is_featured: p.is_featured ?? false,
-        highlight_tier: p.highlight_tier ?? "standard",
-        highlight_expires_at: p.highlight_expires_at ?? null,
+        highlight_tier: (pAny.highlight_tier as string) ?? "standard",
+        highlight_expires_at: (pAny.highlight_expires_at as string | null) ?? null,
         image_urls: imageMap[p.id!] || [],
         bio: p.bio ?? null, has_whatsapp: p.has_whatsapp ?? false,
       };
@@ -173,8 +173,6 @@ export async function prefetchNextBatchUrls(filters?: {
     let query = supabase
       .from("eligible_profiles")
       .select("id")
-      .order("tier_rank", { ascending: false })
-      .order("effective_sort_key", { ascending: false })
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
