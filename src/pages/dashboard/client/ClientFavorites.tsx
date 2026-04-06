@@ -28,7 +28,7 @@ export default function ClientFavorites() {
 
       const { data: profileData } = await supabase
         .from("eligible_profiles")
-        .select("id, display_name, age, city, city_slug, category, slug, pricing_from, is_featured, bio, has_whatsapp, highlight_tier, highlight_expires_at")
+        .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, has_whatsapp, highlight_tier, highlight_expires_at")
         .in("id", ids);
 
       if (!profileData?.length) return [];

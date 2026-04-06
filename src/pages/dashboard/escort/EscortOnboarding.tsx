@@ -10,6 +10,7 @@ import StepDetails from "@/components/onboarding/StepDetails";
 import StepDescription from "@/components/onboarding/StepDescription";
 import StepReview from "@/components/onboarding/StepReview";
 import { type ProfileDraft, INITIAL_DRAFT } from "@/components/onboarding/types";
+import { useLocations } from "@/hooks/useLocations";
 
 const STEPS: StepConfig[] = [
   { label: "Basic Info" },
@@ -21,6 +22,7 @@ const STEPS: StepConfig[] = [
 export default function EscortOnboarding() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { countries } = useLocations();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export default function EscortOnboarding() {
             age: data.age?.toString() || "",
             city: data.city || "",
             city_slug: (data as any).city_slug || "",
-            country: data.country || "",
+            country: (data as any).country_slug || data.country || "",
             category: data.category || "",
             bio: data.bio || "",
             languages: data.languages?.join(", ") || "English",
@@ -81,7 +83,7 @@ export default function EscortOnboarding() {
       age: form.age ? parseInt(form.age) : null,
       city: form.city || null,
       city_slug: form.city_slug || null,
-      country: form.country || null,
+      country: countries.find((c) => c.slug === form.country)?.name || form.country || null,
       country_slug: form.country || null,
       category: form.category || null,
       bio: form.bio.trim() || null,
