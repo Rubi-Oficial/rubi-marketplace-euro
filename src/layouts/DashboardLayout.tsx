@@ -86,6 +86,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ role }: DashboardLayoutProps) {
   const { signOut, user } = useAuth();
   const { t } = useLanguage();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navItems = useNavItems(role);
   const roleLabel = role === "admin" ? t("dash.role_admin") : role === "escort" ? t("dash.role_escort") : t("dash.role_client");
