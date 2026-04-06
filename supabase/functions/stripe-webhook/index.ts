@@ -3,6 +3,21 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const COMMISSION_RATE = 0.15;
 
+function stripeSubscriptionToStatus(status: Stripe.Subscription.Status): string {
+  switch (status) {
+    case "active":
+      return "active";
+    case "past_due":
+      return "past_due";
+    case "canceled":
+      return "canceled";
+    case "unpaid":
+      return "expired";
+    default:
+      return status;
+  }
+}
+
 Deno.serve(async (req) => {
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
   if (!stripeKey) {
@@ -148,6 +163,7 @@ Deno.serve(async (req) => {
               p_tier:       planData.tier,
               p_days:       planData.highlight_days ?? 30,
               p_source:     event.id,
+              p_target_expires_at: expiresAt ?? undefined,
             });
             if (hlErr) {
               console.error(`[stripe-webhook] activate_or_renew_highlight failed for profile ${profileRow.id}:`, hlErr.message);
@@ -233,27 +249,11 @@ Deno.serve(async (req) => {
         const subscription = event.data.object as Stripe.Subscription;
         const stripeSubId = subscription.id;
 
-        let status: string;
-        switch (subscription.status) {
-          case "active":
-            status = "active";
-            break;
-          case "past_due":
-            status = "past_due";
-            break;
-          case "canceled":
-            status = "canceled";
-            break;
-          case "unpaid":
-            status = "expired";
-            break;
-          default:
-            status = subscription.status;
-        }
+        const status = stripeSubscriptionToStatus(subscription.status);
 
         console.log(`[stripe-webhook] subscription.updated — stripe_sub=${stripeSubId}, new_status=${status}`);
 
-        const { error: updateErr } = await supabase
+        const { data: updatedSubs, error: updateErr } = await supabase
           .from("subscriptions")
           .update({
             status,
@@ -261,10 +261,62 @@ Deno.serve(async (req) => {
               ? new Date(subscription.current_period_end * 1000).toISOString()
               : null,
           })
-          .eq("stripe_subscription_id", stripeSubId);
+          .eq("stripe_subscription_id", stripeSubId)
+          .select("id, user_id, plan_id");
 
         if (updateErr) {
           console.error(`[stripe-webhook] Failed to update subscription ${stripeSubId}:`, updateErr.message);
+          break;
+        }
+
+        const updatedSub = updatedSubs?.[0];
+        if (!updatedSub) break;
+
+        const { data: planData } = await supabase
+          .from("plans")
+          .select("tier, is_boost, highlight_days")
+          .eq("id", updatedSub.plan_id)
+          .maybeSingle();
+
+        if (!planData || planData.is_boost || !planData.tier || planData.tier === "standard") {
+          break;
+        }
+
+        const { data: profileRow } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("user_id", updatedSub.user_id)
+          .maybeSingle();
+
+        if (!profileRow?.id) break;
+
+        const eventSource = `${event.id}:sub:${stripeSubId}`;
+
+        if (status === "active" || status === "past_due") {
+          const targetExpiresAt = subscription.current_period_end
+            ? new Date(subscription.current_period_end * 1000).toISOString()
+            : null;
+
+          const { error: hlErr } = await supabase.rpc("activate_or_renew_highlight", {
+            p_profile_id: profileRow.id,
+            p_tier: planData.tier,
+            p_days: planData.highlight_days ?? 30,
+            p_source: eventSource,
+            p_target_expires_at: targetExpiresAt ?? undefined,
+          });
+
+          if (hlErr) {
+            console.error(`[stripe-webhook] Renewal sync failed for profile ${profileRow.id}:`, hlErr.message);
+          }
+        } else {
+          const { error: expErr } = await supabase.rpc("expire_highlight", {
+            p_profile_id: profileRow.id,
+            p_source: eventSource,
+          });
+
+          if (expErr) {
+            console.error(`[stripe-webhook] Expire highlight failed for profile ${profileRow.id}:`, expErr.message);
+          }
         }
         break;
       }
@@ -273,13 +325,35 @@ Deno.serve(async (req) => {
         const subscription = event.data.object as Stripe.Subscription;
         console.log(`[stripe-webhook] subscription.deleted — stripe_sub=${subscription.id}`);
 
-        const { error: delErr } = await supabase
+        const { data: canceledSubs, error: delErr } = await supabase
           .from("subscriptions")
           .update({ status: "canceled" })
-          .eq("stripe_subscription_id", subscription.id);
+          .eq("stripe_subscription_id", subscription.id)
+          .select("user_id");
 
         if (delErr) {
           console.error(`[stripe-webhook] Failed to cancel subscription ${subscription.id}:`, delErr.message);
+          break;
+        }
+
+        const canceledSub = canceledSubs?.[0];
+        if (!canceledSub) break;
+
+        const { data: profileRow } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("user_id", canceledSub.user_id)
+          .maybeSingle();
+
+        if (!profileRow?.id) break;
+
+        const { error: expErr } = await supabase.rpc("expire_highlight", {
+          p_profile_id: profileRow.id,
+          p_source: `${event.id}:deleted:${subscription.id}`,
+        });
+
+        if (expErr) {
+          console.error(`[stripe-webhook] Expire highlight failed for profile ${profileRow.id}:`, expErr.message);
         }
         break;
       }

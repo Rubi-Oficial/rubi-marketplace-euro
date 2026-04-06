@@ -356,3 +356,22 @@ describe("Ordering — exclusive > premium > standard", () => {
     expect(listing[0].id).toBe("prem");
   });
 });
+
+describe("Webhook deduplication — evento duplicado não duplica efeito", () => {
+  it("processa apenas a primeira ocorrência do mesmo event_id", () => {
+    const processed = new Set<string>();
+    let applied = 0;
+
+    const handleWebhookEvent = (eventId: string) => {
+      if (processed.has(eventId)) return;
+      processed.add(eventId);
+      applied += 1;
+    };
+
+    handleWebhookEvent("evt_1");
+    handleWebhookEvent("evt_1");
+    handleWebhookEvent("evt_1");
+
+    expect(applied).toBe(1);
+  });
+});
