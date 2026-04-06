@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth, getRoleDashboard, getRolePrefix } from "@/contexts/AuthContext";
+import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
