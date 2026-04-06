@@ -233,6 +233,7 @@ export type Database = {
           is_boost: boolean | null
           name: string
           price: number
+          stripe_price_id: string | null
           tier: string | null
         }
         Insert: {
@@ -245,6 +246,7 @@ export type Database = {
           is_boost?: boolean | null
           name: string
           price: number
+          stripe_price_id?: string | null
           tier?: string | null
         }
         Update: {
@@ -257,6 +259,7 @@ export type Database = {
           is_boost?: boolean | null
           name?: string
           price?: number
+          stripe_price_id?: string | null
           tier?: string | null
         }
         Relationships: []
