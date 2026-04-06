@@ -227,28 +227,37 @@ export type Database = {
           billing_period: Database["public"]["Enums"]["billing_period"]
           created_at: string
           features_json: Json
+          highlight_days: number | null
           id: string
           is_active: boolean
+          is_boost: boolean | null
           name: string
           price: number
+          tier: string | null
         }
         Insert: {
           billing_period?: Database["public"]["Enums"]["billing_period"]
           created_at?: string
           features_json?: Json
+          highlight_days?: number | null
           id?: string
           is_active?: boolean
+          is_boost?: boolean | null
           name: string
           price: number
+          tier?: string | null
         }
         Update: {
           billing_period?: Database["public"]["Enums"]["billing_period"]
           created_at?: string
           features_json?: Json
+          highlight_days?: number | null
           id?: string
           is_active?: boolean
+          is_boost?: boolean | null
           name?: string
           price?: number
+          tier?: string | null
         }
         Relationships: []
       }
@@ -392,6 +401,8 @@ export type Database = {
           display_name: string | null
           featured_until: string | null
           gender: string | null
+          highlight_expires_at: string | null
+          highlight_tier: string | null
           id: string
           is_featured: boolean
           languages: string[] | null
@@ -415,6 +426,8 @@ export type Database = {
           display_name?: string | null
           featured_until?: string | null
           gender?: string | null
+          highlight_expires_at?: string | null
+          highlight_tier?: string | null
           id?: string
           is_featured?: boolean
           languages?: string[] | null
@@ -438,6 +451,8 @@ export type Database = {
           display_name?: string | null
           featured_until?: string | null
           gender?: string | null
+          highlight_expires_at?: string | null
+          highlight_tier?: string | null
           id?: string
           is_featured?: boolean
           languages?: string[] | null
@@ -645,6 +660,24 @@ export type Database = {
           utm_campaign?: string | null
           utm_medium?: string | null
           utm_source?: string | null
+        }
+        Relationships: []
+      }
+      stripe_webhook_event_dedup: {
+        Row: {
+          created_at: string
+          event_id: string
+          event_type: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          event_type: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          event_type?: string
         }
         Relationships: []
       }
@@ -862,6 +895,19 @@ export type Database = {
       }
     }
     Functions: {
+      activate_or_renew_highlight: {
+        Args: {
+          p_days: number
+          p_profile_id: string
+          p_source: string
+          p_tier: string
+        }
+        Returns: undefined
+      }
+      apply_boost: {
+        Args: { p_profile_id: string; p_source: string }
+        Returns: undefined
+      }
       get_access_analytics: { Args: never; Returns: Json }
       get_admin_dashboard_stats: { Args: never; Returns: Json }
       get_admin_sanity_checks: { Args: never; Returns: Json }
