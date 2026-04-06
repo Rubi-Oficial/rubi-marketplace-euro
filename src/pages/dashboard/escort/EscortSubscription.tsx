@@ -88,35 +88,45 @@ export default function EscortSubscription() {
     if (!user) return;
 
     const load = async () => {
-      const [plansRes, subRes, profileRes] = await Promise.all([
-        supabase.from("plans").select("*").eq("is_active", true).order("price"),
-        supabase
-          .from("subscriptions")
-          .select("*, plans(*)")
-          .eq("user_id", user.id)
-          .in("status", ["active", "pending", "past_due"])
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from("profiles")
-          .select("highlight_tier, highlight_expires_at")
-          .eq("user_id", user.id)
-          .maybeSingle(),
-      ]);
+      try {
+        const [plansRes, subRes, profileRes] = await Promise.all([
+          supabase.from("plans").select("*").eq("is_active", true).order("price"),
+          supabase
+            .from("subscriptions")
+            .select("*, plans(*)")
+            .eq("user_id", user.id)
+            .in("status", ["active", "pending", "past_due"])
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from("profiles")
+            .select("highlight_tier, highlight_expires_at")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+        ]);
 
-      const allPlans = (plansRes.data as Plan[]) || [];
-      setPlans(allPlans.filter((p) => !p.is_boost));
-      setBoostPlans(allPlans.filter((p) => p.is_boost));
-      setSubscription(subRes.data as Subscription | null);
+        if (plansRes.error) {
+          console.error("[EscortSubscription] Plans error:", plansRes.error.message);
+          toast.error("Não foi possível carregar os planos.");
+        }
 
-      if (profileRes.data) {
-        const profileData = profileRes.data as { highlight_tier?: string; highlight_expires_at?: string | null };
-        setHighlightTier(profileData.highlight_tier ?? "standard");
-        setHighlightExpiresAt(profileData.highlight_expires_at ?? null);
+        const allPlans = (plansRes.data as Plan[]) || [];
+        setPlans(allPlans.filter((p) => !p.is_boost));
+        setBoostPlans(allPlans.filter((p) => p.is_boost));
+        setSubscription(subRes.data as Subscription | null);
+
+        if (profileRes.data) {
+          const profileData = profileRes.data as { highlight_tier?: string; highlight_expires_at?: string | null };
+          setHighlightTier(profileData.highlight_tier ?? "standard");
+          setHighlightExpiresAt(profileData.highlight_expires_at ?? null);
+        }
+      } catch (err) {
+        console.error("[EscortSubscription] Unexpected error:", err);
+        toast.error("Ocorreu um erro ao carregar dados da assinatura.");
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     load();

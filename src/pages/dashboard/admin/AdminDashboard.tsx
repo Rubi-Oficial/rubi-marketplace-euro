@@ -44,48 +44,61 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const load = async () => {
-      const [rpcRes, sanityRes, actionsRes] = await Promise.all([
-        supabase.rpc("get_admin_dashboard_stats" as any),
-        supabase.rpc("get_admin_sanity_checks" as any),
-        supabase.from("admin_actions")
-          .select("id, action_type, created_at, users!admin_actions_admin_user_id_fkey(full_name)")
-          .order("created_at", { ascending: false }).limit(10),
-      ]);
+      try {
+        const [rpcRes, sanityRes, actionsRes] = await Promise.all([
+          supabase.rpc("get_admin_dashboard_stats" as any),
+          supabase.rpc("get_admin_sanity_checks" as any),
+          supabase.from("admin_actions")
+            .select("id, action_type, created_at, users!admin_actions_admin_user_id_fkey(full_name)")
+            .order("created_at", { ascending: false }).limit(10),
+        ]);
 
-      const d = (rpcRes.data as any) || {};
-      const supply = d.active_profiles ?? 0;
-      const demand = d.total_clients ?? 0;
-      const ratio = demand > 0 ? (supply / demand).toFixed(2) : "—";
+        if (rpcRes.error) {
+          console.error("[AdminDashboard] Stats RPC error:", rpcRes.error.message);
+          toast.error("Não foi possível carregar as estatísticas.");
+          setLoading(false);
+          return;
+        }
 
-      setStats({
-        totalUsers: d.total_users ?? 0, activeProfiles: supply, pendingProfiles: d.pending_profiles ?? 0,
-        activeSubs: d.active_subs ?? 0, problemSubs: d.problem_subs ?? 0,
-        canceledSubs: d.canceled_subs ?? 0, pendingSubs: d.pending_subs ?? 0,
-        pendingCommissions: Number(d.pending_commissions ?? 0),
-        approvedCommissions: Number(d.approved_commissions ?? 0),
-        paidCommissions: Number(d.paid_commissions ?? 0),
-        gmv: Number(d.gmv ?? 0), totalLeads: d.total_leads ?? 0, supplyDemandRatio: ratio,
-        unreadMessages: d.unread_messages ?? 0, totalMessages: d.total_messages ?? 0,
-        signups7d: d.signups_7d ?? 0, signups30d: d.signups_30d ?? 0,
-        payments7d: d.payments_7d ?? 0, payments30d: d.payments_30d ?? 0,
-        topAffiliates: (d.top_affiliates || []).map((a: any) => ({
-          name: a.name || "—", code: a.code || "", clicks: a.clicks ?? 0,
-          conversions: a.conversions ?? 0, commission: Number(a.commission ?? 0),
-        })),
-        recentActions: (actionsRes.data || []).map((a: any) => ({
-          id: a.id, action_type: a.action_type, created_at: a.created_at,
-          admin_name: a.users?.full_name || "Admin",
-        })),
-      });
+        const d = (rpcRes.data as any) || {};
+        const supply = d.active_profiles ?? 0;
+        const demand = d.total_clients ?? 0;
+        const ratio = demand > 0 ? (supply / demand).toFixed(2) : "—";
 
-      const s = (sanityRes.data as any) || {};
-      setSanity({
-        usersWithoutRole: s.users_without_role ?? 0, orphanProfiles: s.orphan_profiles ?? 0,
-        activeSubsNoStripe: s.active_subs_no_stripe ?? 0, conversionsZeroCommission: s.conversions_zero_commission ?? 0,
-        selfReferrals: s.self_referrals ?? 0, pendingSubsOld: s.pending_subs_old ?? 0,
-        professionalsWithoutProfile: s.professionals_without_profile ?? 0,
-      });
-      setLoading(false);
+        setStats({
+          totalUsers: d.total_users ?? 0, activeProfiles: supply, pendingProfiles: d.pending_profiles ?? 0,
+          activeSubs: d.active_subs ?? 0, problemSubs: d.problem_subs ?? 0,
+          canceledSubs: d.canceled_subs ?? 0, pendingSubs: d.pending_subs ?? 0,
+          pendingCommissions: Number(d.pending_commissions ?? 0),
+          approvedCommissions: Number(d.approved_commissions ?? 0),
+          paidCommissions: Number(d.paid_commissions ?? 0),
+          gmv: Number(d.gmv ?? 0), totalLeads: d.total_leads ?? 0, supplyDemandRatio: ratio,
+          unreadMessages: d.unread_messages ?? 0, totalMessages: d.total_messages ?? 0,
+          signups7d: d.signups_7d ?? 0, signups30d: d.signups_30d ?? 0,
+          payments7d: d.payments_7d ?? 0, payments30d: d.payments_30d ?? 0,
+          topAffiliates: (d.top_affiliates || []).map((a: any) => ({
+            name: a.name || "—", code: a.code || "", clicks: a.clicks ?? 0,
+            conversions: a.conversions ?? 0, commission: Number(a.commission ?? 0),
+          })),
+          recentActions: (actionsRes.data || []).map((a: any) => ({
+            id: a.id, action_type: a.action_type, created_at: a.created_at,
+            admin_name: a.users?.full_name || "Admin",
+          })),
+        });
+
+        const s = (sanityRes.data as any) || {};
+        setSanity({
+          usersWithoutRole: s.users_without_role ?? 0, orphanProfiles: s.orphan_profiles ?? 0,
+          activeSubsNoStripe: s.active_subs_no_stripe ?? 0, conversionsZeroCommission: s.conversions_zero_commission ?? 0,
+          selfReferrals: s.self_referrals ?? 0, pendingSubsOld: s.pending_subs_old ?? 0,
+          professionalsWithoutProfile: s.professionals_without_profile ?? 0,
+        });
+      } catch (err) {
+        console.error("[AdminDashboard] Unexpected error:", err);
+        toast.error("Ocorreu um erro ao carregar o painel.");
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, []);

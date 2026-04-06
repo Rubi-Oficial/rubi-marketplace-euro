@@ -24,27 +24,44 @@ export default function ClientSettings() {
       .from("users")
       .select("full_name, phone")
       .eq("id", user.id)
-      .single()
-      .then(({ data }) => {
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("[ClientSettings] Failed to load user data:", error.message);
+          toast.error(t("settings.save_error") || "Erro ao carregar dados.");
+          return;
+        }
         if (data) {
           setFullName(data.full_name || "");
           setPhone(data.phone || "");
         }
+      })
+      .catch((err) => {
+        console.error("[ClientSettings] Unexpected error:", err);
       });
   }, [user]);
 
   const saveProfile = async () => {
     if (!user) return;
+    if (fullName.trim().length > 100) { toast.error("Nome deve ter no máximo 100 caracteres."); return; }
+    if (phone.trim().length > 20) { toast.error("Telefone deve ter no máximo 20 caracteres."); return; }
     setSaving(true);
-    const { error } = await supabase
-      .from("users")
-      .update({ full_name: fullName, phone })
-      .eq("id", user.id);
-    setSaving(false);
-    if (error) {
-      toast.error(t("settings.save_error"));
-    } else {
-      toast.success(t("settings.data_updated"));
+    try {
+      const { error } = await supabase
+        .from("users")
+        .update({ full_name: fullName.trim(), phone: phone.trim() })
+        .eq("id", user.id);
+      if (error) {
+        console.error("[ClientSettings] Save error:", error.message);
+        toast.error(t("settings.save_error"));
+      } else {
+        toast.success(t("settings.data_updated"));
+      }
+    } catch (err) {
+      console.error("[ClientSettings] Unexpected save error:", err);
+      toast.error("Ocorreu um erro inesperado. Tente novamente.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -54,15 +71,21 @@ export default function ClientSettings() {
       return;
     }
     setChangingPassword(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setChangingPassword(false);
-    if (error) {
-      console.error("[ClientSettings] Password error:", error.message);
-      toast.error(t("settings.password_error") || "Não foi possível alterar a senha. Tente novamente.");
-    } else {
-      toast.success(t("settings.password_changed_success"));
-      setCurrentPassword("");
-      setNewPassword("");
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        console.error("[ClientSettings] Password error:", error.message);
+        toast.error(t("settings.password_error") || "Não foi possível alterar a senha. Tente novamente.");
+      } else {
+        toast.success(t("settings.password_changed_success"));
+        setCurrentPassword("");
+        setNewPassword("");
+      }
+    } catch (err) {
+      console.error("[ClientSettings] Unexpected password error:", err);
+      toast.error("Ocorreu um erro inesperado. Tente novamente.");
+    } finally {
+      setChangingPassword(false);
     }
   };
 
