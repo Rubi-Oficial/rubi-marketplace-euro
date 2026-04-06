@@ -165,6 +165,72 @@ export type Database = {
         }
         Relationships: []
       }
+      highlight_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          expires_at: string | null
+          id: string
+          profile_id: string
+          sort_key: number | null
+          source: string | null
+          tier: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          expires_at?: string | null
+          id?: string
+          profile_id: string
+          sort_key?: number | null
+          source?: string | null
+          tier?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          expires_at?: string | null
+          id?: string
+          profile_id?: string
+          sort_key?: number | null
+          source?: string | null
+          tier?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "highlight_events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "eligible_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "highlight_events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      highlight_tier_counters: {
+        Row: {
+          next_bottom_key: number
+          next_top_key: number
+          tier: string
+        }
+        Insert: {
+          next_bottom_key?: number
+          next_top_key?: number
+          tier: string
+        }
+        Update: {
+          next_bottom_key?: number
+          next_top_key?: number
+          tier?: string
+        }
+        Relationships: []
+      }
       ip_geo_cache: {
         Row: {
           city_name: string | null
@@ -405,6 +471,7 @@ export type Database = {
           featured_until: string | null
           gender: string | null
           highlight_expires_at: string | null
+          highlight_sort_key: number
           highlight_tier: string | null
           id: string
           is_featured: boolean
@@ -430,6 +497,7 @@ export type Database = {
           featured_until?: string | null
           gender?: string | null
           highlight_expires_at?: string | null
+          highlight_sort_key?: number
           highlight_tier?: string | null
           id?: string
           is_featured?: boolean
@@ -455,6 +523,7 @@ export type Database = {
           featured_until?: string | null
           gender?: string | null
           highlight_expires_at?: string | null
+          highlight_sort_key?: number
           highlight_tier?: string | null
           id?: string
           is_featured?: boolean
@@ -846,14 +915,18 @@ export type Database = {
           country: string | null
           created_at: string | null
           display_name: string | null
+          effective_sort_key: number | null
           featured_until: string | null
           gender: string | null
           has_whatsapp: boolean | null
+          highlight_expires_at: string | null
+          highlight_tier: string | null
           id: string | null
           is_featured: boolean | null
           languages: string[] | null
           pricing_from: number | null
           slug: string | null
+          tier_rank: number | null
           updated_at: string | null
         }
         Insert: {
@@ -865,14 +938,18 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           display_name?: string | null
+          effective_sort_key?: never
           featured_until?: string | null
           gender?: string | null
           has_whatsapp?: never
+          highlight_expires_at?: string | null
+          highlight_tier?: string | null
           id?: string | null
           is_featured?: boolean | null
           languages?: string[] | null
           pricing_from?: number | null
           slug?: string | null
+          tier_rank?: never
           updated_at?: string | null
         }
         Update: {
@@ -884,14 +961,18 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           display_name?: string | null
+          effective_sort_key?: never
           featured_until?: string | null
           gender?: string | null
           has_whatsapp?: never
+          highlight_expires_at?: string | null
+          highlight_tier?: string | null
           id?: string | null
           is_featured?: boolean | null
           languages?: string[] | null
           pricing_from?: number | null
           slug?: string | null
+          tier_rank?: never
           updated_at?: string | null
         }
         Relationships: []
@@ -907,6 +988,8 @@ export type Database = {
         }
         Returns: undefined
       }
+      alloc_bottom_key: { Args: { _tier: string }; Returns: number }
+      alloc_top_key: { Args: { _tier: string }; Returns: number }
       apply_boost: {
         Args: { p_profile_id: string; p_source: string }
         Returns: undefined

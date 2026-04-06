@@ -69,7 +69,9 @@ export async function fetchEligibleProfiles(filters?: {
 
     let query = supabase
       .from("eligible_profiles")
-      .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, bio, has_whatsapp, created_at")
+      .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, highlight_tier, highlight_expires_at, bio, has_whatsapp, tier_rank, effective_sort_key, created_at")
+      .order("tier_rank" as any, { ascending: false })
+      .order("effective_sort_key" as any, { ascending: false })
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .order("id", { ascending: false });
@@ -173,6 +175,8 @@ export async function prefetchNextBatchUrls(filters?: {
     let query = supabase
       .from("eligible_profiles")
       .select("id")
+      .order("tier_rank" as any, { ascending: false })
+      .order("effective_sort_key" as any, { ascending: false })
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
