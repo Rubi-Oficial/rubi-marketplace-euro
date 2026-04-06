@@ -82,7 +82,7 @@ export default function EscortProfile() {
             age: data.age?.toString() || "",
             city: data.city || "",
             city_slug: (data as any).city_slug || "",
-            country: data.country || "",
+            country: (data as any).country_slug || data.country || "",
             category: data.category || "",
             bio: data.bio || "",
             languages: data.languages?.join(", ") || "English",
