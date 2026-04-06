@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Loader2, MapPin } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
@@ -15,10 +15,6 @@ import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
-const FEATURED_CITIES = [
-  { name: "Barcelona", slug: "barcelona" },
-  { name: "Madrid", slug: "madrid" },
-];
 
 export default function LandingPage() {
   useReferralCapture();
