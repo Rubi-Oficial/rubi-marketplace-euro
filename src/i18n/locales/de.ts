@@ -449,6 +449,25 @@ const de: TranslationMap = {
   "admin_profile.featured_off": "Hervorhebung entfernt.",
   "admin_profile.featured_label": "Hervorgehoben",
   "admin_profile.feature_action": "Hervorheben",
+
+  "home.h1": "Verifizierte Profile in Europa",
+  "home.subtitle": "Entdecken Sie unabhängige Fachleute mit Fotos und direktem Kontakt.",
+  "home.meta_title": "Rubi Girls — Verifizierte professionelle Profile in Europa",
+  "home.meta_desc": "Entdecken Sie verifizierte unabhängige Fachleute in Europa. Profile mit echten Fotos, direktem Kontakt und sicheren Zahlungen auf Rubi Girls.",
+  "home.featured_cities": "Beliebte Städte",
+  "home.featured_cities_desc": "Entdecken Sie Profile in den wichtigsten europäischen Städten.",
+  "home.view_city": "Profile in {city} ansehen",
+
+  "city.meta_title_default": "Fachleute in {city} — Rubi Girls",
+  "city.meta_desc_default": "Finden Sie verifizierte unabhängige Fachleute in {city}. Echte Profile mit Fotos, Dienstleistungen und direktem Kontakt auf Rubi Girls.",
+  "city.intro_default": "Entdecken Sie verifizierte Fachleute in {city}. Alle Profile sind moderiert und enthalten Fotos, Dienstleistungen und direkte Kontaktinformationen.",
+  "city.meta_title_barcelona": "Fachleute in Barcelona — Verifizierte Profile | Rubi Girls",
+  "city.meta_desc_barcelona": "Entdecken Sie verifizierte unabhängige Fachleute in Barcelona. Echte Profile mit Fotos, Bewertungen und direktem WhatsApp-Kontakt.",
+  "city.intro_barcelona": "Barcelona ist eine der aktivsten Städte auf Rubi Girls. Entdecken Sie verifizierte Profile unabhängiger Fachleute mit echten Fotos und direktem Kontakt.",
+  "city.meta_title_madrid": "Fachleute in Madrid — Verifizierte Profile | Rubi Girls",
+  "city.meta_desc_madrid": "Finden Sie verifizierte unabhängige Fachleute in Madrid. Echte Profile mit Fotos, Bewertungen und direktem WhatsApp-Kontakt.",
+  "city.intro_madrid": "Madrid ist ein Top-Ziel auf Rubi Girls. Entdecken Sie verifizierte Profile unabhängiger Fachleute, die jetzt mit direktem Kontakt verfügbar sind.",
+  "city.h1_default": "Fachleute in {city}",
 };
 
 export default de;

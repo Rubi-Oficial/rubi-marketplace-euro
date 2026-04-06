@@ -449,6 +449,27 @@ const en: TranslationMap = {
   "admin_profile.featured_off": "Feature removed.",
   "admin_profile.featured_label": "Featured",
   "admin_profile.feature_action": "Feature",
+
+  // Home SEO
+  "home.h1": "Verified Profiles Across Europe",
+  "home.subtitle": "Browse independent professionals with photos and direct contact.",
+  "home.meta_title": "Rubi Girls — Verified Professional Profiles in Europe",
+  "home.meta_desc": "Discover verified independent professionals across Europe. Browse profiles with real photos, direct contact and secure payments on Rubi Girls.",
+  "home.featured_cities": "Popular Cities",
+  "home.featured_cities_desc": "Explore profiles in top European cities.",
+  "home.view_city": "View profiles in {city}",
+
+  // City SEO
+  "city.meta_title_default": "Professionals in {city} — Rubi Girls",
+  "city.meta_desc_default": "Find verified independent professionals in {city}. Browse real profiles with photos, services and direct contact on Rubi Girls.",
+  "city.intro_default": "Explore verified professionals available in {city}. All profiles are moderated and include photos, services and direct contact information.",
+  "city.meta_title_barcelona": "Professionals in Barcelona — Verified Profiles | Rubi Girls",
+  "city.meta_desc_barcelona": "Discover verified independent professionals in Barcelona. Browse real profiles with photos, reviews and direct WhatsApp contact.",
+  "city.intro_barcelona": "Barcelona is one of the most active cities on Rubi Girls. Explore verified profiles of independent professionals with real photos and direct contact.",
+  "city.meta_title_madrid": "Professionals in Madrid — Verified Profiles | Rubi Girls",
+  "city.meta_desc_madrid": "Find verified independent professionals in Madrid. Browse real profiles with photos, reviews and direct WhatsApp contact.",
+  "city.intro_madrid": "Madrid is a top destination on Rubi Girls. Discover verified profiles of independent professionals available now with direct contact.",
+  "city.h1_default": "Professionals in {city}",
 };
 
 export default en;

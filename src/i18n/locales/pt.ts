@@ -476,6 +476,27 @@ const pt: TranslationMap = {
   "admin_profile.featured_off": "Destaque removido.",
   "admin_profile.featured_label": "Destaque",
   "admin_profile.feature_action": "Destacar",
+
+  // Home SEO
+  "home.h1": "Perfis Verificados na Europa",
+  "home.subtitle": "Explore profissionais independentes com fotos e contacto directo.",
+  "home.meta_title": "Rubi Girls — Perfis Profissionais Verificados na Europa",
+  "home.meta_desc": "Descubra profissionais independentes verificados na Europa. Perfis com fotos reais, contacto directo e pagamentos seguros na Rubi Girls.",
+  "home.featured_cities": "Cidades Populares",
+  "home.featured_cities_desc": "Explore perfis nas principais cidades europeias.",
+  "home.view_city": "Ver perfis em {city}",
+
+  // City SEO
+  "city.meta_title_default": "Profissionais em {city} — Rubi Girls",
+  "city.meta_desc_default": "Encontre profissionais independentes verificados em {city}. Perfis reais com fotos, serviços e contacto directo na Rubi Girls.",
+  "city.intro_default": "Explore profissionais verificados disponíveis em {city}. Todos os perfis são moderados e incluem fotos, serviços e informações de contacto directo.",
+  "city.meta_title_barcelona": "Profissionais em Barcelona — Perfis Verificados | Rubi Girls",
+  "city.meta_desc_barcelona": "Descubra profissionais independentes verificados em Barcelona. Perfis reais com fotos, avaliações e contacto directo por WhatsApp.",
+  "city.intro_barcelona": "Barcelona é uma das cidades mais activas na Rubi Girls. Explore perfis verificados de profissionais independentes com fotos reais e contacto directo.",
+  "city.meta_title_madrid": "Profissionais em Madrid — Perfis Verificados | Rubi Girls",
+  "city.meta_desc_madrid": "Encontre profissionais independentes verificados em Madrid. Perfis reais com fotos, avaliações e contacto directo por WhatsApp.",
+  "city.intro_madrid": "Madrid é um destino de topo na Rubi Girls. Descubra perfis verificados de profissionais independentes disponíveis agora com contacto directo.",
+  "city.h1_default": "Profissionais em {city}",
 };
 
 export default pt;
