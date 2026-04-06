@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     // Fetch active cities
     const { data: cities } = await supabase
       .from("cities")
-      .select("slug, name")
+      .select("slug, name, is_featured")
       .eq("is_active", true);
 
     // Fetch approved profile slugs
