@@ -449,6 +449,25 @@ const es: TranslationMap = {
   "admin_profile.featured_off": "Destacado eliminado.",
   "admin_profile.featured_label": "Destacado",
   "admin_profile.feature_action": "Destacar",
+
+  "home.h1": "Perfiles Verificados en Europa",
+  "home.subtitle": "Explora profesionales independientes con fotos y contacto directo.",
+  "home.meta_title": "Rubi Girls — Perfiles Profesionales Verificados en Europa",
+  "home.meta_desc": "Descubre profesionales independientes verificados en Europa. Perfiles con fotos reales, contacto directo y pagos seguros en Rubi Girls.",
+  "home.featured_cities": "Ciudades Populares",
+  "home.featured_cities_desc": "Explora perfiles en las principales ciudades europeas.",
+  "home.view_city": "Ver perfiles en {city}",
+
+  "city.meta_title_default": "Profesionales en {city} — Rubi Girls",
+  "city.meta_desc_default": "Encuentra profesionales independientes verificados en {city}. Perfiles reales con fotos, servicios y contacto directo en Rubi Girls.",
+  "city.intro_default": "Explora profesionales verificados disponibles en {city}. Todos los perfiles están moderados e incluyen fotos, servicios e información de contacto directo.",
+  "city.meta_title_barcelona": "Profesionales en Barcelona — Perfiles Verificados | Rubi Girls",
+  "city.meta_desc_barcelona": "Descubre profesionales independientes verificados en Barcelona. Perfiles reales con fotos, reseñas y contacto directo por WhatsApp.",
+  "city.intro_barcelona": "Barcelona es una de las ciudades más activas en Rubi Girls. Explora perfiles verificados de profesionales independientes con fotos reales y contacto directo.",
+  "city.meta_title_madrid": "Profesionales en Madrid — Perfiles Verificados | Rubi Girls",
+  "city.meta_desc_madrid": "Encuentra profesionales independientes verificados en Madrid. Perfiles reales con fotos, reseñas y contacto directo por WhatsApp.",
+  "city.intro_madrid": "Madrid es un destino top en Rubi Girls. Descubre perfiles verificados de profesionales independientes disponibles ahora con contacto directo.",
+  "city.h1_default": "Profesionales en {city}",
 };
 
 export default es;

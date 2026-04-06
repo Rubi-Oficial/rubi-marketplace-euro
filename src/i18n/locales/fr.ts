@@ -449,6 +449,25 @@ const fr: TranslationMap = {
   "admin_profile.featured_off": "Mise en avant supprimée.",
   "admin_profile.featured_label": "En avant",
   "admin_profile.feature_action": "Mettre en avant",
+
+  "home.h1": "Profils Vérifiés en Europe",
+  "home.subtitle": "Parcourez des professionnels indépendants avec photos et contact direct.",
+  "home.meta_title": "Rubi Girls — Profils Professionnels Vérifiés en Europe",
+  "home.meta_desc": "Découvrez des professionnels indépendants vérifiés en Europe. Profils avec photos réelles, contact direct et paiements sécurisés sur Rubi Girls.",
+  "home.featured_cities": "Villes Populaires",
+  "home.featured_cities_desc": "Explorez les profils dans les principales villes européennes.",
+  "home.view_city": "Voir les profils à {city}",
+
+  "city.meta_title_default": "Professionnels à {city} — Rubi Girls",
+  "city.meta_desc_default": "Trouvez des professionnels indépendants vérifiés à {city}. Profils réels avec photos, services et contact direct sur Rubi Girls.",
+  "city.intro_default": "Explorez les professionnels vérifiés disponibles à {city}. Tous les profils sont modérés et incluent photos, services et contact direct.",
+  "city.meta_title_barcelona": "Professionnels à Barcelone — Profils Vérifiés | Rubi Girls",
+  "city.meta_desc_barcelona": "Découvrez des professionnels indépendants vérifiés à Barcelone. Profils réels avec photos, avis et contact WhatsApp direct.",
+  "city.intro_barcelona": "Barcelone est l'une des villes les plus actives sur Rubi Girls. Explorez des profils vérifiés de professionnels indépendants avec photos réelles et contact direct.",
+  "city.meta_title_madrid": "Professionnels à Madrid — Profils Vérifiés | Rubi Girls",
+  "city.meta_desc_madrid": "Trouvez des professionnels indépendants vérifiés à Madrid. Profils réels avec photos, avis et contact WhatsApp direct.",
+  "city.intro_madrid": "Madrid est une destination phare sur Rubi Girls. Découvrez des profils vérifiés de professionnels indépendants disponibles maintenant avec contact direct.",
+  "city.h1_default": "Professionnels à {city}",
 };
 
 export default fr;
