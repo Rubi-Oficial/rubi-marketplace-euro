@@ -303,10 +303,16 @@ Deno.serve(async (req) => {
             console.error(`[stripe-webhook] Renewal sync failed for profile ${profileRow.id}:`, hlErr.message);
           }
         } else {
-          const { error: expErr } = await supabase.rpc("expire_highlight", {
-            p_profile_id: profileRow.id,
-            p_source: eventSource,
-          });
+          // Expire highlight by clearing tier fields
+          const { error: expErr } = await supabase
+            .from("profiles")
+            .update({
+              highlight_tier: null,
+              highlight_expires_at: null,
+              is_featured: false,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", profileRow.id);
 
           if (expErr) {
             console.error(`[stripe-webhook] Expire highlight failed for profile ${profileRow.id}:`, expErr.message);
@@ -341,10 +347,15 @@ Deno.serve(async (req) => {
 
         if (!profileRow?.id) break;
 
-        const { error: expErr } = await supabase.rpc("expire_highlight", {
-          p_profile_id: profileRow.id,
-          p_source: `${event.id}:deleted:${subscription.id}`,
-        });
+        const { error: expErr } = await supabase
+          .from("profiles")
+          .update({
+            highlight_tier: null,
+            highlight_expires_at: null,
+            is_featured: false,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", profileRow.id);
 
         if (expErr) {
           console.error(`[stripe-webhook] Expire highlight failed for profile ${profileRow.id}:`, expErr.message);
