@@ -46,34 +46,42 @@ export default function EscortPhotos() {
   const [loading, setLoading] = useState(true);
 
   const fetchMedia = useCallback(async (pid: string) => {
-    const [{ data: imgData }, { data: vidData }] = await Promise.all([
-      supabase.from("profile_images").select("*").eq("profile_id", pid).order("sort_order"),
-      supabase.from("profile_videos").select("*").eq("profile_id", pid).order("sort_order"),
-    ]);
+    try {
+      const [{ data: imgData, error: imgErr }, { data: vidData, error: vidErr }] = await Promise.all([
+        supabase.from("profile_images").select("*").eq("profile_id", pid).order("sort_order"),
+        supabase.from("profile_videos").select("*").eq("profile_id", pid).order("sort_order"),
+      ]);
 
-    const allPaths = [
-      ...(imgData ?? []).map((img) => img.storage_path),
-      ...(vidData ?? []).map((v) => v.storage_path),
-    ];
-    const urlMap = await getSignedUrls(allPaths);
+      if (imgErr) console.error("[EscortPhotos] Failed to fetch images:", imgErr.message);
+      if (vidErr) console.error("[EscortPhotos] Failed to fetch videos:", vidErr.message);
 
-    if (imgData) {
-      setImages(imgData.map((img) => ({
-        ...img,
-        moderation_status: img.moderation_status as MediaItem["moderation_status"],
-        url: urlMap[img.storage_path] || "",
-        type: "image" as const,
-      })));
-    }
+      const allPaths = [
+        ...(imgData ?? []).map((img) => img.storage_path),
+        ...(vidData ?? []).map((v) => v.storage_path),
+      ];
+      const urlMap = await getSignedUrls(allPaths);
 
-    if (vidData) {
-      setVideos(vidData.map((v) => ({
-        ...v,
-        moderation_status: v.moderation_status as MediaItem["moderation_status"],
-        url: urlMap[v.storage_path] || "",
-        type: "video" as const,
-        duration_seconds: v.duration_seconds ?? undefined,
-      })));
+      if (imgData) {
+        setImages(imgData.map((img) => ({
+          ...img,
+          moderation_status: img.moderation_status as MediaItem["moderation_status"],
+          url: urlMap[img.storage_path] || "",
+          type: "image" as const,
+        })));
+      }
+
+      if (vidData) {
+        setVideos(vidData.map((v) => ({
+          ...v,
+          moderation_status: v.moderation_status as MediaItem["moderation_status"],
+          url: urlMap[v.storage_path] || "",
+          type: "video" as const,
+          duration_seconds: v.duration_seconds ?? undefined,
+        })));
+      }
+    } catch (err) {
+      console.error("[EscortPhotos] Unexpected error fetching media:", err);
+      toast.error("Erro ao carregar mídia. Tente recarregar a página.");
     }
   }, []);
 
@@ -235,17 +243,29 @@ export default function EscortPhotos() {
 
   // ── Delete handlers ──
   const handleDeleteImage = async (item: MediaItem) => {
-    await supabase.storage.from("profile-images").remove([item.storage_path]);
-    await supabase.from("profile_images").delete().eq("id", item.id);
-    setImages((prev) => prev.filter((i) => i.id !== item.id));
-    toast.success("Foto removida.");
+    try {
+      await supabase.storage.from("profile-images").remove([item.storage_path]);
+      const { error } = await supabase.from("profile_images").delete().eq("id", item.id);
+      if (error) throw error;
+      setImages((prev) => prev.filter((i) => i.id !== item.id));
+      toast.success("Foto removida.");
+    } catch (err) {
+      console.error("[EscortPhotos] Delete image error:", err);
+      toast.error("Erro ao remover foto. Tente novamente.");
+    }
   };
 
   const handleDeleteVideo = async (item: MediaItem) => {
-    await supabase.storage.from("profile-images").remove([item.storage_path]);
-    await supabase.from("profile_videos").delete().eq("id", item.id);
-    setVideos((prev) => prev.filter((v) => v.id !== item.id));
-    toast.success("Vídeo removido.");
+    try {
+      await supabase.storage.from("profile-images").remove([item.storage_path]);
+      const { error } = await supabase.from("profile_videos").delete().eq("id", item.id);
+      if (error) throw error;
+      setVideos((prev) => prev.filter((v) => v.id !== item.id));
+      toast.success("Vídeo removido.");
+    } catch (err) {
+      console.error("[EscortPhotos] Delete video error:", err);
+      toast.error("Erro ao remover vídeo. Tente novamente.");
+    }
   };
 
   // ── Render ──

@@ -18,8 +18,13 @@ export default function EscortSettings() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("users").select("full_name, phone").eq("id", user.id).single()
-      .then(({ data }) => {
+    supabase.from("users").select("full_name, phone").eq("id", user.id).maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("[EscortSettings] Failed to load user data:", error.message);
+          toast.error(t("settings.save_error") || "Erro ao carregar dados.");
+          return;
+        }
         if (data) {
           setFullName(data.full_name || "");
           setPhone(data.phone || "");
@@ -29,21 +34,35 @@ export default function EscortSettings() {
 
   const saveProfile = async () => {
     if (!user) return;
+    if (fullName.trim().length > 100) { toast.error("Nome deve ter no máximo 100 caracteres."); return; }
+    if (phone.trim().length > 20) { toast.error("Telefone deve ter no máximo 20 caracteres."); return; }
     setSaving(true);
-    const { error } = await supabase.from("users").update({ full_name: fullName, phone }).eq("id", user.id);
-    setSaving(false);
-    if (error) { console.error("[EscortSettings] Save error:", error.message); toast.error(t("settings.save_error") || "Não foi possível guardar. Tente novamente."); return; }
-    toast.success(t("settings.data_updated"));
+    try {
+      const { error } = await supabase.from("users").update({ full_name: fullName.trim(), phone: phone.trim() }).eq("id", user.id);
+      if (error) { console.error("[EscortSettings] Save error:", error.message); toast.error(t("settings.save_error") || "Não foi possível guardar. Tente novamente."); return; }
+      toast.success(t("settings.data_updated"));
+    } catch (err) {
+      console.error("[EscortSettings] Unexpected save error:", err);
+      toast.error("Ocorreu um erro inesperado. Tente novamente.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const changePassword = async () => {
     if (newPassword.length < 6) { toast.error(t("settings.password_min")); return; }
     setChangingPw(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setChangingPw(false);
-    if (error) { console.error("[EscortSettings] Password error:", error.message); toast.error(t("settings.password_error") || "Não foi possível alterar a senha. Tente novamente."); return; }
-    setNewPassword("");
-    toast.success(t("settings.password_changed"));
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) { console.error("[EscortSettings] Password error:", error.message); toast.error(t("settings.password_error") || "Não foi possível alterar a senha. Tente novamente."); return; }
+      setNewPassword("");
+      toast.success(t("settings.password_changed"));
+    } catch (err) {
+      console.error("[EscortSettings] Unexpected password error:", err);
+      toast.error("Ocorreu um erro inesperado. Tente novamente.");
+    } finally {
+      setChangingPw(false);
+    }
   };
 
   return (
