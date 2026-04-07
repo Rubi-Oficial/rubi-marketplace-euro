@@ -70,12 +70,29 @@ function useAffiliateData(): AffiliateStats & { loading: boolean } {
         supabase.from("referral_conversions").select("*").eq("referrer_user_id", user.id).order("created_at", { ascending: false }),
       ]);
 
-      const conversions = conversionsRes.data || [];
+      const rawConversions = conversionsRes.data || [];
       const referredUsers: ReferredUser[] = (referralsRes.data || []).map((u: any) => ({
         id: u.id,
         display_name: u.display_name,
         role: u.role,
         created_at: u.created_at,
+      }));
+
+      // Build a name lookup for referred users
+      const nameMap = new Map<string, string>();
+      for (const ru of referredUsers) {
+        nameMap.set(ru.id, ru.display_name || "Utilizador");
+      }
+
+      const conversions: ConversionRow[] = rawConversions.map((c: any) => ({
+        id: c.id,
+        referred_user_id: c.referred_user_id,
+        referred_name: nameMap.get(c.referred_user_id) || "Utilizador",
+        conversion_type: c.conversion_type,
+        commission_amount: Number(c.commission_amount),
+        commission_rate: Number(c.commission_rate),
+        status: c.status,
+        created_at: c.created_at,
       }));
 
       setStats({
@@ -84,9 +101,9 @@ function useAffiliateData(): AffiliateStats & { loading: boolean } {
         signups: referredUsers.length,
         referredUsers,
         conversions,
-        commissionPending: conversions.filter((c) => c.status === "pending").reduce((s, c) => s + Number(c.commission_amount), 0),
-        commissionApproved: conversions.filter((c) => c.status === "approved").reduce((s, c) => s + Number(c.commission_amount), 0),
-        commissionPaid: conversions.filter((c) => c.status === "paid").reduce((s, c) => s + Number(c.commission_amount), 0),
+        commissionPending: conversions.filter((c) => c.status === "pending").reduce((s, c) => s + c.commission_amount, 0),
+        commissionApproved: conversions.filter((c) => c.status === "approved").reduce((s, c) => s + c.commission_amount, 0),
+        commissionPaid: conversions.filter((c) => c.status === "paid").reduce((s, c) => s + c.commission_amount, 0),
       });
       setLoading(false);
     };
