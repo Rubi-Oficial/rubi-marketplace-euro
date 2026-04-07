@@ -108,6 +108,18 @@ export default function SearchPage() {
     setSearchParams(params);
   };
 
+  const pageHeading = cityName
+    ? t("search.heading_city", { city: cityName })
+    : countryName
+      ? t("search.heading_country", { country: countryName })
+      : t("nav.explore");
+
+  const pageSubtitle = cityName
+    ? t("search.subtitle_city", { city: cityName, country: countryName || "" })
+    : countryName
+      ? t("search.subtitle_country", { country: countryName })
+      : t("search.subtitle_default");
+
   const searchTitle = cityName ? `${t("nav.explore")} in ${cityName}` : t("nav.explore");
   usePageMeta({
     title: searchTitle,
@@ -131,9 +143,22 @@ export default function SearchPage() {
         <ol className="flex items-center gap-1.5">
           <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
           <li className="text-border">/</li>
-          <li className="text-foreground">{t("nav.explore")}</li>
+          {countryName && !cityName && <li className="text-foreground">{countryName}</li>}
+          {countryName && cityName && (
+            <>
+              <li><button onClick={() => handleRemoveFilter("city")} className="hover:text-foreground transition-colors">{countryName}</button></li>
+              <li className="text-border">/</li>
+              <li className="text-foreground">{cityName}</li>
+            </>
+          )}
+          {!countryName && <li className="text-foreground">{t("nav.explore")}</li>}
         </ol>
       </nav>
+
+      <div className="mb-4">
+        <h1 className="font-display text-xl font-bold text-foreground sm:text-2xl">{pageHeading}</h1>
+        <p className="mt-1 text-sm text-muted-foreground max-w-2xl">{pageSubtitle}</p>
+      </div>
 
       <div className="flex items-center gap-2 mb-4">
         <div className="relative flex-1 min-w-0">
