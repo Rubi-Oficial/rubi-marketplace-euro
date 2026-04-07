@@ -326,6 +326,7 @@ export default function AffiliateDashboard() {
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Data</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Profissional</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Tipo</th>
                   <th className="px-4 py-3 text-right font-medium text-muted-foreground">Comissão</th>
                   <th className="px-4 py-3 text-center font-medium text-muted-foreground">Status</th>
@@ -336,6 +337,9 @@ export default function AffiliateDashboard() {
                   <tr key={c.id} className="border-b border-border last:border-0">
                     <td className="px-4 py-3 text-foreground tabular-nums">
                       {new Date(c.created_at).toLocaleDateString("pt-BR")}
+                    </td>
+                    <td className="px-4 py-3 text-foreground">
+                      {c.referred_name}
                     </td>
                     <td className="px-4 py-3 text-foreground capitalize">
                       {c.conversion_type === "subscription" ? "Assinatura" : c.conversion_type}
