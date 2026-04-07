@@ -1,15 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend,
 } from "recharts";
-import { Users, FileText, DollarSign, Globe, ShieldAlert, Monitor, Smartphone, Tablet, Eye, Bot, AlertTriangle, Info, ChevronDown, ChevronUp, RefreshCw, UserCheck, TrendingDown, Layers } from "lucide-react";
+import {
+  Users, FileText, DollarSign, Globe, ShieldAlert, Monitor, Smartphone, Tablet,
+  Eye, Bot, AlertTriangle, Info, ChevronDown, ChevronUp, RefreshCw, UserCheck,
+  TrendingDown, Layers, CalendarIcon, Filter,
+} from "lucide-react";
 
-const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
+const fmtCurrency = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "EUR" });
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--muted-foreground))", "hsl(var(--destructive))", "hsl(var(--primary) / 0.4)"];
 const DEVICE_COLORS: Record<string, string> = {
@@ -18,6 +27,119 @@ const DEVICE_COLORS: Record<string, string> = {
   tablet: "hsl(var(--primary) / 0.3)",
   unknown: "hsl(var(--muted-foreground))",
 };
+
+type DatePreset = "7d" | "30d" | "90d" | "all" | "custom";
+
+interface DateRange {
+  from: Date | undefined;
+  to: Date | undefined;
+}
+
+// ── Date Filter Component ──
+function DateRangeFilter({
+  preset,
+  range,
+  onPresetChange,
+  onRangeChange,
+}: {
+  preset: DatePreset;
+  range: DateRange;
+  onPresetChange: (p: DatePreset) => void;
+  onRangeChange: (r: DateRange) => void;
+}) {
+  const presets: { value: DatePreset; label: string }[] = [
+    { value: "7d", label: "7 dias" },
+    { value: "30d", label: "30 dias" },
+    { value: "90d", label: "90 dias" },
+    { value: "all", label: "Tudo" },
+    { value: "custom", label: "Personalizado" },
+  ];
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Filter className="h-4 w-4 text-muted-foreground" />
+      <span className="text-xs font-medium text-muted-foreground">Período:</span>
+      {presets.map((p) => (
+        <button
+          key={p.value}
+          onClick={() => onPresetChange(p.value)}
+          className={cn(
+            "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+            preset === p.value
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground hover:bg-muted/80"
+          )}
+        >
+          {p.label}
+        </button>
+      ))}
+      {preset === "custom" && (
+        <div className="flex items-center gap-1.5">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 gap-1.5 text-xs">
+                <CalendarIcon className="h-3 w-3" />
+                {range.from ? format(range.from, "dd/MM/yyyy") : "Início"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={range.from}
+                onSelect={(d) => onRangeChange({ ...range, from: d })}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          <span className="text-xs text-muted-foreground">—</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 gap-1.5 text-xs">
+                <CalendarIcon className="h-3 w-3" />
+                {range.to ? format(range.to, "dd/MM/yyyy") : "Fim"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={range.to}
+                onSelect={(d) => onRangeChange({ ...range, to: d })}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
+      {preset !== "all" && range.from && (
+        <span className="text-[10px] text-muted-foreground ml-1">
+          {format(range.from, "dd/MM/yyyy")} — {range.to ? format(range.to, "dd/MM/yyyy") : "hoje"}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ── Helpers ──
+function getDateRange(preset: DatePreset, custom: DateRange): { from: string | null; to: string | null } {
+  const now = new Date();
+  switch (preset) {
+    case "7d":
+      return { from: startOfDay(subDays(now, 7)).toISOString(), to: endOfDay(now).toISOString() };
+    case "30d":
+      return { from: startOfDay(subDays(now, 30)).toISOString(), to: endOfDay(now).toISOString() };
+    case "90d":
+      return { from: startOfDay(subDays(now, 90)).toISOString(), to: endOfDay(now).toISOString() };
+    case "custom":
+      return {
+        from: custom.from ? startOfDay(custom.from).toISOString() : null,
+        to: custom.to ? endOfDay(custom.to).toISOString() : endOfDay(now).toISOString(),
+      };
+    default:
+      return { from: null, to: null };
+  }
+}
 
 interface ReportStats {
   totalUsers: number;
@@ -36,6 +158,8 @@ interface ReportStats {
   totalConversions: number;
   totalCommissions: number;
   paidCommissions: number;
+  pendingCommissions: number;
+  approvedCommissions: number;
   recentUsers: { id: string; full_name: string | null; email: string; role: string; created_at: string }[];
 }
 
@@ -75,59 +199,93 @@ export default function AdminReports() {
   const [loading, setLoading] = useState(true);
   const [accessLoading, setAccessLoading] = useState(false);
 
+  // Date filter state
+  const [preset, setPreset] = useState<DatePreset>("30d");
+  const [customRange, setCustomRange] = useState<DateRange>({ from: undefined, to: undefined });
+
+  const dateRange = useMemo(() => getDateRange(preset, customRange), [preset, customRange]);
+
+  const handlePresetChange = useCallback((p: DatePreset) => {
+    setPreset(p);
+    if (p !== "custom") {
+      setCustomRange({ from: undefined, to: undefined });
+    }
+  }, []);
+
+  // Load stats when date range changes
   useEffect(() => {
     const load = async () => {
-      const [
-        usersRes, clientsRes, prosRes, adminsRes,
-        profilesRes, approvedRes, pendingRes, rejectedRes,
-        leadsRes, subsRes, activeSubsRes, canceledSubsRes,
-        allActiveSubsRes, convsRes, recentUsersRes,
-      ] = await Promise.all([
-        supabase.from("users").select("id", { count: "exact", head: true }),
-        supabase.from("users").select("id", { count: "exact", head: true }).eq("role", "client"),
-        supabase.from("users").select("id", { count: "exact", head: true }).eq("role", "professional"),
-        supabase.from("users").select("id", { count: "exact", head: true }).eq("role", "admin"),
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("status", "approved"),
-        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
-        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("status", "rejected"),
-        supabase.from("leads").select("id", { count: "exact", head: true }),
-        supabase.from("subscriptions").select("id", { count: "exact", head: true }),
-        supabase.from("subscriptions").select("id", { count: "exact", head: true }).eq("status", "active"),
-        supabase.from("subscriptions").select("id", { count: "exact", head: true }).eq("status", "canceled"),
-        supabase.from("subscriptions").select("plans(price)").eq("status", "active"),
-        supabase.from("referral_conversions").select("commission_amount, status"),
-        supabase.from("users").select("id, full_name, email, role, created_at").order("created_at", { ascending: false }).limit(10),
-      ]);
+      setLoading(true);
+      try {
+        const { from, to } = dateRange;
 
-      const gmv = (allActiveSubsRes.data || []).reduce((s, sub: any) => s + Number(sub.plans?.price || 0), 0);
-      const convs = convsRes.data || [];
-      const totalComm = convs.reduce((s, c) => s + Number(c.commission_amount), 0);
-      const paidComm = convs.filter((c) => c.status === "paid").reduce((s, c) => s + Number(c.commission_amount), 0);
+        // Helper to apply date filter
+        const withDate = (q: any) => {
+          let query = q;
+          if (from) query = query.gte("created_at", from);
+          if (to) query = query.lte("created_at", to);
+          return query;
+        };
 
-      setStats({
-        totalUsers: usersRes.count ?? 0,
-        clientCount: clientsRes.count ?? 0,
-        professionalCount: prosRes.count ?? 0,
-        adminCount: adminsRes.count ?? 0,
-        totalProfiles: profilesRes.count ?? 0,
-        approvedProfiles: approvedRes.count ?? 0,
-        pendingProfiles: pendingRes.count ?? 0,
-        rejectedProfiles: rejectedRes.count ?? 0,
-        totalLeads: leadsRes.count ?? 0,
-        totalSubs: subsRes.count ?? 0,
-        activeSubs: activeSubsRes.count ?? 0,
-        canceledSubs: canceledSubsRes.count ?? 0,
-        gmv,
-        totalConversions: convs.length,
-        totalCommissions: totalComm,
-        paidCommissions: paidComm,
-        recentUsers: (recentUsersRes.data || []) as any,
-      });
-      setLoading(false);
+        const [
+          usersRes, clientsRes, prosRes, adminsRes,
+          profilesRes, approvedRes, pendingRes, rejectedRes,
+          leadsRes, subsRes, activeSubsRes, canceledSubsRes,
+          allActiveSubsRes, convsRes, recentUsersRes,
+        ] = await Promise.all([
+          withDate(supabase.from("users").select("id", { count: "exact", head: true })),
+          withDate(supabase.from("users").select("id", { count: "exact", head: true }).eq("role", "client")),
+          withDate(supabase.from("users").select("id", { count: "exact", head: true }).eq("role", "professional")),
+          withDate(supabase.from("users").select("id", { count: "exact", head: true }).eq("role", "admin")),
+          withDate(supabase.from("profiles").select("id", { count: "exact", head: true })),
+          supabase.from("profiles").select("id", { count: "exact", head: true }).eq("status", "approved"),
+          supabase.from("profiles").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
+          supabase.from("profiles").select("id", { count: "exact", head: true }).eq("status", "rejected"),
+          withDate(supabase.from("leads").select("id", { count: "exact", head: true })),
+          withDate(supabase.from("subscriptions").select("id", { count: "exact", head: true })),
+          withDate(supabase.from("subscriptions").select("id", { count: "exact", head: true }).eq("status", "active")),
+          withDate(supabase.from("subscriptions").select("id", { count: "exact", head: true }).eq("status", "canceled")),
+          supabase.from("subscriptions").select("plans(price)").eq("status", "active"),
+          withDate(supabase.from("referral_conversions").select("commission_amount, status")),
+          supabase.from("users").select("id, full_name, email, role, created_at").order("created_at", { ascending: false }).limit(10),
+        ]);
+
+        const gmv = (allActiveSubsRes.data || []).reduce((s, sub: any) => s + Number(sub.plans?.price || 0), 0);
+        const convs = convsRes.data || [];
+        const totalComm = convs.reduce((s, c) => s + Number(c.commission_amount), 0);
+        const paidComm = convs.filter((c) => c.status === "paid").reduce((s, c) => s + Number(c.commission_amount), 0);
+        const pendingComm = convs.filter((c) => c.status === "pending").reduce((s, c) => s + Number(c.commission_amount), 0);
+        const approvedComm = convs.filter((c) => c.status === "approved").reduce((s, c) => s + Number(c.commission_amount), 0);
+
+        setStats({
+          totalUsers: usersRes.count ?? 0,
+          clientCount: clientsRes.count ?? 0,
+          professionalCount: prosRes.count ?? 0,
+          adminCount: adminsRes.count ?? 0,
+          totalProfiles: profilesRes.count ?? 0,
+          approvedProfiles: approvedRes.count ?? 0,
+          pendingProfiles: pendingRes.count ?? 0,
+          rejectedProfiles: rejectedRes.count ?? 0,
+          totalLeads: leadsRes.count ?? 0,
+          totalSubs: subsRes.count ?? 0,
+          activeSubs: activeSubsRes.count ?? 0,
+          canceledSubs: canceledSubsRes.count ?? 0,
+          gmv,
+          totalConversions: convs.length,
+          totalCommissions: totalComm,
+          paidCommissions: paidComm,
+          pendingCommissions: pendingComm,
+          approvedCommissions: approvedComm,
+          recentUsers: (recentUsersRes.data || []) as any,
+        });
+      } catch (err) {
+        console.error("[AdminReports] Failed to load stats:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
-  }, []);
+  }, [dateRange]);
 
   const loadAccessAnalytics = async (force = false) => {
     if (accessData && !force) return;
@@ -169,16 +327,32 @@ export default function AdminReports() {
 
   const financialData = [
     { name: "GMV", value: stats.gmv },
-    { name: "Comissões", value: stats.totalCommissions },
+    { name: "Comissões Total", value: stats.totalCommissions },
+    { name: "Pendentes", value: stats.pendingCommissions },
+    { name: "Aprovadas", value: stats.approvedCommissions },
     { name: "Pagas", value: stats.paidCommissions },
   ];
 
   return (
     <div className="animate-fade-in space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">Relatórios</h1>
-        <p className="mt-0.5 text-sm text-muted-foreground">Visão consolidada da plataforma.</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-foreground">Relatórios</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">Visão consolidada da plataforma.</p>
+        </div>
       </div>
+
+      {/* Date Filter */}
+      <Card>
+        <CardContent className="p-3">
+          <DateRangeFilter
+            preset={preset}
+            range={customRange}
+            onPresetChange={handlePresetChange}
+            onRangeChange={setCustomRange}
+          />
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="overview" className="space-y-4" onValueChange={(v) => { if (v === "access") loadAccessAnalytics(); }}>
         <TabsList className="flex-wrap">
@@ -248,7 +422,7 @@ export default function AdminReports() {
         {/* ── Financial Tab ── */}
         <TabsContent value="financial" className="space-y-4">
           <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-            <StatCard label="GMV (Ativas)" value={fmt(stats.gmv)} />
+            <StatCard label="GMV (Ativas)" value={fmtCurrency(stats.gmv)} />
             <StatCard label="Assinaturas Ativas" value={stats.activeSubs.toString()} />
             <StatCard label="Canceladas" value={stats.canceledSubs.toString()} />
             <StatCard label="Conversões" value={stats.totalConversions.toString()} />
@@ -260,15 +434,19 @@ export default function AdminReports() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">Receita vs Comissões</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={financialData} barSize={40}>
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={financialData} barSize={36}>
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                     <YAxis hide />
                     <Tooltip
-                      formatter={(value: number) => fmt(value)}
+                      formatter={(value: number) => fmtCurrency(value)}
                       contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
                     />
-                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
+                      {financialData.map((_, i) => (
+                        <Cell key={i} fill={i === 0 ? "hsl(var(--primary))" : i >= 3 ? "hsl(142 71% 45%)" : "hsl(var(--primary) / 0.5)"} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -279,14 +457,18 @@ export default function AdminReports() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">Comissões de Afiliados</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <p className="text-xs text-muted-foreground">Total</p>
-                    <p className="text-xl font-bold tabular-nums text-foreground">{fmt(stats.totalCommissions)}</p>
+                    <p className="text-xs text-muted-foreground">Pendentes</p>
+                    <p className="text-lg font-bold tabular-nums text-foreground">{fmtCurrency(stats.pendingCommissions)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Aprovadas</p>
+                    <p className="text-lg font-bold tabular-nums text-primary">{fmtCurrency(stats.approvedCommissions)}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Pagas</p>
-                    <p className="text-xl font-bold tabular-nums text-green-600">{fmt(stats.paidCommissions)}</p>
+                    <p className="text-lg font-bold tabular-nums text-green-600">{fmtCurrency(stats.paidCommissions)}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -379,7 +561,6 @@ interface BotClassification {
 function classifyBot(userAgent: string): BotClassification {
   const ua = (userAgent || "").toLowerCase();
 
-  // Search engine crawlers (safe, expected)
   if (ua.includes("googlebot"))
     return { name: "Googlebot", type: "Rastreador de busca", intent: "Indexação SEO (Google)", severity: "safe", recommendation: "Nenhuma ação necessária. Garanta um sitemap.xml atualizado para melhor indexação." };
   if (ua.includes("bingbot") || ua.includes("bingpreview"))
@@ -394,8 +575,6 @@ function classifyBot(userAgent: string): BotClassification {
     return { name: "Yahoo Slurp", type: "Rastreador de busca", intent: "Indexação SEO (Yahoo)", severity: "safe", recommendation: "Nenhuma ação necessária." };
   if (ua.includes("applebot"))
     return { name: "Applebot", type: "Rastreador de busca", intent: "Indexação para Spotlight/Siri", severity: "safe", recommendation: "Nenhuma ação necessária." };
-
-  // Social media preview bots (safe)
   if (ua.includes("facebookexternalhit") || ua.includes("facebot"))
     return { name: "Facebook Bot", type: "Pré-visualização social", intent: "Geração de preview ao compartilhar links no Facebook/Instagram", severity: "safe", recommendation: "Adicione meta tags Open Graph para melhorar previews." };
   if (ua.includes("twitterbot"))
@@ -406,18 +585,14 @@ function classifyBot(userAgent: string): BotClassification {
     return { name: "WhatsApp Bot", type: "Pré-visualização social", intent: "Geração de preview ao compartilhar links no WhatsApp", severity: "safe", recommendation: "Adicione meta tags Open Graph para melhorar previews." };
   if (ua.includes("telegrambot"))
     return { name: "TelegramBot", type: "Pré-visualização social", intent: "Geração de preview ao compartilhar no Telegram", severity: "safe", recommendation: "Adicione meta tags Open Graph para melhorar previews." };
-
-  // Monitoring / uptime (safe)
   if (ua.includes("uptimerobot"))
-    return { name: "UptimeRobot", type: "Monitoramento", intent: "Verificação de disponibilidade do site", severity: "safe", recommendation: "Esperado se você usa UptimeRobot. Configure-o para não inflar métricas de visitas." };
+    return { name: "UptimeRobot", type: "Monitoramento", intent: "Verificação de disponibilidade do site", severity: "safe", recommendation: "Esperado se você usa UptimeRobot." };
   if (ua.includes("pingdom"))
     return { name: "Pingdom", type: "Monitoramento", intent: "Monitoramento de disponibilidade e performance", severity: "safe", recommendation: "Esperado se você usa Pingdom." };
   if (ua.includes("gtmetrix"))
     return { name: "GTmetrix", type: "Análise de performance", intent: "Análise de velocidade do site", severity: "safe", recommendation: "Esperado se você usa GTmetrix para análises." };
   if (ua.includes("pagespeed") || ua.includes("lighthouse"))
     return { name: "PageSpeed/Lighthouse", type: "Análise de performance", intent: "Auditoria de velocidade (Google)", severity: "safe", recommendation: "Esperado, tráfego legítimo." };
-
-  // SEO tools (informational - benign but monitoring recommended)
   if (ua.includes("ahrefsbot"))
     return { name: "AhrefsBot", type: "Ferramenta SEO", intent: "Análise de backlinks e conteúdo (Ahrefs)", severity: "seo", recommendation: "Pode ser bloqueado via robots.txt se não desejar que a Ahrefs rastreie o site." };
   if (ua.includes("semrushbot"))
@@ -430,8 +605,6 @@ function classifyBot(userAgent: string): BotClassification {
     return { name: "Rogerbot", type: "Ferramenta SEO", intent: "Rastreador da Moz", severity: "seo", recommendation: "Pode ser bloqueado via robots.txt." };
   if (ua.includes("petalbot"))
     return { name: "PetalBot", type: "Rastreador de busca", intent: "Indexação para Huawei/Petal Search", severity: "seo", recommendation: "Nenhuma ação necessária, tráfego esperado." };
-
-  // Generic HTTP clients / scripting (suspicious)
   if (ua.includes("go-http-client"))
     return { name: "Go HTTP Client", type: "Script automatizado (Go)", intent: "Scraping ou automação via linguagem Go", severity: "warning", recommendation: "Verifique o IP de origem. Se repetitivo, considere adicionar rate-limiting ou bloquear o IP no firewall/CDN." };
   if (ua.includes("python-requests") || ua.includes("python-urllib"))
@@ -448,8 +621,6 @@ function classifyBot(userAgent: string): BotClassification {
     return { name: "Navegador headless", type: "Automação de browser", intent: "Scraping ou automação com browser headless", severity: "danger", recommendation: "Possível tentativa de bypass de proteções. Considere implementar CAPTCHA ou Cloudflare Bot Management." };
   if (ua.includes("selenium"))
     return { name: "Selenium", type: "Automação de browser", intent: "Testes automatizados ou scraping via Selenium", severity: "warning", recommendation: "Pode ser scraping ou testes. Monitore o IP de origem." };
-
-  // Empty or suspicious UAs
   if (!ua || ua.trim() === "")
     return { name: "Sem User Agent", type: "Acesso suspeito", intent: "Acesso sem identificação (possível scanner ou bot primitivo)", severity: "danger", recommendation: "Bloquear requisições sem User-Agent no servidor ou CDN é uma boa prática de segurança." };
 
@@ -483,7 +654,6 @@ function AccessAnalyticsPanel({ data, onRefresh, refreshing }: { data: AccessAna
 
   return (
     <div className="space-y-4">
-      {/* Header with refresh */}
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-medium text-muted-foreground">Análise de Acessos</h2>
         <button
@@ -743,7 +913,6 @@ function AccessAnalyticsPanel({ data, onRefresh, refreshing }: { data: AccessAna
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Referrers */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Origens do Tráfego</CardTitle>
@@ -773,7 +942,6 @@ function AccessAnalyticsPanel({ data, onRefresh, refreshing }: { data: AccessAna
           </CardContent>
         </Card>
 
-        {/* Geolocation */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Geolocalização</CardTitle>
@@ -808,7 +976,6 @@ function AccessAnalyticsPanel({ data, onRefresh, refreshing }: { data: AccessAna
 
       {/* Top Authenticated Users + UTM Campaigns */}
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Top authenticated users */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -851,7 +1018,6 @@ function AccessAnalyticsPanel({ data, onRefresh, refreshing }: { data: AccessAna
           </CardContent>
         </Card>
 
-        {/* UTM Campaigns */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Campanhas UTM (30d)</CardTitle>
@@ -887,7 +1053,7 @@ function AccessAnalyticsPanel({ data, onRefresh, refreshing }: { data: AccessAna
         </Card>
       </div>
 
-      {/* Recent bots - improved */}
+      {/* Recent bots */}
       {data.recent_bots.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
