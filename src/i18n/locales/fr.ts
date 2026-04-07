@@ -33,6 +33,11 @@ const fr: TranslationMap = {
   "search.clear_filters": "Effacer les filtres",
   "search.in_city": "à {city}",
   "search.for_service": "{service}",
+  "search.heading_city": "Profils à {city}",
+  "search.heading_country": "Profils en {country}",
+  "search.subtitle_city": "Découvrez les profils vérifiés disponibles à {city}, {country}",
+  "search.subtitle_country": "Découvrez les profils vérifiés disponibles en {country}",
+  "search.subtitle_default": "Parcourez et découvrez des profils professionnels vérifiés",
 
   "profile.unavailable": "Profil indisponible",
   "profile.unavailable_desc": "Ce profil n'est pas disponible pour le moment.",
