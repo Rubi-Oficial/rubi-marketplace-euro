@@ -23,20 +23,23 @@ interface ReferredUser {
   created_at: string;
 }
 
+interface ConversionRow {
+  id: string;
+  referred_user_id: string;
+  referred_name: string;
+  conversion_type: string;
+  commission_amount: number;
+  commission_rate: number;
+  status: string;
+  created_at: string;
+}
+
 interface AffiliateStats {
   referralCode: string | null;
   clicks: number;
   signups: number;
   referredUsers: ReferredUser[];
-  conversions: {
-    id: string;
-    referred_user_id: string;
-    conversion_type: string;
-    commission_amount: number;
-    commission_rate: number;
-    status: string;
-    created_at: string;
-  }[];
+  conversions: ConversionRow[];
   commissionPending: number;
   commissionApproved: number;
   commissionPaid: number;
