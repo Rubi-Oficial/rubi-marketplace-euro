@@ -1,115 +1,52 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sharedSiteDefaults } from "../../../src/config/site.shared.ts";
+import { LOCAL_SEO_CITIES } from "../../../src/config/localSeoPages.ts";
 
 const CATEGORY_SLUGS = ["women", "men", "couples", "shemales", "gay", "virtual-sex", "videos"];
+const SITE_URL = Deno.env.get("APP_URL") || sharedSiteDefaults.siteUrl;
 
-const SITE_URL = "https://rubigirls.fun";
+const STATIC_PAGES = ["/", "/buscar", "/planos", "/sobre", "/contato", "/blog", "/termos", "/privacidade", "/cookies"];
+const MARKET_HUBS = ["/es", "/br"];
 
-const STATIC_PAGES = [
-  { path: "/", priority: "1.0", changefreq: "daily" },
-  { path: "/buscar", priority: "0.9", changefreq: "daily" },
-  { path: "/planos", priority: "0.8", changefreq: "weekly" },
-  { path: "/sobre", priority: "0.5", changefreq: "monthly" },
-  { path: "/contato", priority: "0.5", changefreq: "monthly" },
-  { path: "/blog", priority: "0.6", changefreq: "weekly" },
-  { path: "/termos", priority: "0.3", changefreq: "monthly" },
-  { path: "/privacidade", priority: "0.3", changefreq: "monthly" },
-  { path: "/cookies", priority: "0.3", changefreq: "monthly" },
-];
+const toAbsoluteUrl = (path: string) => new URL(path.startsWith("/") ? path : `/${path}`, SITE_URL).toString();
+const toUrlNode = (path: string, lastmod: string, changefreq = "weekly", priority = "0.7") => `  <url>\n    <loc>${toAbsoluteUrl(path)}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>\n`;
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-      },
-    });
-  }
-
+Deno.serve(async () => {
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Fetch active cities
-    const { data: cities } = await supabase
-      .from("cities")
-      .select("slug, name, is_featured")
-      .eq("is_active", true);
-
-    // Fetch approved profile slugs
-    const { data: profiles } = await supabase
-      .from("eligible_profiles")
-      .select("slug, updated_at");
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { data: cities } = await supabase.from("cities").select("slug, is_featured").eq("is_active", true);
+    const { data: profiles } = await supabase.from("eligible_profiles").select("slug, city_slug, updated_at");
 
     const today = new Date().toISOString().split("T")[0];
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
-    const categories = CATEGORY_SLUGS;
+    for (const path of STATIC_PAGES) xml += toUrlNode(path, today, path === "/" ? "daily" : "weekly", path === "/" ? "1.0" : "0.7");
+    for (const path of MARKET_HUBS) xml += toUrlNode(path, today, "daily", "0.85");
+    for (const cat of CATEGORY_SLUGS) xml += toUrlNode(`/categoria/${cat}`, today, "daily", "0.8");
 
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-`;
-
-    // Static pages
-    for (const page of STATIC_PAGES) {
-      xml += `  <url>
-    <loc>${SITE_URL}${page.path}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
-  </url>
-`;
-    }
-
-    // Category pages
-    for (const cat of categories) {
-      xml += `  <url>
-    <loc>${SITE_URL}/categoria/${cat}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-`;
-    }
-
-    // City pages — featured cities get higher priority
     if (cities) {
       for (const city of cities) {
-        const priority = city.is_featured ? "0.9" : "0.7";
-        xml += `  <url>
-    <loc>${SITE_URL}/cidade/${city.slug}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>${priority}</priority>
-  </url>
-`;
+        xml += toUrlNode(`/cidade/${city.slug}`, today, "daily", city.is_featured ? "0.9" : "0.7");
       }
     }
 
-    // Profile pages
+    // Canonical local city hubs are indexable; local subpages are omitted until inventory/index rules are fully validated.
+    for (const localCity of LOCAL_SEO_CITIES) {
+      xml += toUrlNode(localCity.basePath, today, "daily", "0.9");
+    }
+
     if (profiles) {
       for (const p of profiles) {
         if (!p.slug) continue;
         const lastmod = p.updated_at ? new Date(p.updated_at).toISOString().split("T")[0] : today;
-        xml += `  <url>
-    <loc>${SITE_URL}/perfil/${p.slug}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-`;
+        const cityConfig = p.city_slug ? LOCAL_SEO_CITIES.find((entry) => entry.citySlug === p.city_slug) : null;
+        const canonicalProfilePath = cityConfig ? `${cityConfig.profileBasePath}/${p.slug}` : `/perfil/${p.slug}`;
+        xml += toUrlNode(canonicalProfilePath, lastmod, "weekly", "0.7");
       }
     }
 
     xml += `</urlset>`;
-
-    return new Response(xml, {
-      headers: {
-        "Content-Type": "application/xml",
-        "Cache-Control": "public, max-age=3600",
-      },
-    });
+    return new Response(xml, { headers: { "Content-Type": "application/xml", "Cache-Control": "public, max-age=3600" } });
   } catch (err) {
     console.error("Sitemap error:", err);
     return new Response("Error generating sitemap", { status: 500 });

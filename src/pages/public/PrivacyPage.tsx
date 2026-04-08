@@ -7,7 +7,7 @@ export default function PrivacyPage() {
 
   usePageMeta({
     title: t("privacy.title"),
-    description: "Rubi Girls Privacy Policy. Learn how we protect your personal data in compliance with GDPR.",
+    description: "the platform Privacy Policy. Learn how we protect your personal data in compliance with GDPR.",
     path: "/privacidade",
     breadcrumbs: [
       { name: "Home", url: SITE_URL },

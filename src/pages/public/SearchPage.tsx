@@ -123,7 +123,7 @@ export default function SearchPage() {
   const searchTitle = cityName ? `${t("nav.explore")} in ${cityName}` : t("nav.explore");
   usePageMeta({
     title: searchTitle,
-    description: `Search and browse verified professional profiles on Rubi Girls${cityName ? ` in ${cityName}` : ""}. Filter by category, service and location.`,
+    description: `Search and browse verified professional profiles on the platform${cityName ? ` in ${cityName}` : ""}. Filter by category, service and location.`,
     path: "/buscar",
     breadcrumbs: [
       { name: "Home", url: SITE_URL },

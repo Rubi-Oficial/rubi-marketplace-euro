@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { getSiteIdentity } from "@/config/site";
 
 const NotFound = () => {
   const location = useLocation();
@@ -10,8 +11,9 @@ const NotFound = () => {
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
-    document.title = `${t("notfound.title")} | Rubi Girls`;
-    return () => { document.title = "Rubi Girls"; };
+    const site = getSiteIdentity();
+    document.title = `${t("notfound.title")} | ${site.siteName}`;
+    return () => { document.title = `${site.defaultTitle} | ${site.siteName}`; };
   }, [location.pathname, t]);
 
   return (

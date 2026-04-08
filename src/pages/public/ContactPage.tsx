@@ -24,7 +24,7 @@ export default function ContactPage() {
 
   usePageMeta({
     title: t("contact.title"),
-    description: "Contact Rubi Girls. Send us a message for support, feedback or partnership inquiries.",
+    description: "Contact the platform. Send us a message for support, feedback or partnership inquiries.",
     path: "/contato",
     breadcrumbs: [
       { name: "Home", url: SITE_URL },
@@ -33,7 +33,7 @@ export default function ContactPage() {
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "ContactPage",
-      name: "Contact Rubi Girls",
+      name: "Contact the platform",
       url: `${SITE_URL}/contato`,
     },
   });

@@ -1,8 +1,10 @@
 import { useEffect } from "react";
+import { buildCanonicalUrl, getSiteIdentity } from "@/config/site";
 
-const SITE_NAME = "Rubi Girls";
-const SITE_URL = "https://rubigirls.fun";
-const DEFAULT_IMAGE = "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3fb95501-7293-435c-8e48-18647dd9730a/id-preview-c1672483--253fcd53-5b7c-44c1-a163-aa96b1bf2105.lovable.app-1773883136683.png";
+const SITE = getSiteIdentity();
+const SITE_NAME = SITE.siteName;
+const SITE_URL = SITE.siteUrl;
+const DEFAULT_IMAGE = SITE.defaultOgImage;
 
 interface PageMetaOptions {
   title: string;
@@ -14,6 +16,7 @@ interface PageMetaOptions {
   noindex?: boolean;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   breadcrumbs?: { name: string; url: string }[];
+  hreflang?: { lang: string; url: string }[];
 }
 
 function setMeta(name: string, content: string, isProperty = false) {
@@ -61,7 +64,7 @@ function setRobots(noindex: boolean) {
       el.setAttribute("name", "robots");
       document.head.appendChild(el);
     }
-    el.setAttribute("content", "noindex, nofollow");
+    el.setAttribute("content", "noindex, follow");
   } else if (el && el.getAttribute("content")?.includes("noindex")) {
     el.setAttribute("content", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
   }
@@ -71,29 +74,32 @@ function buildBreadcrumbJsonLd(breadcrumbs: { name: string; url: string }[]): Re
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: breadcrumbs.map((item, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      name: item.name,
-      item: item.url,
-    })),
+    itemListElement: breadcrumbs.map((item, index) => ({ "@type": "ListItem", position: index + 1, name: item.name, item: item.url })),
   };
+}
+
+function setHreflangLinks(links: { lang: string; url: string }[]) {
+  document.querySelectorAll('link[data-seo-hreflang]').forEach((el) => el.remove());
+  links.forEach(({ lang, url }) => {
+    const link = document.createElement("link");
+    link.setAttribute("rel", "alternate");
+    link.setAttribute("hreflang", lang);
+    link.setAttribute("href", url);
+    link.setAttribute("data-seo-hreflang", "true");
+    document.head.appendChild(link);
+  });
 }
 
 export function usePageMeta(options: PageMetaOptions) {
   useEffect(() => {
     const fullTitle = `${options.title} | ${SITE_NAME}`;
-    const url = `${SITE_URL}${options.path || ""}`;
+    const url = buildCanonicalUrl(options.path || "/");
     const image = options.image || DEFAULT_IMAGE;
     const imageAlt = options.imageAlt || options.title;
 
-    // Title
     document.title = fullTitle;
-
-    // Standard meta
     setMeta("description", options.description);
 
-    // Open Graph
     setMeta("og:title", fullTitle, true);
     setMeta("og:description", options.description, true);
     setMeta("og:url", url, true);
@@ -102,41 +108,29 @@ export function usePageMeta(options: PageMetaOptions) {
     setMeta("og:type", options.type || "website", true);
     setMeta("og:site_name", SITE_NAME, true);
 
-    // Twitter
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:title", fullTitle);
     setMeta("twitter:description", options.description);
     setMeta("twitter:image", image);
     setMeta("twitter:image:alt", imageAlt);
 
-    // Canonical
     setCanonical(url);
-
-    // Robots
     setRobots(!!options.noindex);
 
-    // JSON-LD: page-specific + breadcrumbs
+    if (options.hreflang && options.hreflang.length > 0) setHreflangLinks(options.hreflang);
+
     const jsonLdItems: Record<string, unknown>[] = [];
-    if (options.jsonLd) {
-      if (Array.isArray(options.jsonLd)) {
-        jsonLdItems.push(...options.jsonLd);
-      } else {
-        jsonLdItems.push(options.jsonLd);
-      }
-    }
-    if (options.breadcrumbs && options.breadcrumbs.length > 0) {
-      jsonLdItems.push(buildBreadcrumbJsonLd(options.breadcrumbs));
-    }
-    if (jsonLdItems.length > 0) {
-      setJsonLd(jsonLdItems);
-    }
+    if (options.jsonLd) jsonLdItems.push(...(Array.isArray(options.jsonLd) ? options.jsonLd : [options.jsonLd]));
+    if (options.breadcrumbs?.length) jsonLdItems.push(buildBreadcrumbJsonLd(options.breadcrumbs));
+    if (jsonLdItems.length > 0) setJsonLd(jsonLdItems);
 
     return () => {
-      document.title = `${SITE_NAME} — Premium European Catalogue`;
+      document.title = `${SITE.defaultTitle} | ${SITE_NAME}`;
       removeJsonLd();
       setRobots(false);
+      document.querySelectorAll('link[data-seo-hreflang]').forEach((el) => el.remove());
     };
-  }, [options.title, options.description, options.path, options.image, options.imageAlt, options.type, options.noindex, options.jsonLd, options.breadcrumbs]);
+  }, [options.title, options.description, options.path, options.image, options.imageAlt, options.type, options.noindex, options.jsonLd, options.breadcrumbs, options.hreflang]);
 }
 
-export { SITE_NAME, SITE_URL };
+export { SITE_NAME, SITE_URL, DEFAULT_IMAGE };

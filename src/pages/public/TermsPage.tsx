@@ -7,7 +7,7 @@ export default function TermsPage() {
 
   usePageMeta({
     title: t("terms.title"),
-    description: "Rubi Girls Terms of Use. Read our terms and conditions for using the platform.",
+    description: "the platform Terms of Use. Read our terms and conditions for using the platform.",
     path: "/termos",
     breadcrumbs: [
       { name: "Home", url: SITE_URL },

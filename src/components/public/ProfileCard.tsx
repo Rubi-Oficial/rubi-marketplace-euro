@@ -6,6 +6,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { getProfilePublicPath } from "@/lib/seoRoutes";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { ImageCarousel } from "@/components/profile/ImageCarousel";
 import { TierBadge } from "@/components/profile/TierBadge";
@@ -45,10 +46,10 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
           supabase.from("leads").insert({ profile_id: profile.id, source: "whatsapp_card" });
           window.open(`https://wa.me/${contact.whatsapp.replace(/\D/g, "")}`, "_blank", "noopener,noreferrer");
         } else {
-          navigate(`/perfil/${profile.slug}`);
+          navigate(getProfilePublicPath(profile));
         }
       } catch {
-        navigate(`/perfil/${profile.slug}`);
+        navigate(getProfilePublicPath(profile));
       } finally {
         setWhatsappLoading(false);
       }
@@ -67,7 +68,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
       className="group relative flex flex-col overflow-hidden rounded-xl bg-card shadow-sm border border-border/40 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/8 cursor-pointer"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={() => navigate(`/perfil/${profile.slug}`)}
+      onClick={() => navigate(getProfilePublicPath(profile))}
     >
       {/* Image section */}
       <div className="relative h-[340px] sm:h-[380px] overflow-hidden bg-muted">
@@ -128,7 +129,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
           <Button
             size="sm"
             className="flex-1 gap-1.5 rounded-lg text-sm font-semibold"
-            onClick={() => navigate(`/perfil/${profile.slug}`)}
+            onClick={() => navigate(getProfilePublicPath(profile))}
             aria-label={`${t("common.view_profile")} - ${profile.display_name}`}
           >
             {t("common.view_profile")}

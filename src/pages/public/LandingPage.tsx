@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/public/EmptyState";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { buildAbsoluteUrl, getSiteIdentity } from "@/config/site";
 
 
 export default function LandingPage() {
@@ -27,11 +28,11 @@ export default function LandingPage() {
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      name: "Rubi Girls",
-      url: "https://rubigirls.fun",
+      name: getSiteIdentity().siteName,
+      url: buildAbsoluteUrl("/"),
       potentialAction: {
         "@type": "SearchAction",
-        target: "https://rubigirls.fun/buscar?q={search_term_string}",
+        target: `${buildAbsoluteUrl("/buscar")}?q={search_term_string}`,
         "query-input": "required name=search_term_string",
       },
     },

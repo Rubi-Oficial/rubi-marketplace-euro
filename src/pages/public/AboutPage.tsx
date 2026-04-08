@@ -7,7 +7,7 @@ export default function AboutPage() {
 
   usePageMeta({
     title: t("about.title"),
-    description: "Learn about Rubi Girls — a premium platform for independent professionals across Europe. Our mission, values and commitment to privacy.",
+    description: "Learn about the platform — a premium platform for independent professionals across Europe. Our mission, values and commitment to privacy.",
     path: "/sobre",
     breadcrumbs: [
       { name: "Home", url: SITE_URL },
@@ -16,11 +16,11 @@ export default function AboutPage() {
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "AboutPage",
-      name: "About Rubi Girls",
+      name: "About the platform",
       url: `${SITE_URL}/sobre`,
       mainEntity: {
         "@type": "Organization",
-        name: "Rubi Girls",
+        name: "the platform",
         url: SITE_URL,
       },
     },

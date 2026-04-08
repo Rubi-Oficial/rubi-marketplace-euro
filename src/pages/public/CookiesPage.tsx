@@ -7,7 +7,7 @@ export default function CookiesPage() {
 
   usePageMeta({
     title: t("cookies.title"),
-    description: "Rubi Girls Cookie Policy. Understand how we use cookies to improve your experience.",
+    description: "the platform Cookie Policy. Understand how we use cookies to improve your experience.",
     path: "/cookies",
     breadcrumbs: [
       { name: "Home", url: SITE_URL },

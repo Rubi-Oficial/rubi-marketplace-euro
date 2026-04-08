@@ -26,7 +26,7 @@ export default function PlansPage() {
 
   usePageMeta({
     title: t("plans.title"),
-    description: "Choose a Rubi Girls plan. Verified profile, dedicated support and full GDPR compliance. Cancel anytime.",
+    description: "Choose a the platform plan. Verified profile, dedicated support and full GDPR compliance. Cancel anytime.",
     path: "/planos",
     breadcrumbs: [
       { name: "Home", url: SITE_URL },
@@ -36,7 +36,7 @@ export default function PlansPage() {
       "@context": "https://schema.org",
       "@type": "WebPage",
       name: t("plans.title"),
-      description: "Choose a Rubi Girls plan for your professional profile.",
+      description: "Choose a the platform plan for your professional profile.",
       url: `${SITE_URL}/planos`,
     },
   });

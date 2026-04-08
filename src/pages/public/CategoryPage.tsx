@@ -66,7 +66,7 @@ export default function CategoryPage() {
 
   usePageMeta({
     title: `${categoryName} — Profiles`,
-    description: `Browse verified ${categoryName.toLowerCase()} profiles on Rubi Girls. Photos, reviews and direct contact across Europe.`,
+    description: `Browse verified ${categoryName.toLowerCase()} profiles on the platform. Photos, reviews and direct contact across Europe.`,
     path: `/categoria/${slug}`,
     breadcrumbs: [
       { name: "Home", url: SITE_URL },
@@ -78,7 +78,7 @@ export default function CategoryPage() {
       name: `${categoryName} Profiles`,
       description: `Verified ${categoryName.toLowerCase()} profiles across Europe`,
       url: `${SITE_URL}/categoria/${slug}`,
-      isPartOf: { "@type": "WebSite", name: "Rubi Girls", url: SITE_URL },
+      isPartOf: { "@type": "WebSite", name: "the platform", url: SITE_URL },
     },
   });
 

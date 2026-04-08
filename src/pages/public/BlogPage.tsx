@@ -20,7 +20,7 @@ const posts = [
   {
     slug: "programa-afiliados-como-funciona",
     title: "Programa de Afiliados: como funciona?",
-    excerpt: "Entenda como indicar profissionais e ganhar comissões recorrentes na Rubi Girls.",
+    excerpt: "Entenda como indicar profissionais e ganhar comissões recorrentes na the platform.",
     date: "2026-03-05",
   },
 ];
@@ -30,7 +30,7 @@ export default function BlogPage() {
 
   usePageMeta({
     title: t("blog.title"),
-    description: "Tips, news and guides for independent professionals. Read the Rubi Girls blog.",
+    description: "Tips, news and guides for independent professionals. Read the the platform blog.",
     path: "/blog",
     breadcrumbs: [
       { name: "Home", url: SITE_URL },
@@ -39,12 +39,12 @@ export default function BlogPage() {
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "Blog",
-      name: "Rubi Girls Blog",
+      name: "the platform Blog",
       description: "Tips, news and guides for independent professionals.",
       url: `${SITE_URL}/blog`,
       publisher: {
         "@type": "Organization",
-        name: "Rubi Girls",
+        name: "the platform",
         url: SITE_URL,
       },
       blogPost: posts.map((post) => ({
