@@ -1081,9 +1081,8 @@ function AccessAnalyticsPanel({ data, onRefresh, refreshing }: { data: AccessAna
                     const style = BOT_SEVERITY_STYLES[cls.severity];
                     const isExpanded = expandedBotRow === i;
                     return (
-                      <>
+                      <React.Fragment key={i}>
                         <tr
-                          key={i}
                           className={`border-b border-border/50 last:border-0 cursor-pointer hover:bg-muted/20 ${style.row}`}
                           onClick={() => setExpandedBotRow(isExpanded ? null : i)}
                         >
