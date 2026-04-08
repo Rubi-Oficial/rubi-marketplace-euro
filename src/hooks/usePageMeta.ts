@@ -14,6 +14,7 @@ interface PageMetaOptions {
   noindex?: boolean;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   breadcrumbs?: { name: string; url: string }[];
+  hreflang?: { lang: string; url: string }[];
 }
 
 function setMeta(name: string, content: string, isProperty = false) {
@@ -61,7 +62,7 @@ function setRobots(noindex: boolean) {
       el.setAttribute("name", "robots");
       document.head.appendChild(el);
     }
-    el.setAttribute("content", "noindex, nofollow");
+    el.setAttribute("content", "noindex, follow");
   } else if (el && el.getAttribute("content")?.includes("noindex")) {
     el.setAttribute("content", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
   }
@@ -78,6 +79,19 @@ function buildBreadcrumbJsonLd(breadcrumbs: { name: string; url: string }[]): Re
       item: item.url,
     })),
   };
+}
+
+
+function setHreflangLinks(links: { lang: string; url: string }[]) {
+  document.querySelectorAll('link[data-seo-hreflang]').forEach((el) => el.remove());
+  links.forEach(({ lang, url }) => {
+    const link = document.createElement("link");
+    link.setAttribute("rel", "alternate");
+    link.setAttribute("hreflang", lang);
+    link.setAttribute("href", url);
+    link.setAttribute("data-seo-hreflang", "true");
+    document.head.appendChild(link);
+  });
 }
 
 export function usePageMeta(options: PageMetaOptions) {
@@ -115,6 +129,10 @@ export function usePageMeta(options: PageMetaOptions) {
     // Robots
     setRobots(!!options.noindex);
 
+    if (options.hreflang && options.hreflang.length > 0) {
+      setHreflangLinks(options.hreflang);
+    }
+
     // JSON-LD: page-specific + breadcrumbs
     const jsonLdItems: Record<string, unknown>[] = [];
     if (options.jsonLd) {
@@ -135,8 +153,9 @@ export function usePageMeta(options: PageMetaOptions) {
       document.title = `${SITE_NAME} — Premium European Catalogue`;
       removeJsonLd();
       setRobots(false);
+      document.querySelectorAll('link[data-seo-hreflang]').forEach((el) => el.remove());
     };
-  }, [options.title, options.description, options.path, options.image, options.imageAlt, options.type, options.noindex, options.jsonLd, options.breadcrumbs]);
+  }, [options.title, options.description, options.path, options.image, options.imageAlt, options.type, options.noindex, options.jsonLd, options.breadcrumbs, options.hreflang]);
 }
 
 export { SITE_NAME, SITE_URL };

@@ -9,6 +9,7 @@ import { ProfileGallery } from "@/components/profile/ProfileGallery";
 import { ProfileInfo } from "@/components/profile/ProfileInfo";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
+import { getCanonicalSeoProfilePath, LOCAL_SEO_CITIES, MARKET_LABEL } from "@/config/localSeoPages";
 
 interface PublicProfile {
   id: string;
@@ -36,7 +37,7 @@ interface MediaItem {
 
 export default function ProfilePage() {
   const { t } = useLanguage();
-  const { slug } = useParams();
+  const { slug, market, cityBase, pageSlug } = useParams();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [images, setImages] = useState<MediaItem[]>([]);
   const [videos, setVideos] = useState<MediaItem[]>([]);
@@ -159,13 +160,20 @@ export default function ProfilePage() {
     load();
   }, [slug]);
 
+
+  const canonicalProfilePath = useMemo(() => {
+    if (!slug) return "/perfil";
+    if (profile?.city_slug) return getCanonicalSeoProfilePath(profile.city_slug, slug);
+    return market && cityBase ? `/${market}/${cityBase}/modelo/${slug}` : `/perfil/${slug}`;
+  }, [slug, profile?.city_slug, market, cityBase]);
+
   const profileJsonLd = useMemo(() => {
     if (!profile) return undefined;
     return {
       "@context": "https://schema.org",
       "@type": "ProfilePage",
       name: profile.display_name,
-      url: `${SITE_URL}/perfil/${slug}`,
+      url: `${SITE_URL}${canonicalProfilePath}`,
       mainEntity: {
         "@type": "Person",
         name: profile.display_name,
@@ -173,29 +181,38 @@ export default function ProfilePage() {
         image: images[0]?.url,
       },
     };
-  }, [profile, images, slug]);
+  }, [profile, images, canonicalProfilePath]);
 
   const breadcrumbs = useMemo(() => {
     const crumbs = [{ name: "Home", url: SITE_URL }];
-    if (profile?.category) {
-      const catSlug = profile.category.toLowerCase().replace(/\s+/g, "-");
-      crumbs.push({ name: profile.category, url: `${SITE_URL}/categoria/${catSlug}` });
-    }
-    if (profile?.city && profile?.city_slug) {
-      crumbs.push({ name: profile.city, url: `${SITE_URL}/cidade/${profile.city_slug}` });
+    const seoCity = LOCAL_SEO_CITIES.find((c) => c.citySlug === profile?.city_slug);
+    if (seoCity) {
+      crumbs.push({ name: MARKET_LABEL[seoCity.market], url: `${SITE_URL}/${seoCity.market}` });
+      crumbs.push({ name: seoCity.cityName, url: `${SITE_URL}${seoCity.basePath}` });
+      if (pageSlug) {
+        crumbs.push({ name: "Modelo", url: `${SITE_URL}${seoCity.basePath}/modelo/${slug}` });
+      }
+    } else {
+      if (profile?.category) {
+        const catSlug = profile.category.toLowerCase().replace(/\s+/g, "-");
+        crumbs.push({ name: profile.category, url: `${SITE_URL}/categoria/${catSlug}` });
+      }
+      if (profile?.city && profile?.city_slug) {
+        crumbs.push({ name: profile.city, url: `${SITE_URL}/cidade/${profile.city_slug}` });
+      }
     }
     if (profile) {
-      crumbs.push({ name: profile.display_name, url: `${SITE_URL}/perfil/${slug}` });
+      crumbs.push({ name: profile.display_name, url: `${SITE_URL}${canonicalProfilePath}` });
     }
     return crumbs;
-  }, [profile, slug]);
+  }, [profile, canonicalProfilePath, pageSlug, slug]);
 
   usePageMeta({
-    title: profile ? `${profile.display_name} — ${profile.city || "Europe"}` : "Profile",
+    title: profile ? `${profile.display_name} en ${profile.city || "Europa"} | Perfil verificado` : "Profile",
     description: profile
-      ? `${profile.display_name}${profile.category ? `, ${profile.category}` : ""} in ${profile.city || "Europe"}. ${profile.bio?.slice(0, 120) || ""}`
+      ? `Perfil de ${profile.display_name} en ${profile.city || "Europa"}. Fotos, descripción, servicios y contacto directo.`
       : "Profile on Rubi Girls",
-    path: `/perfil/${slug}`,
+    path: canonicalProfilePath,
     image: images[0]?.url,
     imageAlt: profile ? `${profile.display_name} profile photo` : undefined,
     type: "profile",
@@ -239,21 +256,16 @@ export default function ProfilePage() {
     <div className="container mx-auto px-4 py-6 animate-fade-in">
       <nav aria-label="Breadcrumb" className="mb-3 text-xs text-muted-foreground">
         <ol className="flex items-center gap-1.5 flex-wrap">
-          <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
-          {profile.category && (
-            <>
-              <li className="text-border">/</li>
-              <li><Link to={`/categoria/${profile.category.toLowerCase().replace(/\s+/g, "-")}`} className="hover:text-foreground transition-colors">{profile.category}</Link></li>
-            </>
-          )}
-          {profile.city && profile.city_slug && (
-            <>
-              <li className="text-border">/</li>
-              <li><Link to={`/cidade/${profile.city_slug}`} className="hover:text-foreground transition-colors">{profile.city}</Link></li>
-            </>
-          )}
-          <li className="text-border">/</li>
-          <li className="text-foreground">{profile.display_name}</li>
+          {breadcrumbs.map((crumb, index) => (
+            <li key={crumb.url} className="flex items-center gap-1.5">
+              {index > 0 && <span className="text-border">/</span>}
+              {index === breadcrumbs.length - 1 ? (
+                <span className="text-foreground">{crumb.name}</span>
+              ) : (
+                <Link to={crumb.url.replace(SITE_URL, "") || "/"} className="hover:text-foreground transition-colors">{crumb.name}</Link>
+              )}
+            </li>
+          ))}
         </ol>
       </nav>
 
@@ -284,6 +296,13 @@ export default function ProfilePage() {
           </Link>
         ))}
       </div>
+
+      {profile.city_slug && (
+        <div className="mb-5 flex flex-wrap gap-2 text-xs">
+          <Link to={getCanonicalSeoProfilePath(profile.city_slug, profile.slug || slug || "")?.replace(`/modelo/${profile.slug || slug}`, "") || "/"} className="rounded-full border border-border/40 px-3 py-1 hover:border-primary/40">Voltar para a cidade</Link>
+          <Link to="/buscar" className="rounded-full border border-border/40 px-3 py-1 hover:border-primary/40">Explorar mais perfis</Link>
+        </div>
+      )}
 
       <div className="grid gap-8 lg:grid-cols-5">
         <div className="lg:col-span-3">

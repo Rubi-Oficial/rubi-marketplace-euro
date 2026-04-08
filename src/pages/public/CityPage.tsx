@@ -10,6 +10,30 @@ import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 // Cities with custom microcopy keys
 const CITY_OVERRIDES = new Set(["barcelona", "madrid"]);
 
+const SEO_CITY_COPY: Record<string, { title: string; desc: string; h1: string }> = {
+  barcelona: {
+    title: "Escorts en Barcelona | Perfiles verificados y contacto directo",
+    desc: "Descubre escorts en Barcelona con perfiles verificados, fotos y contacto directo. Explora perfiles por zona, estilo y servicio.",
+    h1: "Escorts en Barcelona",
+  },
+  madrid: {
+    title: "Escorts en Madrid | Perfiles verificados",
+    desc: "Encuentra escorts en Madrid con perfiles verificados, fotos y contacto directo. Explora perfiles por zona, estilo y servicio.",
+    h1: "Escorts en Madrid",
+  },
+  florianopolis: {
+    title: "Acompanhantes em Florianópolis | Perfis verificados",
+    desc: "Encontre acompanhantes em Florianópolis com perfis verificados, fotos e contato direto.",
+    h1: "Acompanhantes em Florianópolis",
+  },
+  "sao-paulo": {
+    title: "Acompanhantes em São Paulo | Contato direto",
+    desc: "Explore acompanhantes em São Paulo com perfis verificados, fotos e contato direto.",
+    h1: "Acompanhantes em São Paulo",
+  },
+};
+
+
 export default function CityPage() {
   const { t } = useLanguage();
   const { slug } = useParams();
@@ -25,16 +49,13 @@ export default function CityPage() {
 
   // Resolve city-specific or default translation keys
   const hasOverride = slug ? CITY_OVERRIDES.has(slug) : false;
-  const metaTitle = hasOverride
-    ? t(`city.meta_title_${slug}`)
-    : t("city.meta_title_default", { city: cityName });
-  const metaDesc = hasOverride
-    ? t(`city.meta_desc_${slug}`)
-    : t("city.meta_desc_default", { city: cityName });
+  const seoCopy = slug ? SEO_CITY_COPY[slug] : undefined;
+  const metaTitle = seoCopy?.title || (hasOverride ? t(`city.meta_title_${slug}`) : t("city.meta_title_default", { city: cityName }));
+  const metaDesc = seoCopy?.desc || (hasOverride ? t(`city.meta_desc_${slug}`) : t("city.meta_desc_default", { city: cityName }));
   const introText = hasOverride
     ? t(`city.intro_${slug}`)
     : t("city.intro_default", { city: cityName });
-  const h1Text = t("city.h1_default", { city: cityName });
+  const h1Text = seoCopy?.h1 || t("city.h1_default", { city: cityName });
 
   useEffect(() => { fetchServices().then(setServices); }, []);
 

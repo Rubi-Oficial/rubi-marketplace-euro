@@ -31,7 +31,7 @@ export default function PublicLayout() {
 
       <footer className="border-t-2 border-border py-10 mt-8 bg-secondary/40" role="contentinfo">
         <div className="container mx-auto px-4">
-          <div className="grid gap-10 md:grid-cols-4">
+          <div className="grid gap-10 md:grid-cols-5">
             <div>
               <Link to="/" className="inline-block" aria-label="Rubi Girls — Home">
                 <img src={logoRubiGirls} alt="Rubi Girls" className="h-6" />
@@ -83,6 +83,21 @@ export default function PublicLayout() {
                 <Link to="/cookies" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">
                   {t("footer.cookies")}
                 </Link>
+              </nav>
+            </div>
+            <div>
+              <h4 className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                SEO Local
+              </h4>
+              <nav aria-label="Local SEO links" className="mt-4 flex flex-col gap-2.5 text-sm">
+                <Link to="/es/escorts-barcelona" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">Barcelona</Link>
+                <Link to="/es/escorts-madrid" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">Madrid</Link>
+                <Link to="/es/escorts-barcelona/vip" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">VIP Escorts Barcelona</Link>
+                <Link to="/es/escorts-madrid/luxury" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">Luxury Escorts Madrid</Link>
+                <Link to="/br/acompanhantes-florianopolis" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">Florianópolis</Link>
+                <Link to="/br/acompanhantes-sao-paulo" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">São Paulo</Link>
+                <Link to="/br/acompanhantes-sao-paulo/jardins" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">Acompanhantes no Jardins</Link>
+                <Link to="/br/acompanhantes-florianopolis/jurere-internacional" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">Acompanhantes em Jurerê Internacional</Link>
               </nav>
             </div>
           </div>
