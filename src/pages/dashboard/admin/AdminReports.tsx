@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
@@ -1081,9 +1081,8 @@ function AccessAnalyticsPanel({ data, onRefresh, refreshing }: { data: AccessAna
                     const style = BOT_SEVERITY_STYLES[cls.severity];
                     const isExpanded = expandedBotRow === i;
                     return (
-                      <>
+                      <React.Fragment key={i}>
                         <tr
-                          key={i}
                           className={`border-b border-border/50 last:border-0 cursor-pointer hover:bg-muted/20 ${style.row}`}
                           onClick={() => setExpandedBotRow(isExpanded ? null : i)}
                         >
@@ -1122,7 +1121,7 @@ function AccessAnalyticsPanel({ data, onRefresh, refreshing }: { data: AccessAna
                             </td>
                           </tr>
                         )}
-                      </>
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
