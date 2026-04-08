@@ -1121,7 +1121,7 @@ function AccessAnalyticsPanel({ data, onRefresh, refreshing }: { data: AccessAna
                             </td>
                           </tr>
                         )}
-                      </>
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
