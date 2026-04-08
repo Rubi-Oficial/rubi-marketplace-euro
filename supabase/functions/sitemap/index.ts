@@ -1,9 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sharedSiteDefaults } from "../../../src/config/site.shared.ts";
-import { LOCAL_SEO_CITIES } from "../../../src/config/localSeoPages.ts";
+import { CITY_SLUG_TO_PROFILE_BASE, LOCAL_SEO_CITIES, SITE_URL_DEFAULT } from "../_shared/seoConfig.ts";
 
 const CATEGORY_SLUGS = ["women", "men", "couples", "shemales", "gay", "virtual-sex", "videos"];
-const SITE_URL = Deno.env.get("APP_URL") || sharedSiteDefaults.siteUrl;
+const SITE_URL = Deno.env.get("APP_URL") || SITE_URL_DEFAULT;
 
 const STATIC_PAGES = ["/", "/buscar", "/planos", "/sobre", "/contato", "/blog", "/termos", "/privacidade", "/cookies"];
 const MARKET_HUBS = ["/es", "/br"];
@@ -39,8 +38,8 @@ Deno.serve(async () => {
       for (const p of profiles) {
         if (!p.slug) continue;
         const lastmod = p.updated_at ? new Date(p.updated_at).toISOString().split("T")[0] : today;
-        const cityConfig = p.city_slug ? LOCAL_SEO_CITIES.find((entry) => entry.citySlug === p.city_slug) : null;
-        const canonicalProfilePath = cityConfig ? `${cityConfig.profileBasePath}/${p.slug}` : `/perfil/${p.slug}`;
+        const profileBasePath = p.city_slug ? CITY_SLUG_TO_PROFILE_BASE.get(p.city_slug) : undefined;
+        const canonicalProfilePath = profileBasePath ? `${profileBasePath}/${p.slug}` : `/perfil/${p.slug}`;
         xml += toUrlNode(canonicalProfilePath, lastmod, "weekly", "0.7");
       }
     }
