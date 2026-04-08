@@ -20,7 +20,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["'Cormorant Garamond'", "serif"],
+        display: ["'Plus Jakarta Sans'", "sans-serif"],
         body: ["Inter", "sans-serif"],
       },
       colors: {
@@ -68,23 +68,23 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         gold: {
-          DEFAULT: "hsl(40 49% 69%)",
-          light: "hsl(40 49% 76%)",
-          dark: "hsl(35 36% 61%)",
+          DEFAULT: "hsl(35 60% 50%)",
+          light: "hsl(35 60% 65%)",
+          dark: "hsl(25 70% 42%)",
         },
         ruby: {
-          DEFAULT: "hsl(274 48% 33%)",
-          light: "hsl(277 32% 51%)",
-          dark: "hsl(272 37% 14%)",
+          DEFAULT: "hsl(350 65% 48%)",
+          light: "hsl(350 60% 62%)",
+          dark: "hsl(340 70% 38%)",
         },
         success: {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
         surface: {
-          light: "hsl(271 30% 20%)",
-          hover: "hsl(271 30% 24%)",
-          active: "hsl(271 30% 28%)",
+          light: "hsl(270 15% 97%)",
+          hover: "hsl(270 15% 93%)",
+          active: "hsl(270 15% 84%)",
         },
       },
       borderRadius: {

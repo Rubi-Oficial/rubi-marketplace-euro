@@ -65,7 +65,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="group relative flex flex-col overflow-hidden premium-card rounded-[var(--card-radius)] bg-card/95 shadow-sm border border-border transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-[0_16px_34px_rgba(0,0,0,0.35)] cursor-pointer"
+      className="group relative flex flex-col overflow-hidden rounded-xl bg-card shadow-sm border border-border/40 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/8 cursor-pointer"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => navigate(getProfilePublicPath(profile))}
@@ -81,7 +81,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
         />
 
         {profile.category && (
-          <div className="absolute top-3 right-3 rounded-full bg-background/50 backdrop-blur-sm px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90">
+          <div className="absolute top-3 right-3 rounded-full bg-black/50 backdrop-blur-sm px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90">
             {profile.category}
           </div>
         )}
@@ -107,7 +107,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
           )}
         </div>
 
-        <div className={cn("min-h-[5.5rem]", truncatedBio && "rounded-lg bg-surface-light/80 px-3 py-2.5 border border-border/50")}>
+        <div className={cn("min-h-[5.5rem]", truncatedBio && "rounded-lg bg-surface-light px-3 py-2.5")}>
           {truncatedBio && (
             <p className="text-sm leading-relaxed text-foreground/80 line-clamp-3">
               {truncatedBio}
@@ -128,7 +128,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
         <div className="flex items-center gap-2 pt-1 mt-auto" onClick={(e) => e.stopPropagation()}>
           <Button
             size="sm"
-            className="flex-1 gap-1.5 rounded-[var(--button-radius)] text-sm font-semibold"
+            className="flex-1 gap-1.5 rounded-lg text-sm font-semibold"
             onClick={() => navigate(getProfilePublicPath(profile))}
             aria-label={`${t("common.view_profile")} - ${profile.display_name}`}
           >
@@ -139,7 +139,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
           {profile.has_whatsapp && (
             <Button
               size="sm"
-              className="shrink-0 rounded-[var(--button-radius)] px-3 bg-success hover:bg-success/90 text-success-foreground border-0"
+              className="shrink-0 rounded-lg px-3 bg-success hover:bg-success/90 text-success-foreground border-0"
               disabled={whatsappLoading}
               onClick={handleWhatsApp}
               aria-label={`WhatsApp — ${profile.display_name}`}
@@ -155,7 +155,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
           <Button
             size="sm"
             variant="outline"
-            className={`shrink-0 rounded-[var(--button-radius)] px-3 transition-colors duration-200 ${
+            className={`shrink-0 rounded-lg px-3 transition-colors duration-200 ${
               favorited
                 ? "bg-primary/10 border-primary/30 text-primary"
                 : "bg-surface-light border-border/60 text-muted-foreground hover:text-primary hover:border-primary/30"
