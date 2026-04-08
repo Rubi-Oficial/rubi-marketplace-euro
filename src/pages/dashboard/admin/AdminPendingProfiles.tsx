@@ -45,52 +45,71 @@ export default function AdminPendingProfiles() {
 
   const fetchData = async () => {
     setLoading(true);
-    const [{ data: profileData }, { data: imgData }] = await Promise.all([
-      supabase.from("profiles").select("*")
-        .eq("status", "pending_review").order("created_at", { ascending: false }),
-      supabase.from("profile_images").select("*, profiles!inner(display_name)")
-        .eq("moderation_status", "pending").order("created_at", { ascending: false }),
-    ]);
+    try {
+      const [{ data: profileData, error: profErr }, { data: imgData, error: imgErr }] = await Promise.all([
+        supabase.from("profiles").select("*")
+          .eq("status", "pending_review").order("created_at", { ascending: false }),
+        supabase.from("profile_images").select("*, profiles!inner(display_name)")
+          .eq("moderation_status", "pending").order("created_at", { ascending: false }),
+      ]);
 
-    setProfiles((profileData as PendingProfile[]) ?? []);
-    const imgPaths = (imgData ?? []).map((img: any) => img.storage_path);
-    const imgUrls = await getSignedUrls(imgPaths);
-    setPendingImages((imgData ?? []).map((img: any) => ({
-      ...img,
-      url: imgUrls[img.storage_path] || "",
-      profile_name: img.profiles?.display_name || "—",
-    })));
-    setLoading(false);
+      if (profErr) console.error("[AdminPendingProfiles] Profiles error:", profErr.message);
+      if (imgErr) console.error("[AdminPendingProfiles] Images error:", imgErr.message);
+
+      setProfiles((profileData as PendingProfile[]) ?? []);
+      const imgPaths = (imgData ?? []).map((img: any) => img.storage_path);
+      const imgUrls = await getSignedUrls(imgPaths);
+      setPendingImages((imgData ?? []).map((img: any) => ({
+        ...img,
+        url: imgUrls[img.storage_path] || "",
+        profile_name: img.profiles?.display_name || "—",
+      })));
+    } catch (err) {
+      console.error("[AdminPendingProfiles] Unexpected error:", err);
+      toast.error("Erro ao carregar dados de moderação. Tente recarregar.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchData(); }, []);
 
   const handleProfileAction = async (profile: PendingProfile, action: "approved" | "rejected") => {
-    const { error } = await supabase.from("profiles").update({ status: action }).eq("id", profile.id);
-    if (error) { toast.error(error.message); return; }
+    try {
+      const { error } = await supabase.from("profiles").update({ status: action }).eq("id", profile.id);
+      if (error) { toast.error("Erro ao processar perfil. Tente novamente."); console.error("[AdminPendingProfiles]", error.message); return; }
 
-    // Log admin action
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from("admin_actions").insert({
-        admin_user_id: user.id,
-        action_type: `profile_${action}`,
-        target_profile_id: profile.id,
-        target_user_id: profile.user_id,
-      });
+      // Log admin action
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("admin_actions").insert({
+          admin_user_id: user.id,
+          action_type: `profile_${action}`,
+          target_profile_id: profile.id,
+          target_user_id: profile.user_id,
+        });
+      }
+
+      toast.success(action === "approved" ? "Perfil aprovado!" : "Perfil rejeitado.");
+      setSelectedProfile(null);
+      fetchData();
+    } catch (err) {
+      console.error("[AdminPendingProfiles] Profile action error:", err);
+      toast.error("Ocorreu um erro inesperado. Tente novamente.");
     }
-
-    toast.success(action === "approved" ? "Perfil aprovado!" : "Perfil rejeitado.");
-    setSelectedProfile(null);
-    fetchData();
   };
 
   const handleImageAction = async (img: PendingImage, action: "approved" | "rejected") => {
-    const { error } = await supabase.from("profile_images")
-      .update({ moderation_status: action }).eq("id", img.id);
-    if (error) { toast.error(error.message); return; }
-    toast.success(action === "approved" ? "Foto aprovada!" : "Foto rejeitada.");
-    fetchData();
+    try {
+      const { error } = await supabase.from("profile_images")
+        .update({ moderation_status: action }).eq("id", img.id);
+      if (error) { toast.error("Erro ao processar foto. Tente novamente."); console.error("[AdminPendingProfiles]", error.message); return; }
+      toast.success(action === "approved" ? "Foto aprovada!" : "Foto rejeitada.");
+      fetchData();
+    } catch (err) {
+      console.error("[AdminPendingProfiles] Image action error:", err);
+      toast.error("Ocorreu um erro inesperado. Tente novamente.");
+    }
   };
 
   return (
