@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
