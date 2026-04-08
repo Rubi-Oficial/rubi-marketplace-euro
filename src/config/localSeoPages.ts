@@ -1,3 +1,5 @@
+import { sharedSiteDefaults } from "@/config/site.shared";
+
 export type SeoMarket = "es" | "br";
 export type SeoPageType = "city" | "district" | "attribute";
 
@@ -25,6 +27,7 @@ export interface SeoCityConfig {
   pages: SeoLocalPageConfig[];
 }
 
+export const LOCAL_SEO_SITE_URL = sharedSiteDefaults.siteUrl;
 export const INDEX_MIN_PROFILES = 8;
 
 export const MARKET_LABEL: Record<SeoMarket, string> = {
