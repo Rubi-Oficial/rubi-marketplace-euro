@@ -45,22 +45,31 @@ export default function AdminPendingProfiles() {
 
   const fetchData = async () => {
     setLoading(true);
-    const [{ data: profileData }, { data: imgData }] = await Promise.all([
-      supabase.from("profiles").select("*")
-        .eq("status", "pending_review").order("created_at", { ascending: false }),
-      supabase.from("profile_images").select("*, profiles!inner(display_name)")
-        .eq("moderation_status", "pending").order("created_at", { ascending: false }),
-    ]);
+    try {
+      const [{ data: profileData, error: profErr }, { data: imgData, error: imgErr }] = await Promise.all([
+        supabase.from("profiles").select("*")
+          .eq("status", "pending_review").order("created_at", { ascending: false }),
+        supabase.from("profile_images").select("*, profiles!inner(display_name)")
+          .eq("moderation_status", "pending").order("created_at", { ascending: false }),
+      ]);
 
-    setProfiles((profileData as PendingProfile[]) ?? []);
-    const imgPaths = (imgData ?? []).map((img: any) => img.storage_path);
-    const imgUrls = await getSignedUrls(imgPaths);
-    setPendingImages((imgData ?? []).map((img: any) => ({
-      ...img,
-      url: imgUrls[img.storage_path] || "",
-      profile_name: img.profiles?.display_name || "—",
-    })));
-    setLoading(false);
+      if (profErr) console.error("[AdminPendingProfiles] Profiles error:", profErr.message);
+      if (imgErr) console.error("[AdminPendingProfiles] Images error:", imgErr.message);
+
+      setProfiles((profileData as PendingProfile[]) ?? []);
+      const imgPaths = (imgData ?? []).map((img: any) => img.storage_path);
+      const imgUrls = await getSignedUrls(imgPaths);
+      setPendingImages((imgData ?? []).map((img: any) => ({
+        ...img,
+        url: imgUrls[img.storage_path] || "",
+        profile_name: img.profiles?.display_name || "—",
+      })));
+    } catch (err) {
+      console.error("[AdminPendingProfiles] Unexpected error:", err);
+      toast.error("Erro ao carregar dados de moderação. Tente recarregar.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchData(); }, []);
