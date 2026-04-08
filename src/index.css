@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,60 +6,61 @@
 
 @layer base {
   :root {
-    --font-display: 'Plus Jakarta Sans', sans-serif;
+    --font-display: 'Cormorant Garamond', serif;
     --font-body: 'Inter', sans-serif;
 
-    /* Rubi Girls — Light Premium Palette */
-    --background: 0 0% 98%;
-    --foreground: 240 10% 10%;
+    /* Premium editorial dark palette */
+    --background: 272 37% 8%;
+    --foreground: 33 40% 94%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 10%;
+    --card: 271 36% 12%;
+    --card-foreground: 33 40% 94%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
+    --popover: 271 36% 12%;
+    --popover-foreground: 33 40% 94%;
 
-    /* Ruby Red Accent */
-    --primary: 350 65% 48%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 40 49% 69%;
+    --primary-foreground: 272 37% 10%;
 
-    --secondary: 240 6% 93%;
-    --secondary-foreground: 240 10% 20%;
+    --secondary: 274 48% 33%;
+    --secondary-foreground: 33 40% 94%;
 
-    --muted: 240 5% 93%;
-    --muted-foreground: 240 5% 42%;
+    --muted: 271 24% 18%;
+    --muted-foreground: 34 24% 74%;
 
-    --accent: 240 6% 94%;
-    --accent-foreground: 240 10% 12%;
+    --accent: 277 32% 51%;
+    --accent-foreground: 33 40% 94%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 56%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 88%;
-    --input: 240 6% 88%;
-    --ring: 350 65% 48%;
+    --border: 0 0% 100% / 0.08;
+    --input: 0 0% 100% / 0.08;
+    --ring: 277 32% 51%;
 
-    --radius: 0.5rem;
+    --radius: 1.25rem;
+    --card-radius: 20px;
+    --button-radius: 14px;
+    --input-radius: 14px;
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
 
-    /* Custom tokens */
-    --gold: 35 60% 50%;
-    --surface-glow: 350 65% 48%;
-    --ruby-gradient: linear-gradient(135deg, hsl(350 65% 48%), hsl(340 70% 38%));
-    --gold-gradient: linear-gradient(135deg, hsl(35 60% 50%), hsl(25 70% 42%));
-    --surface-gradient: linear-gradient(180deg, hsl(0 0% 100%), hsl(240 5% 96%));
+    --gold: 40 49% 69%;
+    --surface-glow: 277 32% 51%;
+    --ruby-gradient: linear-gradient(135deg, hsl(274 48% 33%), hsl(272 37% 14%));
+    --gold-gradient: linear-gradient(135deg, hsl(40 49% 69%), hsl(35 36% 61%));
+    --surface-gradient: linear-gradient(180deg, hsl(271 36% 14%), hsl(272 37% 10%));
 
-    /* Success token for WhatsApp etc. */
-    --success: 142 71% 35%;
+    --success: 142 59% 42%;
     --success-foreground: 0 0% 100%;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 10% 20%;
-    --sidebar-primary: 350 65% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 6% 95%;
-    --sidebar-accent-foreground: 240 10% 12%;
-    --sidebar-border: 240 6% 90%;
-    --sidebar-ring: 350 65% 48%;
+    --sidebar-background: 272 37% 8%;
+    --sidebar-foreground: 33 40% 94%;
+    --sidebar-primary: 40 49% 69%;
+    --sidebar-primary-foreground: 272 37% 10%;
+    --sidebar-accent: 274 34% 20%;
+    --sidebar-accent-foreground: 33 40% 94%;
+    --sidebar-border: 0 0% 100% / 0.08;
+    --sidebar-ring: 277 32% 51%;
   }
 }
 
@@ -75,56 +76,34 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    letter-spacing: -0.04em;
+    letter-spacing: -0.02em;
   }
 
-  /* Improved focus-visible for all interactive elements */
   :focus-visible {
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 6px;
   }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-  .text-pretty {
-    text-wrap: pretty;
-  }
-  .font-display {
-    font-family: var(--font-display);
-  }
-  .font-body {
-    font-family: var(--font-body);
-  }
-  .tabular-nums {
-    font-variant-numeric: tabular-nums;
-  }
-  .gold-gradient {
-    background: var(--gold-gradient);
-  }
-  .ruby-gradient {
-    background: var(--ruby-gradient);
-  }
-  .surface-gradient {
-    background: var(--surface-gradient);
-  }
-  .glass {
-    @apply bg-card/80 backdrop-blur-md border border-border/50;
-  }
-  .glow-ruby {
-    box-shadow: 0 0 20px hsl(350 65% 48% / 0.12), inset 0 1px 0 hsl(350 65% 48% / 0.08);
-  }
-  .glow-gold {
-    box-shadow: 0 0 20px hsl(35 60% 50% / 0.15), inset 0 1px 0 hsl(35 60% 50% / 0.1);
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+  .font-display { font-family: var(--font-display); }
+  .font-body { font-family: var(--font-body); }
+  .tabular-nums { font-variant-numeric: tabular-nums; }
+  .gold-gradient { background: var(--gold-gradient); }
+  .ruby-gradient { background: var(--ruby-gradient); }
+  .surface-gradient { background: var(--surface-gradient); }
+  .glass { @apply bg-card/75 backdrop-blur-lg border border-border; }
+  .glow-ruby { box-shadow: 0 0 20px hsl(277 32% 51% / 0.16), inset 0 1px 0 hsl(277 32% 51% / 0.08); }
+  .glow-gold { box-shadow: 0 0 20px hsl(40 49% 69% / 0.18), inset 0 1px 0 hsl(40 49% 69% / 0.1); }
+  .premium-card {
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
   }
 
-  /* Skip-to-content for accessibility */
-  .skip-link {
-    @apply sr-only;
-  }
+  .skip-link { @apply sr-only; }
   .skip-link:focus {
     @apply not-sr-only fixed top-2 left-2 z-[100] rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg;
   }

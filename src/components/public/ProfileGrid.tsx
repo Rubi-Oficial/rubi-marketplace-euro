@@ -22,7 +22,7 @@ export const ProfileGridSkeleton = React.forwardRef<HTMLDivElement, { count?: nu
   ({ count = 8, columns = "grid-cols-1 md:grid-cols-2 lg:grid-cols-4" }, ref) => (
     <div ref={ref} className={`grid gap-6 ${columns}`}>
       {Array.from({ length: count }, (_, i) => (
-        <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-muted" />
+        <div key={i} className="aspect-[3/4] animate-pulse rounded-[var(--card-radius)] bg-muted" />
       ))}
     </div>
   )

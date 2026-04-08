@@ -30,12 +30,12 @@ export function ActiveFilterChips({ filters, countryName, cityName, serviceName,
   const chipElements = chips.map((chip) => (
     <span
       key={chip.key}
-      className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary"
+      className="inline-flex items-center gap-1 rounded-full bg-primary/15 border border-primary/30 px-2.5 py-1 text-xs font-medium text-primary"
     >
       {chip.label}
       <button
         onClick={() => onRemove(chip.key)}
-        className="ml-0.5 rounded-full p-0.5 hover:bg-primary/20 transition-colors"
+        className="ml-0.5 rounded-full p-0.5 hover:bg-primary/25 transition-colors"
       >
         <X className="h-2.5 w-2.5" />
       </button>
@@ -50,7 +50,7 @@ export function ActiveFilterChips({ filters, countryName, cityName, serviceName,
     <div className="flex flex-wrap items-center gap-1.5 mb-4">
       {chipElements}
       {chips.length > 1 && (
-        <button onClick={onClearAll} className="text-[11px] text-muted-foreground hover:text-foreground ml-1 transition-colors">
+        <button onClick={onClearAll} className="text-[11px] text-muted-foreground hover:text-primary ml-1 transition-colors">
           {t("chips.clear_all")}
         </button>
       )}

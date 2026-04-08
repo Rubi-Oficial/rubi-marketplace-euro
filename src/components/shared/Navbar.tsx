@@ -51,7 +51,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border/50 shadow-sm"
+      className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/60 shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
       role="navigation"
       aria-label="Main navigation"
     >
@@ -82,7 +82,7 @@ export default function Navbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="shrink-0 rounded-full h-8 w-8 flex items-center justify-center text-lg leading-none transition-colors hover:bg-accent"
+                className="shrink-0 rounded-full h-8 w-8 flex items-center justify-center text-lg leading-none transition-colors hover:bg-secondary/40"
                 aria-label={`Language: ${currentLang.name}`}
               >
                 {currentLang.flag}
@@ -127,7 +127,7 @@ export default function Navbar() {
         </div>
 
         <button
-          className="p-2 text-foreground rounded-full hover:bg-accent transition-colors md:hidden"
+          className="p-2 text-foreground rounded-full hover:bg-secondary/40 transition-colors md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-expanded={mobileOpen}
           aria-controls="mobile-menu"
@@ -148,8 +148,8 @@ export default function Navbar() {
                 aria-selected={isAllActive}
                 className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
                   isAllActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    ? "gold-gradient text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
                 }`}
               >
                 {t("nav.all")}
@@ -162,8 +162,8 @@ export default function Navbar() {
                   aria-selected={activeSlug === cat.slug}
                   className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
                     activeSlug === cat.slug
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                      ? "gold-gradient text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
                   }`}
                 >
                   {t(cat.key)}
@@ -179,7 +179,7 @@ export default function Navbar() {
       {mobileOpen && (
         <div
           id="mobile-menu"
-          className="md:hidden border-t border-border/50 bg-card/95 backdrop-blur-xl px-4 py-4 space-y-1 animate-fade-in shadow-lg max-h-[70vh] overflow-y-auto"
+          className="md:hidden border-t border-border/50 bg-background/90 backdrop-blur-lg px-4 py-4 space-y-1 animate-fade-in shadow-lg max-h-[70vh] overflow-y-auto"
           role="menu"
         >
           <form onSubmit={(e) => { handleSearch(e); closeMobile(); }} className="flex gap-2 mb-3 sm:hidden" role="search">
@@ -207,7 +207,7 @@ export default function Navbar() {
                 className={`rounded-full px-2.5 py-1.5 text-base transition-all duration-200 ${
                   lang === l.code
                     ? "bg-primary/15 ring-1 ring-primary scale-110"
-                    : "hover:bg-accent"
+                    : "hover:bg-secondary/40"
                 }`}
                 aria-label={l.name}
               >
@@ -216,26 +216,26 @@ export default function Navbar() {
             ))}
           </div>
 
-          <Link to="/buscar" onClick={closeMobile} className="flex items-center gap-2 text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">
+          <Link to="/buscar" onClick={closeMobile} className="flex items-center gap-2 text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-secondary/40 transition-colors" role="menuitem">
             <Search className="h-4 w-4 text-muted-foreground" /> {t("nav.explore")}
           </Link>
           {CATEGORIES.map((cat) => (
-            <Link key={cat.slug} to={`/categoria/${cat.slug}`} onClick={closeMobile} className="block text-sm text-muted-foreground py-2 px-4 rounded-lg hover:bg-accent transition-colors" role="menuitem">
+            <Link key={cat.slug} to={`/categoria/${cat.slug}`} onClick={closeMobile} className="block text-sm text-muted-foreground py-2 px-4 rounded-lg hover:bg-secondary/40 transition-colors" role="menuitem">
               {t(cat.key)}
             </Link>
           ))}
-          <Link to="/planos" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">{t("nav.plans")}</Link>
-          <Link to="/sobre" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">{t("nav.about")}</Link>
+          <Link to="/planos" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-secondary/40 transition-colors" role="menuitem">{t("nav.plans")}</Link>
+          <Link to="/sobre" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-secondary/40 transition-colors" role="menuitem">{t("nav.about")}</Link>
           <div className="border-t border-border/30 pt-3 mt-2">
             {user ? (
               <>
-                <Link to={dashboardPath} onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">{t("nav.dashboard")}</Link>
-                <button onClick={() => { signOut(); closeMobile(); }} className="block w-full text-left text-sm text-muted-foreground py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">{t("nav.sign_out")}</button>
+                <Link to={dashboardPath} onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-secondary/40 transition-colors" role="menuitem">{t("nav.dashboard")}</Link>
+                <button onClick={() => { signOut(); closeMobile(); }} className="block w-full text-left text-sm text-muted-foreground py-2.5 px-2 rounded-lg hover:bg-secondary/40 transition-colors" role="menuitem">{t("nav.sign_out")}</button>
               </>
             ) : (
               <>
-                <Link to="/login" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">{t("nav.sign_in")}</Link>
-                <Link to="/cadastro" onClick={closeMobile} className="block text-sm text-primary font-medium py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">{t("nav.get_started")}</Link>
+                <Link to="/login" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-secondary/40 transition-colors" role="menuitem">{t("nav.sign_in")}</Link>
+                <Link to="/cadastro" onClick={closeMobile} className="block text-sm text-primary font-medium py-2.5 px-2 rounded-lg hover:bg-secondary/40 transition-colors" role="menuitem">{t("nav.get_started")}</Link>
               </>
             )}
           </div>

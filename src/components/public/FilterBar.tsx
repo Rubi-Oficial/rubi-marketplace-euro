@@ -48,12 +48,12 @@ export function FilterBar({
         variant="outline"
         size="sm"
         onClick={onOpenFilters}
-        className={`h-9 gap-2 rounded-full border-border/40 focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
+        className={`h-9 gap-2 rounded-full border-border bg-card/60 focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 ${hasGeneralFilter ? "border-primary/50 text-primary bg-primary/10" : ""}`}
       >
         <SlidersHorizontal className="h-3.5 w-3.5" />
         <span className="text-xs">{t("landing.filters")}</span>
         {hasGeneralFilter && (
-          <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
+          <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm px-1">
             {generalCount}
           </span>
         )}
@@ -63,12 +63,12 @@ export function FilterBar({
         variant="outline"
         size="sm"
         onClick={onOpenLocation}
-        className={`h-9 gap-2 rounded-full border-border/40 focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
+        className={`h-9 gap-2 rounded-full border-border bg-card/60 focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 ${hasLocationFilter ? "border-primary/50 text-primary bg-primary/10" : ""}`}
       >
         <MapPin className="h-3.5 w-3.5" />
         <span className="text-xs">{t("landing.location")}</span>
         {hasLocationFilter && (
-          <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
+          <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm px-1">
             {locationCount}
           </span>
         )}
@@ -85,7 +85,7 @@ export function FilterBar({
       />
 
       {hasFilters && (
-        <button onClick={onClearAll} className="ml-auto text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 rounded-sm">
+        <button onClick={onClearAll} className="ml-auto text-xs text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 rounded-sm">
           {t("landing.clear_all")}
         </button>
       )}
