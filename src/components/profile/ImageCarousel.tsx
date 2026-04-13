@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProgressiveImage } from "./ProgressiveImage";
@@ -16,7 +16,7 @@ interface ImageCarouselProps {
 /**
  * Auto-rotating image carousel with manual navigation controls.
  */
-export function ImageCarousel({ urls, displayName, hovered }: ImageCarouselProps) {
+function ImageCarouselInner({ urls, displayName, hovered }: ImageCarouselProps) {
   const hasMultiple = urls.length > 1;
   const [activeIdx, setActiveIdx] = useState(0);
   const pausedUntilRef = useRef(0);
@@ -125,3 +125,10 @@ export function ImageCarousel({ urls, displayName, hovered }: ImageCarouselProps
     </>
   );
 }
+
+// Memoize to avoid re-renders when parent state changes (e.g. hover on sibling cards)
+export const ImageCarousel = memo(ImageCarouselInner, (prev, next) => {
+  return prev.urls === next.urls
+    && prev.displayName === next.displayName
+    && prev.hovered === next.hovered;
+});

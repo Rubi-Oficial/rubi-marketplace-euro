@@ -1,6 +1,5 @@
-import { forwardRef, useState, useCallback } from "react";
+import { forwardRef, useState, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { MapPin, Euro, Heart, ArrowRight, MessageCircle } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,7 @@ export { fetchEligibleProfiles, fetchFilterOptions, fetchServices } from "@/lib/
 
 const BIO_MAX_LENGTH = 150;
 
-export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile }>(({ profile }, ref) => {
+const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile }>(({ profile }, ref) => {
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
   const urls = profile.image_urls;
@@ -56,18 +55,19 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
     [profile.id, profile.slug, whatsappLoading, navigate]
   );
 
+  const handleNavigate = useCallback(() => {
+    navigate(`/perfil/${profile.slug}`);
+  }, [navigate, profile.slug]);
+
   if (!profile.slug) return null;
 
   return (
-    <motion.div
+    <div
       ref={ref}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="group relative flex flex-col overflow-hidden rounded-xl bg-card shadow-sm border border-border/40 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/8 cursor-pointer"
+      className="group relative flex flex-col overflow-hidden rounded-xl bg-card shadow-sm border border-border/40 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/8 cursor-pointer animate-fade-in"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={() => navigate(`/perfil/${profile.slug}`)}
+      onClick={handleNavigate}
     >
       {/* Image section */}
       <div className="relative h-[340px] sm:h-[380px] overflow-hidden bg-muted">
@@ -128,7 +128,7 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
           <Button
             size="sm"
             className="flex-1 gap-1.5 rounded-lg text-sm font-semibold"
-            onClick={() => navigate(`/perfil/${profile.slug}`)}
+            onClick={handleNavigate}
             aria-label={`${t("common.view_profile")} - ${profile.display_name}`}
           >
             {t("common.view_profile")}
@@ -167,7 +167,14 @@ export const ProfileCard = forwardRef<HTMLDivElement, { profile: EligibleProfile
           </Button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 });
-ProfileCard.displayName = "ProfileCard";
+ProfileCardInner.displayName = "ProfileCardInner";
+
+// Memoize to prevent re-renders when parent re-renders (e.g. infinite scroll adding new items)
+export const ProfileCard = memo(ProfileCardInner, (prev, next) => {
+  return prev.profile.id === next.profile.id
+    && prev.profile.image_urls === next.profile.image_urls
+    && prev.profile.highlight_tier === next.profile.highlight_tier;
+});
