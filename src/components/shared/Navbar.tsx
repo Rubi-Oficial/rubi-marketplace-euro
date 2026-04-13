@@ -233,10 +233,24 @@ export default function Navbar() {
               <button onClick={() => { signOut(); closeMobile(); }} className="block w-full text-left text-sm text-muted-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.sign_out")}</button>
             </>
           ) : (
-            <>
-              <Link to="/login" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.sign_in")}</Link>
-              <Link to="/cadastro" onClick={closeMobile} className="block text-sm text-primary font-semibold py-2.5 px-3 rounded-lg hover:bg-primary/10 transition-colors" role="menuitem">{t("nav.get_started")}</Link>
-            </>
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                to="/login"
+                onClick={closeMobile}
+                className="inline-flex items-center justify-center text-sm font-medium py-2.5 px-3 rounded-lg border border-border/50 bg-card/60 text-foreground hover:bg-accent/45 transition-colors"
+                role="menuitem"
+              >
+                {t("nav.sign_in")}
+              </Link>
+              <Link
+                to="/cadastro"
+                onClick={closeMobile}
+                className="inline-flex items-center justify-center text-sm font-semibold py-2.5 px-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-[0_8px_20px_hsl(var(--primary)_/_0.28)]"
+                role="menuitem"
+              >
+                {t("nav.get_started")}
+              </Link>
+            </div>
           )}
         </div>
       </div>
