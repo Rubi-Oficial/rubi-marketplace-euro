@@ -131,17 +131,14 @@ export default function ProfilePage() {
           url: signedMap[v.storage_path] || "",
         })));
 
-        // Fetch service names if profile has services
+        // Extract service names from the joined query (no sequential fetch needed)
         const psData = psResult.data;
         if (psData && psData.length > 0) {
-          const serviceIds = psData.map((r: any) => r.service_id);
-          const { data: svcData } = await supabase
-            .from("services")
-            .select("name, slug")
-            .in("id", serviceIds)
-            .eq("is_active", true)
-            .order("sort_order");
-          if (svcData) setServices(svcData);
+          const svcList = psData
+            .map((r: any) => r.services)
+            .filter(Boolean)
+            .map((s: any) => ({ name: s.name, slug: s.slug }));
+          setServices(svcList);
         }
 
         // Track lead (non-critical, fire and forget)
