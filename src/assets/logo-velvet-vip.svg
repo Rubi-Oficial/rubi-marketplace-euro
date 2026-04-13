@@ -1,0 +1,19 @@
+<svg width="420" height="120" viewBox="0 0 420 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F7E2A7"/>
+      <stop offset="45%" stop-color="#E3BC61"/>
+      <stop offset="100%" stop-color="#B6872E"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="420" height="120" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <rect width="420" height="120" rx="16" fill="transparent"/>
+  <g filter="url(#shadow)">
+    <path d="M44 20L67 86L90 20H103L72 98H62L31 20H44Z" fill="url(#gold)"/>
+    <text x="96" y="83" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-style="italic" font-weight="700" fill="url(#gold)">elvet</text>
+    <text x="127" y="108" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="3" fill="url(#gold)">escorts.vip</text>
+  </g>
+  <path d="M30 105C128 68 285 64 392 92" stroke="url(#gold)" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+</svg>

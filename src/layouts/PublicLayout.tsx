@@ -4,7 +4,7 @@ import Navbar from "@/components/shared/Navbar";
 import PageTransition from "@/components/shared/PageTransition";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
-import logoRubiGirls from "@/assets/logo-rubi-girls.png";
+import logoVelvetVip from "@/assets/logo-velvet-vip.svg";
 
 export default function PublicLayout() {
   const { t } = useLanguage();
@@ -33,8 +33,8 @@ export default function PublicLayout() {
         <div className="container mx-auto px-4">
           <div className="grid gap-10 md:grid-cols-5">
             <div>
-              <Link to="/" className="inline-block" aria-label="Rubi Girls — Home">
-                <img src={logoRubiGirls} alt="Rubi Girls" className="h-6" />
+              <Link to="/" className="inline-block" aria-label="Velvet Escorts VIP — Home">
+                <img src={logoVelvetVip} alt="Velvet Escorts VIP" className="h-12 w-auto object-contain" />
               </Link>
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
                 {t("footer.desc")}
@@ -102,7 +102,7 @@ export default function PublicLayout() {
             </div>
           </div>
           <div className="mt-8 border-t border-[hsl(41_49%_69%_/_0.22)] pt-5 text-center text-xs text-secondary-foreground">
-            © {new Date().getFullYear()} Rubi Girls. {t("footer.rights")}
+            © {new Date().getFullYear()} Velvet Escorts VIP. {t("footer.rights")}
           </div>
         </div>
       </footer>
