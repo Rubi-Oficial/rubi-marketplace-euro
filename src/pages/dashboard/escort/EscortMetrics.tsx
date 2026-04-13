@@ -16,38 +16,41 @@ export default function EscortMetrics() {
   useEffect(() => {
     if (!user) return;
 
-    supabase.from("profiles").select("id, status").eq("user_id", user.id).maybeSingle()
-      .then(({ data: profile, error }) => {
-        if (error) {
-          console.error("[EscortMetrics] Profile fetch error:", error.message);
+    const loadMetrics = async () => {
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles").select("id, status").eq("user_id", user.id).maybeSingle();
+        
+        if (profileError) {
+          console.error("[EscortMetrics] Profile fetch error:", profileError.message);
           return;
         }
         if (!profile) return;
 
         const pid = profile.id;
-        Promise.all([
+        const [viewsRes, waCardRes, waProfileRes, tgRes, imgsRes] = await Promise.all([
           supabase.from("leads").select("id", { count: "exact", head: true }).eq("profile_id", pid).eq("source", "profile_view"),
           supabase.from("leads").select("id", { count: "exact", head: true }).eq("profile_id", pid).eq("source", "whatsapp_card"),
           supabase.from("leads").select("id", { count: "exact", head: true }).eq("profile_id", pid).eq("source", "whatsapp_profile"),
           supabase.from("leads").select("id", { count: "exact", head: true }).eq("profile_id", pid).eq("source", "telegram_profile"),
           supabase.from("profile_images").select("moderation_status").eq("profile_id", pid),
-        ]).then(([viewsRes, waCardRes, waProfileRes, tgRes, imgsRes]) => {
-          setProfileViews(viewsRes.count ?? 0);
-          setWhatsappCard(waCardRes.count ?? 0);
-          setWhatsappProfile(waProfileRes.count ?? 0);
-          setTelegramProfile(tgRes.count ?? 0);
-          if (imgsRes.data) {
-            setApprovedImages(imgsRes.data.filter((i: any) => i.moderation_status === "approved").length);
-            setPendingImages(imgsRes.data.filter((i: any) => i.moderation_status === "pending").length);
-            setRejectedImages(imgsRes.data.filter((i: any) => i.moderation_status === "rejected").length);
-          }
-        }).catch((err) => {
-          console.error("[EscortMetrics] Metrics fetch error:", err);
-        });
-      })
-      .catch((err) => {
+        ]);
+
+        setProfileViews(viewsRes.count ?? 0);
+        setWhatsappCard(waCardRes.count ?? 0);
+        setWhatsappProfile(waProfileRes.count ?? 0);
+        setTelegramProfile(tgRes.count ?? 0);
+        if (imgsRes.data) {
+          setApprovedImages(imgsRes.data.filter((i: any) => i.moderation_status === "approved").length);
+          setPendingImages(imgsRes.data.filter((i: any) => i.moderation_status === "pending").length);
+          setRejectedImages(imgsRes.data.filter((i: any) => i.moderation_status === "rejected").length);
+        }
+      } catch (err) {
         console.error("[EscortMetrics] Unexpected error:", err);
-      });
+      }
+    };
+
+    loadMetrics();
   }, [user]);
 
   return (
