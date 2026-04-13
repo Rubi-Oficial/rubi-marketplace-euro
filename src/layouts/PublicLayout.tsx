@@ -29,7 +29,7 @@ export default function PublicLayout() {
         </main>
       </div>
 
-      <footer className="border-t-2 border-border py-10 mt-8 bg-secondary/40" role="contentinfo">
+      <footer className="border-t border-[hsl(0_0%_100%_/_0.08)] py-10 mt-8 bg-[hsl(273_35%_12%_/_0.82)] backdrop-blur-sm" role="contentinfo">
         <div className="container mx-auto px-4">
           <div className="grid gap-10 md:grid-cols-5">
             <div>
@@ -45,13 +45,13 @@ export default function PublicLayout() {
                 {t("footer.platform")}
               </h4>
               <nav aria-label="Platform links" className="mt-4 flex flex-col gap-2.5 text-sm">
-                <Link to="/buscar" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">
+                <Link to="/buscar" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">
                   {t("footer.explore")}
                 </Link>
-                <Link to="/planos" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">
+                <Link to="/planos" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">
                   {t("footer.plans")}
                 </Link>
-                <Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">
+                <Link to="/blog" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">
                   {t("footer.blog")}
                 </Link>
               </nav>
@@ -61,10 +61,10 @@ export default function PublicLayout() {
                 {t("footer.company")}
               </h4>
               <nav aria-label="Company links" className="mt-4 flex flex-col gap-2.5 text-sm">
-                <Link to="/sobre" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">
+                <Link to="/sobre" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">
                   {t("footer.about")}
                 </Link>
-                <Link to="/contato" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">
+                <Link to="/contato" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">
                   {t("footer.contact")}
                 </Link>
               </nav>
@@ -74,13 +74,13 @@ export default function PublicLayout() {
                 {t("footer.legal")}
               </h4>
               <nav aria-label="Legal links" className="mt-4 flex flex-col gap-2.5 text-sm">
-                <Link to="/termos" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">
+                <Link to="/termos" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">
                   {t("footer.terms")}
                 </Link>
-                <Link to="/privacidade" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">
+                <Link to="/privacidade" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">
                   {t("footer.privacy")}
                 </Link>
-                <Link to="/cookies" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">
+                <Link to="/cookies" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">
                   {t("footer.cookies")}
                 </Link>
               </nav>
@@ -90,18 +90,18 @@ export default function PublicLayout() {
                 SEO Local
               </h4>
               <nav aria-label="Local SEO links" className="mt-4 flex flex-col gap-2.5 text-sm">
-                <Link to="/es/escorts-barcelona" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">Barcelona</Link>
-                <Link to="/es/escorts-madrid" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">Madrid</Link>
-                <Link to="/es/escorts-barcelona/vip" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">VIP Escorts Barcelona</Link>
-                <Link to="/es/escorts-madrid/luxury" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">Luxury Escorts Madrid</Link>
-                <Link to="/br/acompanhantes-florianopolis" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">Florianópolis</Link>
-                <Link to="/br/acompanhantes-sao-paulo" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">São Paulo</Link>
-                <Link to="/br/acompanhantes-sao-paulo/jardins" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">Acompanhantes no Jardins</Link>
-                <Link to="/br/acompanhantes-florianopolis/jurere-internacional" className="text-muted-foreground hover:text-foreground transition-colors rounded-sm">Acompanhantes em Jurerê Internacional</Link>
+                <Link to="/es/escorts-barcelona" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">Barcelona</Link>
+                <Link to="/es/escorts-madrid" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">Madrid</Link>
+                <Link to="/es/escorts-barcelona/vip" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">VIP Escorts Barcelona</Link>
+                <Link to="/es/escorts-madrid/luxury" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">Luxury Escorts Madrid</Link>
+                <Link to="/br/acompanhantes-florianopolis" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">Florianópolis</Link>
+                <Link to="/br/acompanhantes-sao-paulo" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">São Paulo</Link>
+                <Link to="/br/acompanhantes-sao-paulo/jardins" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">Acompanhantes no Jardins</Link>
+                <Link to="/br/acompanhantes-florianopolis/jurere-internacional" className="text-secondary-foreground hover:text-primary transition-colors rounded-sm">Acompanhantes em Jurerê Internacional</Link>
               </nav>
             </div>
           </div>
-          <div className="mt-8 border-t border-border/20 pt-5 text-center text-xs text-muted-foreground">
+          <div className="mt-8 border-t border-[hsl(41_49%_69%_/_0.22)] pt-5 text-center text-xs text-secondary-foreground">
             © {new Date().getFullYear()} Rubi Girls. {t("footer.rights")}
           </div>
         </div>
