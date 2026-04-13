@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Eye, EyeOff, User, Briefcase } from "lucide-react";
+import BrandLogo from "@/components/shared/BrandLogo";
 
 const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, ref) {
   const [email, setEmail] = useState("");
@@ -86,17 +87,16 @@ const RegisterPage = forwardRef<HTMLDivElement>(function RegisterPage(_props, re
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
       <div className="w-full max-w-md animate-fade-in">
         <div className="mb-8 text-center">
-          <Link to="/" className="font-display text-3xl font-bold text-primary" aria-label="Rubi Girls — Home">
-            <span className="font-bold">Rubi</span>{" "}
-            <span className="font-medium text-foreground/80">Girls</span>
+          <Link to="/" className="inline-flex justify-center" aria-label="Velvet Escorts VIP — Home">
+            <BrandLogo imgClassName="h-14 sm:h-16" />
           </Link>
           <p className="mt-2 text-muted-foreground">{t("auth.create_account")}</p>
         </div>
 
-        <div className="rounded-2xl border border-border/60 bg-card p-6 sm:p-8 shadow-sm">
+        <div className="rounded-2xl border border-border/60 bg-card p-6 sm:p-8 shadow-[0_10px_30px_hsl(274_36%_4%_/_0.35)]">
           <form onSubmit={handleRegister} className="space-y-4" noValidate>
             <div className="space-y-2">
               <Label htmlFor="fullName">{t("auth.full_name")}</Label>
