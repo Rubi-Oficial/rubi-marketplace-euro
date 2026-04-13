@@ -113,6 +113,7 @@ export function usePageTracking(userId?: string) {
       session_id: sessionId,
       page_path: path,
       referrer_url: document.referrer || undefined,
+      user_id: userId,
       ...utmParams,
     });
   }, [location.pathname, queueVisit, userId]);
