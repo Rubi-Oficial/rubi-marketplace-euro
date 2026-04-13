@@ -67,7 +67,7 @@ export default function ProfilePage() {
 
         if (!eligible) { setLoading(false); return; }
 
-        // Parallel fetches: contact, images, videos, services
+        // Parallel fetches: contact, images, videos, services (with names)
         const [contactResult, imgResult, vidResult, psResult] = await Promise.all([
           supabase.rpc("get_profile_contact", { p_profile_id: eligible.id }),
           supabase
@@ -84,7 +84,7 @@ export default function ProfilePage() {
             .order("sort_order"),
           supabase
             .from("profile_services")
-            .select("service_id")
+            .select("service_id, services!inner(name, slug)")
             .eq("profile_id", eligible.id),
         ]);
 
