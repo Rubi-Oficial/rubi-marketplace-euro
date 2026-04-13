@@ -17,7 +17,11 @@ export default function EscortMetrics() {
     if (!user) return;
 
     supabase.from("profiles").select("id, status").eq("user_id", user.id).maybeSingle()
-      .then(({ data: profile }) => {
+      .then(({ data: profile, error }) => {
+        if (error) {
+          console.error("[EscortMetrics] Profile fetch error:", error.message);
+          return;
+        }
         if (!profile) return;
 
         const pid = profile.id;
@@ -37,7 +41,12 @@ export default function EscortMetrics() {
             setPendingImages(imgsRes.data.filter((i: any) => i.moderation_status === "pending").length);
             setRejectedImages(imgsRes.data.filter((i: any) => i.moderation_status === "rejected").length);
           }
+        }).catch((err) => {
+          console.error("[EscortMetrics] Metrics fetch error:", err);
         });
+      })
+      .catch((err) => {
+        console.error("[EscortMetrics] Unexpected error:", err);
       });
   }, [user]);
 

@@ -30,24 +30,35 @@ export default function AdminUserManagement() {
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
-    let query = supabase
-      .from("users")
-      .select("*", { count: "exact" })
-      .order("created_at", { ascending: false });
+    try {
+      let query = supabase
+        .from("users")
+        .select("*", { count: "exact" })
+        .order("created_at", { ascending: false });
 
-    if (filterRole !== "all") {
-      query = query.eq("role", filterRole as UserRow["role"]);
-    }
-    if (searchText.trim()) {
-      const term = `%${searchText.trim()}%`;
-      query = query.or(`full_name.ilike.${term},email.ilike.${term}`);
-    }
-    query = query.range(page * pageSize, (page + 1) * pageSize - 1);
+      if (filterRole !== "all") {
+        query = query.eq("role", filterRole as UserRow["role"]);
+      }
+      if (searchText.trim()) {
+        const term = `%${searchText.trim()}%`;
+        query = query.or(`full_name.ilike.${term},email.ilike.${term}`);
+      }
+      query = query.range(page * pageSize, (page + 1) * pageSize - 1);
 
-    const { data, count } = await query;
-    setUsers((data as UserRow[]) ?? []);
-    setTotalCount(count ?? 0);
-    setLoading(false);
+      const { data, count, error } = await query;
+      if (error) {
+        console.error("[AdminUserManagement] Fetch error:", error.message);
+        toast.error("Não foi possível carregar os usuários.");
+        return;
+      }
+      setUsers((data as UserRow[]) ?? []);
+      setTotalCount(count ?? 0);
+    } catch (err) {
+      console.error("[AdminUserManagement] Unexpected error:", err);
+      toast.error("Ocorreu um erro inesperado ao carregar usuários.");
+    } finally {
+      setLoading(false);
+    }
   }, [page, pageSize, filterRole, searchText]);
 
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
@@ -61,24 +72,31 @@ export default function AdminUserManagement() {
     setSelectedUser(user);
     setDetailOpen(true);
 
-    if (user.role === "professional") {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, display_name, slug, category, status, city")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      setUserProfile(data as ProfileBrief | null);
-    } else {
-      setUserProfile(null);
-    }
+    try {
+      if (user.role === "professional") {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, display_name, slug, category, status, city")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (error) console.error("[AdminUserManagement] Profile detail error:", error.message);
+        setUserProfile(data as ProfileBrief | null);
+      } else {
+        setUserProfile(null);
+      }
 
-    const { data: acts } = await supabase
-      .from("admin_actions")
-      .select("id, action_type, notes, created_at")
-      .eq("target_user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(20);
-    setUserActions((acts as AdminAction[]) ?? []);
+      const { data: acts, error: actsError } = await supabase
+        .from("admin_actions")
+        .select("id, action_type, notes, created_at")
+        .eq("target_user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (actsError) console.error("[AdminUserManagement] Actions error:", actsError.message);
+      setUserActions((acts as AdminAction[]) ?? []);
+    } catch (err) {
+      console.error("[AdminUserManagement] Unexpected detail error:", err);
+      toast.error("Não foi possível carregar os detalhes do usuário.");
+    }
   };
 
   const handleSave = async (updates: Partial<UserRow>) => {
@@ -89,27 +107,33 @@ export default function AdminUserManagement() {
     }
     setSaving(true);
 
-    const { error } = await supabase.from("users").update(updates).eq("id", selectedUser.id);
-    if (error) {
-      toast.error(error.message);
+    try {
+      const { error } = await supabase.from("users").update(updates).eq("id", selectedUser.id);
+      if (error) {
+        console.error("[AdminUserManagement] Save error:", error.message);
+        toast.error("Não foi possível salvar as alterações. Tente novamente.");
+        return;
+      }
+
+      const { data: { user: adminUser } } = await supabase.auth.getUser();
+      if (adminUser) {
+        await supabase.from("admin_actions").insert({
+          admin_user_id: adminUser.id,
+          action_type: "user_edited",
+          target_user_id: selectedUser.id,
+          notes: `Campos alterados: ${Object.keys(updates).join(", ")}`,
+        });
+      }
+
+      toast.success("Usuário atualizado com sucesso.");
+      setSelectedUser({ ...selectedUser, ...updates } as UserRow);
+      fetchUsers();
+    } catch (err) {
+      console.error("[AdminUserManagement] Unexpected save error:", err);
+      toast.error("Ocorreu um erro inesperado. Tente novamente.");
+    } finally {
       setSaving(false);
-      return;
     }
-
-    const { data: { user: adminUser } } = await supabase.auth.getUser();
-    if (adminUser) {
-      await supabase.from("admin_actions").insert({
-        admin_user_id: adminUser.id,
-        action_type: "user_edited",
-        target_user_id: selectedUser.id,
-        notes: `Campos alterados: ${Object.keys(updates).join(", ")}`,
-      });
-    }
-
-    toast.success("Usuário atualizado com sucesso.");
-    setSaving(false);
-    setSelectedUser({ ...selectedUser, ...updates } as UserRow);
-    fetchUsers();
   };
 
   return (

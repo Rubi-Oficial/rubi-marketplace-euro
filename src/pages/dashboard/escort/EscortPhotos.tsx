@@ -88,11 +88,22 @@ export default function EscortPhotos() {
   useEffect(() => {
     if (!user) return;
     supabase.from("profiles").select("id").eq("user_id", user.id).maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("[EscortPhotos] Profile fetch error:", error.message);
+          toast.error("Não foi possível carregar o perfil. Tente novamente.");
+          setLoading(false);
+          return;
+        }
         if (data) {
           setProfileId(data.id);
           fetchMedia(data.id);
         }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("[EscortPhotos] Unexpected error:", err);
+        toast.error("Ocorreu um erro inesperado. Tente novamente.");
         setLoading(false);
       });
   }, [user, fetchMedia]);
