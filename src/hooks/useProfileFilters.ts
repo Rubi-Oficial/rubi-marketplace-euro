@@ -38,7 +38,15 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
   const offsetRef = useRef(0);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(filters.search);
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [filters.search]);
 
   const filteredCities = useMemo(
     () => (filters.country ? getCitiesByCountry(filters.country) : []),
@@ -52,14 +60,14 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
   }, []);
 
   const buildFilterParams = useCallback(() => ({
-    search: filters.search || undefined,
+    search: debouncedSearch || undefined,
     country: filters.country || undefined,
     city_slugs: filters.country && !filters.city ? filteredCities.map((c) => c.slug) : undefined,
     city_slug: filters.city || undefined,
     category: filters.category || undefined,
     service_slug: filters.service || undefined,
     limit,
-  }), [filters.search, filters.country, filters.city, filters.category, filters.service, filteredCities, limit]);
+  }), [debouncedSearch, filters.country, filters.city, filters.category, filters.service, filteredCities, limit]);
 
   // Initial load + filter changes
   useEffect(() => {

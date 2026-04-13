@@ -19,7 +19,7 @@ export default function SearchPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
 
-  const searchQuery = searchParams.get("q") || "";
+  const searchQuery = searchParams.get("q") || searchParams.get("search") || "";
   const urlCountry = searchParams.get("country") || "";
   const urlCity = searchParams.get("city") || "";
   const urlCategory = searchParams.get("category") || "";
@@ -54,9 +54,11 @@ export default function SearchPage() {
   const syncToUrl = (next: Record<string, string>) => {
     const params = new URLSearchParams(searchParams);
     Object.entries(next).forEach(([k, v]) => {
-      if (v) params.set(k, v);
-      else params.delete(k);
+      const paramKey = k === "search" ? "q" : k;
+      if (v) params.set(paramKey, v);
+      else params.delete(paramKey);
     });
+    params.delete("search");
     setSearchParams(params);
   };
 
@@ -67,8 +69,10 @@ export default function SearchPage() {
       return next;
     });
     const params = new URLSearchParams(searchParams);
-    if (value) params.set(key, value);
-    else params.delete(key);
+    const paramKey = key === "search" ? "q" : key;
+    if (value) params.set(paramKey, value);
+    else params.delete(paramKey);
+    if (key === "search") params.delete("search");
     if (key === "country") params.delete("city");
     setSearchParams(params);
   };
