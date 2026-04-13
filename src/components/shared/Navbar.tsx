@@ -49,7 +49,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border/50 shadow-sm"
+      className="fixed top-0 left-0 right-0 z-50 bg-[hsl(274_36%_8%_/_0.72)] backdrop-blur-md border-b border-[hsl(0_0%_100%_/_0.08)] shadow-[0_8px_28px_hsl(274_36%_4%_/_0.5)]"
       role="navigation"
       aria-label="Main navigation"
     >
@@ -80,7 +80,7 @@ export default function Navbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="shrink-0 rounded-full h-8 w-8 flex items-center justify-center text-lg leading-none transition-colors hover:bg-accent"
+                className="shrink-0 rounded-full h-8 w-8 flex items-center justify-center text-lg leading-none transition-colors hover:bg-accent/35"
                 aria-label={`Language: ${currentLang.name}`}
               >
                 {currentLang.flag}
@@ -146,8 +146,8 @@ export default function Navbar() {
                 aria-selected={isAllActive}
                 className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
                   isAllActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    ? "bg-primary/95 text-primary-foreground shadow-[0_8px_18px_hsl(41_49%_69%_/_0.18)]"
+                    : "text-secondary-foreground hover:text-foreground hover:bg-accent/35"
                 }`}
               >
                 {t("nav.all")}
@@ -160,8 +160,8 @@ export default function Navbar() {
                   aria-selected={activeSlug === cat.slug}
                   className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
                     activeSlug === cat.slug
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                      ? "bg-primary/95 text-primary-foreground shadow-[0_8px_18px_hsl(41_49%_69%_/_0.18)]"
+                      : "text-secondary-foreground hover:text-foreground hover:bg-accent/35"
                   }`}
                 >
                   {t(cat.key)}
@@ -177,7 +177,7 @@ export default function Navbar() {
       {mobileOpen && (
         <div
           id="mobile-menu"
-          className="md:hidden border-t border-border/50 bg-card/95 backdrop-blur-xl px-4 py-4 space-y-1 animate-fade-in shadow-lg max-h-[70vh] overflow-y-auto"
+          className="md:hidden border-t border-[hsl(0_0%_100%_/_0.08)] bg-[hsl(274_36%_8%_/_0.92)] backdrop-blur-md px-4 py-4 space-y-1 animate-fade-in shadow-lg max-h-[70vh] overflow-y-auto"
           role="menu"
         >
           <form onSubmit={(e) => { handleSearch(e); closeMobile(); }} className="flex gap-2 mb-3 sm:hidden" role="search">
@@ -204,8 +204,8 @@ export default function Navbar() {
                 onClick={() => setLang(l.code)}
                 className={`rounded-full px-2.5 py-1.5 text-base transition-all duration-200 ${
                   lang === l.code
-                    ? "bg-primary/15 ring-1 ring-primary scale-110"
-                    : "hover:bg-accent"
+                    ? "bg-primary/20 ring-1 ring-primary/70 scale-110"
+                    : "hover:bg-accent/35"
                 }`}
                 aria-label={l.name}
               >

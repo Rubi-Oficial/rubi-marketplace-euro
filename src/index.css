@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,60 +6,57 @@
 
 @layer base {
   :root {
-    --font-display: 'Plus Jakarta Sans', sans-serif;
+    --font-display: 'Cormorant Garamond', serif;
     --font-body: 'Inter', sans-serif;
 
-    /* Rubi Girls — Light Premium Palette */
-    --background: 0 0% 98%;
-    --foreground: 240 10% 10%;
+    /* Dark premium palette */
+    --background: 274 36% 8%;
+    --foreground: 33 33% 94%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 10%;
+    --card: 273 35% 12%;
+    --card-foreground: 33 33% 94%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
+    --popover: 273 35% 12%;
+    --popover-foreground: 33 33% 94%;
 
-    /* Ruby Red Accent */
-    --primary: 350 65% 48%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 41 49% 69%;
+    --primary-foreground: 274 36% 8%;
 
-    --secondary: 240 6% 93%;
-    --secondary-foreground: 240 10% 20%;
+    --secondary: 273 35% 16%;
+    --secondary-foreground: 35 22% 74%;
 
-    --muted: 240 5% 93%;
-    --muted-foreground: 240 5% 42%;
+    --muted: 273 28% 18%;
+    --muted-foreground: 35 22% 74%;
 
-    --accent: 240 6% 94%;
-    --accent-foreground: 240 10% 12%;
+    --accent: 275 48% 33%;
+    --accent-foreground: 33 33% 94%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 355 74% 56%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 88%;
-    --input: 240 6% 88%;
-    --ring: 350 65% 48%;
+    --border: 0 0% 100% / 0.08;
+    --input: 0 0% 100% / 0.08;
+    --ring: 278 31% 51%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    /* Custom tokens */
-    --gold: 35 60% 50%;
-    --surface-glow: 350 65% 48%;
-    --ruby-gradient: linear-gradient(135deg, hsl(350 65% 48%), hsl(340 70% 38%));
-    --gold-gradient: linear-gradient(135deg, hsl(35 60% 50%), hsl(25 70% 42%));
-    --surface-gradient: linear-gradient(180deg, hsl(0 0% 100%), hsl(240 5% 96%));
+    --gold: 41 49% 69%;
+    --surface-glow: 278 31% 51%;
+    --ruby-gradient: linear-gradient(135deg, hsl(278 31% 51%), hsl(275 48% 33%));
+    --gold-gradient: linear-gradient(135deg, hsl(41 49% 74%), hsl(41 49% 63%));
+    --surface-gradient: linear-gradient(180deg, hsl(273 35% 12%), hsl(274 36% 8%));
 
-    /* Success token for WhatsApp etc. */
-    --success: 142 71% 35%;
+    --success: 142 56% 46%;
     --success-foreground: 0 0% 100%;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 10% 20%;
-    --sidebar-primary: 350 65% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 6% 95%;
-    --sidebar-accent-foreground: 240 10% 12%;
-    --sidebar-border: 240 6% 90%;
-    --sidebar-ring: 350 65% 48%;
+    --sidebar-background: 274 36% 8%;
+    --sidebar-foreground: 33 33% 94%;
+    --sidebar-primary: 41 49% 69%;
+    --sidebar-primary-foreground: 274 36% 8%;
+    --sidebar-accent: 273 35% 16%;
+    --sidebar-accent-foreground: 33 33% 94%;
+    --sidebar-border: 0 0% 100% / 0.08;
+    --sidebar-ring: 278 31% 51%;
   }
 }
 
@@ -75,14 +72,15 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    letter-spacing: -0.04em;
+    letter-spacing: -0.015em;
+    font-weight: 600;
+    color: hsl(var(--foreground));
   }
 
-  /* Improved focus-visible for all interactive elements */
   :focus-visible {
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 6px;
   }
 }
 
@@ -112,16 +110,15 @@
     background: var(--surface-gradient);
   }
   .glass {
-    @apply bg-card/80 backdrop-blur-md border border-border/50;
+    @apply bg-card/70 backdrop-blur-md border border-[hsl(0_0%_100%_/_0.08)];
   }
   .glow-ruby {
-    box-shadow: 0 0 20px hsl(350 65% 48% / 0.12), inset 0 1px 0 hsl(350 65% 48% / 0.08);
+    box-shadow: 0 0 24px hsl(278 31% 51% / 0.15), inset 0 1px 0 hsl(41 49% 69% / 0.14);
   }
   .glow-gold {
-    box-shadow: 0 0 20px hsl(35 60% 50% / 0.15), inset 0 1px 0 hsl(35 60% 50% / 0.1);
+    box-shadow: 0 10px 24px hsl(41 49% 69% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.3);
   }
 
-  /* Skip-to-content for accessibility */
   .skip-link {
     @apply sr-only;
   }
