@@ -82,9 +82,9 @@ export default {
           foreground: "hsl(var(--success-foreground))",
         },
         surface: {
-          light: "hsl(270 15% 97%)",
-          hover: "hsl(270 15% 93%)",
-          active: "hsl(270 15% 84%)",
+          light: "hsl(273 30% 16%)",
+          hover: "hsl(273 28% 20%)",
+          active: "hsl(273 25% 24%)",
         },
       },
       borderRadius: {

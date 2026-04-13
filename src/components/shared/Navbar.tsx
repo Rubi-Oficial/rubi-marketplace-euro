@@ -173,72 +173,73 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div
-          id="mobile-menu"
-          className="md:hidden border-t border-[hsl(0_0%_100%_/_0.08)] bg-[hsl(274_36%_8%_/_0.92)] backdrop-blur-md px-4 py-4 space-y-1 animate-fade-in shadow-lg max-h-[70vh] overflow-y-auto"
-          role="menu"
-        >
-          <form onSubmit={(e) => { handleSearch(e); closeMobile(); }} className="flex gap-2 mb-3 sm:hidden" role="search">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-              <Input
-                placeholder={t("nav.search_placeholder")}
-                className="pl-9 h-9 bg-card border-border/40 text-sm rounded-full"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                aria-label={t("nav.search_placeholder")}
-              />
-            </div>
-            <Button type="submit" variant="premium" size="sm" className="h-9 px-3 rounded-full">
-              <Search className="h-3.5 w-3.5" />
-            </Button>
-          </form>
-
-          {/* Mobile language selector */}
-          <div className="flex items-center gap-1.5 px-2 py-2 mb-1">
-            {LANGUAGES.map((l) => (
-              <button
-                key={l.code}
-                onClick={() => setLang(l.code)}
-                className={`rounded-full px-2.5 py-1.5 text-base transition-all duration-200 ${
-                  lang === l.code
-                    ? "bg-primary/20 ring-1 ring-primary/70 scale-110"
-                    : "hover:bg-accent/35"
-                }`}
-                aria-label={l.name}
-              >
-                {l.flag}
-              </button>
-            ))}
+      {/* Mobile menu with smooth transition */}
+      <div
+        id="mobile-menu"
+        className={`md:hidden border-t border-[hsl(0_0%_100%_/_0.08)] bg-[hsl(274_36%_8%_/_0.95)] backdrop-blur-lg px-4 space-y-1 shadow-[0_12px_40px_hsl(274_36%_4%_/_0.6)] overflow-hidden transition-all duration-300 ease-out ${
+          mobileOpen ? "max-h-[70vh] py-4 opacity-100" : "max-h-0 py-0 opacity-0 pointer-events-none"
+        }`}
+        role="menu"
+        aria-hidden={!mobileOpen}
+      >
+        <form onSubmit={(e) => { handleSearch(e); closeMobile(); }} className="flex gap-2 mb-3 sm:hidden" role="search">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Input
+              placeholder={t("nav.search_placeholder")}
+              className="pl-9 h-9 bg-card border-border/40 text-sm rounded-full"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              aria-label={t("nav.search_placeholder")}
+            />
           </div>
+          <Button type="submit" variant="premium" size="sm" className="h-9 px-3 rounded-full">
+            <Search className="h-3.5 w-3.5" />
+          </Button>
+        </form>
 
-          <Link to="/buscar" onClick={closeMobile} className="flex items-center gap-2 text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">
-            <Search className="h-4 w-4 text-muted-foreground" /> {t("nav.explore")}
-          </Link>
-          {CATEGORIES.map((cat) => (
-            <Link key={cat.slug} to={`/categoria/${cat.slug}`} onClick={closeMobile} className="block text-sm text-muted-foreground py-2 px-4 rounded-lg hover:bg-accent transition-colors" role="menuitem">
-              {t(cat.key)}
-            </Link>
+        {/* Mobile language selector */}
+        <div className="flex items-center gap-1.5 px-2 py-2 mb-1">
+          {LANGUAGES.map((l) => (
+            <button
+              key={l.code}
+              onClick={() => setLang(l.code)}
+              className={`rounded-full px-2.5 py-1.5 text-base transition-all duration-200 ${
+                lang === l.code
+                  ? "bg-primary/20 ring-1 ring-primary/70 scale-110"
+                  : "hover:bg-accent/35"
+              }`}
+              aria-label={l.name}
+            >
+              {l.flag}
+            </button>
           ))}
-          <Link to="/planos" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">{t("nav.plans")}</Link>
-          <Link to="/sobre" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">{t("nav.about")}</Link>
-          <div className="border-t border-border/30 pt-3 mt-2">
-            {user ? (
-              <>
-                <Link to={dashboardPath} onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">{t("nav.dashboard")}</Link>
-                <button onClick={() => { signOut(); closeMobile(); }} className="block w-full text-left text-sm text-muted-foreground py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">{t("nav.sign_out")}</button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">{t("nav.sign_in")}</Link>
-                <Link to="/cadastro" onClick={closeMobile} className="block text-sm text-primary font-medium py-2.5 px-2 rounded-lg hover:bg-accent transition-colors" role="menuitem">{t("nav.get_started")}</Link>
-              </>
-            )}
-          </div>
         </div>
-      )}
+
+        <Link to="/buscar" onClick={closeMobile} className="flex items-center gap-2.5 text-sm text-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">
+          <Search className="h-4 w-4 text-muted-foreground" /> {t("nav.explore")}
+        </Link>
+        {CATEGORIES.map((cat) => (
+          <Link key={cat.slug} to={`/categoria/${cat.slug}`} onClick={closeMobile} className="block text-sm text-muted-foreground py-2 px-5 rounded-lg hover:bg-accent/40 hover:text-foreground transition-colors" role="menuitem">
+            {t(cat.key)}
+          </Link>
+        ))}
+        <Link to="/planos" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.plans")}</Link>
+        <Link to="/sobre" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.about")}</Link>
+        <div className="border-t border-border/30 pt-3 mt-2">
+          {user ? (
+            <>
+              <Link to={dashboardPath} onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.dashboard")}</Link>
+              <button onClick={() => { signOut(); closeMobile(); }} className="block w-full text-left text-sm text-muted-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.sign_out")}</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.sign_in")}</Link>
+              <Link to="/cadastro" onClick={closeMobile} className="block text-sm text-primary font-semibold py-2.5 px-3 rounded-lg hover:bg-primary/10 transition-colors" role="menuitem">{t("nav.get_started")}</Link>
+            </>
+          )}
+        </div>
+      </div>
     </nav>
   );
 }

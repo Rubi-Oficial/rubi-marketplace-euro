@@ -87,15 +87,18 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen pb-20 md:pb-0">
-      {/* Hero — neutral H1 + subtitle */}
-      <section className="pt-6 pb-2 md:pt-8 md:pb-4">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="font-display text-2xl font-bold text-foreground md:text-3xl">
+      {/* Hero — refined with subtle accent line */}
+      <section className="relative pt-8 pb-3 md:pt-12 md:pb-5 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-accent/8 via-transparent to-transparent pointer-events-none" />
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="mx-auto mb-3 h-px w-12 bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+          <h1 className="font-display text-3xl font-bold text-foreground md:text-4xl lg:text-[2.75rem] leading-tight tracking-tight">
             {t("home.h1")}
           </h1>
-          <p className="mt-1.5 text-sm text-muted-foreground max-w-md mx-auto">
+          <p className="mt-2 text-sm md:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
             {t("home.subtitle")}
           </p>
+          <div className="mx-auto mt-4 h-px w-20 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
         </div>
       </section>
 
@@ -161,17 +164,19 @@ export default function LandingPage() {
       <VideoSection filters={{ activeCity: filters.city, activeService: filters.service }} />
 
 
-      <section className="relative py-14 overflow-hidden">
+      <section className="relative py-16 md:py-20 overflow-hidden">
         <div className="absolute inset-0 ruby-gradient opacity-90" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(41_49%_69%_/_0.08),transparent_60%)]" />
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h2 className="font-display text-xl md:text-2xl font-bold text-white">
+          <div className="mx-auto mb-4 h-px w-10 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-white leading-tight">
             {t("landing.cta_title")}
           </h2>
-          <p className="mt-2 text-sm text-white/80 max-w-md mx-auto">
+          <p className="mt-3 text-sm md:text-base text-white/75 max-w-md mx-auto leading-relaxed">
             {t("landing.cta_desc")}
           </p>
-          <Button className="mt-6 bg-white text-primary hover:bg-white/90 font-semibold shadow-lg" asChild>
+          <Button className="mt-8 bg-white text-primary hover:bg-white/90 font-semibold shadow-[0_8px_32px_hsl(0_0%_0%_/_0.25)] h-11 px-6 rounded-full text-sm" asChild>
             <Link to="/cadastro?role=professional">
               {t("landing.cta_button")} <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
