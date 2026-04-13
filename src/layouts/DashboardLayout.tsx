@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
-import logoRubiGirls from "@/assets/logo-rubi-girls.png";
+import BrandLogo from "@/components/shared/BrandLogo";
 
 interface NavItem {
   label: string;
@@ -94,8 +94,8 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
   const sidebarContent = (
     <>
       <div className="flex h-16 items-center justify-between px-6">
-        <Link to="/" className="shrink-0">
-          <img src={logoRubiGirls} alt="Rubi Girls" className="h-6" />
+        <Link to="/" className="shrink-0" aria-label="Velvet Escorts VIP — Home">
+          <BrandLogo imgClassName="h-9" />
         </Link>
         <button className="md:hidden text-muted-foreground" onClick={() => setSidebarOpen(false)}>
           <X className="h-5 w-5" />
@@ -122,9 +122,9 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <div className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-border bg-card px-4 md:hidden">
-        <Link to="/" className="shrink-0">
-          <img src={logoRubiGirls} alt="Rubi Girls" className="h-6" />
+      <div className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-border bg-card/95 px-4 backdrop-blur-sm md:hidden">
+        <Link to="/" className="shrink-0" aria-label="Velvet Escorts VIP — Home">
+          <BrandLogo imgClassName="h-9" />
         </Link>
         <button onClick={() => setSidebarOpen(true)} className="text-foreground">
           <Menu className="h-5 w-5" />
@@ -134,17 +134,17 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-border bg-card animate-fade-in">
+          <aside className="absolute inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-card animate-fade-in">
             {sidebarContent}
           </aside>
         </div>
       )}
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-card md:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card md:flex">
         {sidebarContent}
       </aside>
 
-      <main className="flex-1 p-4 pt-20 md:ml-60 md:p-8 md:pt-8">
+      <main className="flex-1 p-4 pt-20 md:ml-64 md:p-8 md:pt-8 lg:p-10">
         <AnimatePresence mode="wait">
           <PageTransition key={location.pathname}>
             <Outlet />
