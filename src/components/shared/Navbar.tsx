@@ -8,7 +8,7 @@ import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { LANGUAGES } from "@/i18n/translations";
-import logoVelvetVip from "@/assets/logo-velvet-vip.svg";
+import BrandLogo from "@/components/shared/BrandLogo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,7 +56,7 @@ export default function Navbar() {
       {/* Top row: logo, search, auth */}
       <div className="container mx-auto flex h-14 items-center justify-between gap-4 px-4">
         <Link to="/" className="shrink-0" aria-label="Velvet Escorts VIP — Home">
-          <img src={logoVelvetVip} alt="Velvet Escorts VIP" className="h-10 w-auto object-contain" />
+          <BrandLogo imgClassName="h-9 sm:h-10" />
         </Link>
 
         <form onSubmit={handleSearch} className="hidden sm:flex flex-1 max-w-md items-center gap-2" role="search">

@@ -4,7 +4,7 @@ import Navbar from "@/components/shared/Navbar";
 import PageTransition from "@/components/shared/PageTransition";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageContext";
-import logoVelvetVip from "@/assets/logo-velvet-vip.svg";
+import BrandLogo from "@/components/shared/BrandLogo";
 
 export default function PublicLayout() {
   const { t } = useLanguage();
@@ -34,7 +34,7 @@ export default function PublicLayout() {
           <div className="grid gap-10 md:grid-cols-5">
             <div>
               <Link to="/" className="inline-block" aria-label="Velvet Escorts VIP — Home">
-                <img src={logoVelvetVip} alt="Velvet Escorts VIP" className="h-12 w-auto object-contain" />
+                <BrandLogo imgClassName="h-10" />
               </Link>
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
                 {t("footer.desc")}
