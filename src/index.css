@@ -44,7 +44,9 @@
     --surface-glow: 278 31% 51%;
     --ruby-gradient: linear-gradient(135deg, hsl(278 31% 51%), hsl(275 48% 33%));
     --gold-gradient: linear-gradient(135deg, hsl(41 49% 74%), hsl(41 49% 63%));
-    --surface-gradient: linear-gradient(180deg, hsl(273 35% 12%), hsl(274 36% 8%));
+    --surface-gradient: linear-gradient(180deg, hsl(273 35% 14%), hsl(274 36% 8%));
+    --surface-light: 273 30% 16%;
+    --surface-hover: 273 28% 20%;
 
     --success: 142 56% 46%;
     --success-foreground: 0 0% 100%;
