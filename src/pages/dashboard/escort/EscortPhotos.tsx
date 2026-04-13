@@ -87,14 +87,28 @@ export default function EscortPhotos() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("id").eq("user_id", user.id).maybeSingle()
-      .then(({ data }) => {
+    const loadProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles").select("id").eq("user_id", user.id).maybeSingle();
+        if (error) {
+          console.error("[EscortPhotos] Profile fetch error:", error.message);
+          toast.error("Não foi possível carregar o perfil. Tente novamente.");
+          setLoading(false);
+          return;
+        }
         if (data) {
           setProfileId(data.id);
           fetchMedia(data.id);
         }
         setLoading(false);
-      });
+      } catch (err) {
+        console.error("[EscortPhotos] Unexpected error:", err);
+        toast.error("Ocorreu um erro inesperado. Tente novamente.");
+        setLoading(false);
+      }
+    };
+    loadProfile();
   }, [user, fetchMedia]);
 
   const persistOrder = useCallback(async (items: MediaItem[], table: "profile_images" | "profile_videos") => {
