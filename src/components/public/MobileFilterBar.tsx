@@ -19,24 +19,24 @@ export const MobileFilterBar = React.forwardRef<HTMLDivElement, MobileFilterBarP
     return (
       <div
         ref={ref}
-        className="sticky top-0 z-30 -mx-4 border-b border-border/20 bg-background/75 px-4 py-2 backdrop-blur-xl md:hidden"
+        className="sticky top-0 z-30 -mx-4 bg-background/80 px-4 py-2.5 backdrop-blur-2xl md:hidden border-b border-border/10 shadow-[0_2px_12px_hsl(0_0%_0%_/_0.15)]"
         role="toolbar"
         aria-label="Filters"
       >
-        <div className="mx-auto flex max-w-lg items-center gap-2">
+        <div className="mx-auto flex max-w-lg items-center gap-2.5">
           <Button
             variant="outline"
             size="sm"
             onClick={onOpenFilters}
-            className={`h-9 flex-1 rounded-full border-border/50 text-xs font-medium transition-all duration-200 ${
-              hasGeneralFilter ? "border-primary/40 text-primary bg-primary/5" : ""
+            className={`h-10 flex-1 rounded-full border-border/40 text-xs font-semibold tracking-wide transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/50 ${
+              hasGeneralFilter ? "border-primary/50 text-primary bg-primary/8 shadow-sm" : "hover:bg-accent/20"
             }`}
             aria-label={`${t("landing.filters")}${hasGeneralFilter ? ` (${generalCount} active)` : ""}`}
           >
             <SlidersHorizontal className="mr-2 h-4 w-4" />
             {t("landing.filters")}
             {hasGeneralFilter && (
-              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground shadow-sm">
                 {generalCount}
               </span>
             )}
@@ -45,15 +45,15 @@ export const MobileFilterBar = React.forwardRef<HTMLDivElement, MobileFilterBarP
             variant="outline"
             size="sm"
             onClick={onOpenLocation}
-            className={`h-9 flex-1 rounded-full border-border/50 text-xs font-medium transition-all duration-200 ${
-              hasLocationFilter ? "border-primary/40 text-primary bg-primary/5" : ""
+            className={`h-10 flex-1 rounded-full border-border/40 text-xs font-semibold tracking-wide transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/50 ${
+              hasLocationFilter ? "border-primary/50 text-primary bg-primary/8 shadow-sm" : "hover:bg-accent/20"
             }`}
             aria-label={`${t("landing.location")}${hasLocationFilter ? ` (${locationCount} active)` : ""}`}
           >
             <MapPin className="mr-2 h-4 w-4" />
             {t("landing.location")}
             {hasLocationFilter && (
-              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground shadow-sm">
                 {locationCount}
               </span>
             )}

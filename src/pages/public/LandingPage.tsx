@@ -88,27 +88,27 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen pb-0">
-      {/* Hero — refined with subtle accent line */}
-      <section className="relative pt-8 pb-3 md:pt-12 md:pb-5 overflow-hidden">
+      {/* Hero — compact on mobile, elegant on desktop */}
+      <section className="relative pt-4 pb-2 md:pt-10 md:pb-5 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-accent/8 via-transparent to-transparent pointer-events-none" />
         <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="mx-auto mb-3 h-px w-12 bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
-          <h1 className="font-display text-3xl font-bold text-foreground md:text-4xl lg:text-[2.75rem] leading-tight tracking-tight">
+          <div className="mx-auto mb-2 md:mb-3 h-px w-12 bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+          <h1 className="font-display text-2xl font-bold text-foreground md:text-4xl lg:text-[2.75rem] leading-tight tracking-tight">
             {t("home.h1")}
           </h1>
-          <p className="mt-2 text-sm md:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
+          <p className="mt-1 md:mt-2 text-xs md:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
             {t("home.subtitle")}
           </p>
-          <div className="mx-auto mt-4 h-px w-20 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        <nav aria-label="Breadcrumb" className="mt-4 text-xs text-muted-foreground">
-          <ol className="flex items-center justify-center gap-1.5 flex-wrap">
-            <li className="text-foreground">Home</li>
-            <li className="text-border">/</li>
-            <li><Link to="/es" className="hover:text-foreground transition-colors">Europa</Link></li>
-            <li className="text-border">/</li>
-            <li><Link to="/buscar" className="hover:text-foreground transition-colors">Explorar perfis</Link></li>
-          </ol>
-        </nav>
+          {/* Breadcrumb — desktop only */}
+          <nav aria-label="Breadcrumb" className="hidden md:block mt-4 text-xs text-muted-foreground">
+            <ol className="flex items-center justify-center gap-1.5 flex-wrap">
+              <li className="text-foreground">Home</li>
+              <li className="text-border">/</li>
+              <li><Link to="/es" className="hover:text-foreground transition-colors">Europa</Link></li>
+              <li className="text-border">/</li>
+              <li><Link to="/buscar" className="hover:text-foreground transition-colors">Explorar perfis</Link></li>
+            </ol>
+          </nav>
         </div>
       </section>
 

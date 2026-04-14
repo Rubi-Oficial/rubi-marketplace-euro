@@ -64,13 +64,13 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile }
   return (
     <div
       ref={ref}
-      className="group relative flex flex-col overflow-hidden rounded-xl bg-card shadow-sm border border-border/40 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/8 cursor-pointer animate-fade-in"
+      className="group relative flex flex-col overflow-hidden rounded-2xl bg-card shadow-sm border border-border/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-0.5 cursor-pointer animate-fade-in focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-background"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={handleNavigate}
     >
       {/* Image section */}
-      <div className="relative h-[340px] sm:h-[380px] overflow-hidden bg-muted">
+      <div className="relative h-[300px] sm:h-[360px] overflow-hidden bg-muted">
         <ImageCarousel urls={urls} displayName={profile.display_name} hovered={hovered} />
 
         <TierBadge
