@@ -205,7 +205,10 @@ const pt: TranslationMap = {
   "common.waiting": "Aguardando...",
   "common.copy": "Copiar",
   "common.copied": "Link copiado!",
-  "common.view_profile": "Ver Perfil",
+ "common.view_profile": "Ver Perfil",
+ "common.new": "Novo",
+ "common.verified": "Verificado",
+ "common.service": "serviço",
 
   // Video Section
   "video.latest": "Últimos Vídeos",

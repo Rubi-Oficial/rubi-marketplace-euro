@@ -188,7 +188,10 @@ const en: TranslationMap = {
   "common.waiting": "Waiting...",
   "common.copy": "Copy",
   "common.copied": "Link copied!",
-  "common.view_profile": "View Profile",
+ "common.view_profile": "View Profile",
+ "common.new": "New",
+ "common.verified": "Verified",
+ "common.service": "service",
 
   "video.latest": "Latest Videos",
   "video.exclusive": "Exclusive content from verified profiles.",
