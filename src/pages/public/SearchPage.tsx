@@ -177,8 +177,8 @@ export default function SearchPage() {
         <p className="mt-1 text-sm text-muted-foreground max-w-2xl">{pageSubtitle}</p>
       </div>
 
-      <div className="flex items-center gap-2 mb-4">
-        <div className="relative flex-1 min-w-0">
+      <div className="mb-4 space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-2">
+        <div className="relative min-w-0 sm:flex-1">
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder={t("nav.search_placeholder")}
@@ -189,37 +189,39 @@ export default function SearchPage() {
           />
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setFilterOpen(true)}
-          className={`h-10 gap-1.5 rounded-full border-border/40 shrink-0 ${hasGeneralFilter ? "border-primary/40 text-primary" : ""}`}
-          aria-label={t("landing.filters")}
-        >
-          <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
-          <span className="text-xs hidden sm:inline">{t("landing.filters")}</span>
-          {hasGeneralFilter && (
-            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
-              {[filters.category, filters.service].filter(Boolean).length}
-            </span>
-          )}
-        </Button>
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:w-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFilterOpen(true)}
+            className={`h-10 justify-center gap-1.5 rounded-xl border-border/40 px-3 sm:rounded-full sm:shrink-0 ${hasGeneralFilter ? "border-primary/40 text-primary bg-primary/5" : ""}`}
+            aria-label={t("landing.filters")}
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="text-xs">{t("landing.filters")}</span>
+            {hasGeneralFilter && (
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
+                {[filters.category, filters.service].filter(Boolean).length}
+              </span>
+            )}
+          </Button>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setLocationOpen(true)}
-          className={`h-10 gap-1.5 rounded-full border-border/40 shrink-0 ${hasLocationFilter ? "border-primary/40 text-primary" : ""}`}
-          aria-label={t("landing.location")}
-        >
-          <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-          <span className="text-xs hidden sm:inline">{t("landing.location")}</span>
-          {hasLocationFilter && (
-            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
-              {[filters.country, filters.city].filter(Boolean).length}
-            </span>
-          )}
-        </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLocationOpen(true)}
+            className={`h-10 justify-center gap-1.5 rounded-xl border-border/40 px-3 sm:rounded-full sm:shrink-0 ${hasLocationFilter ? "border-primary/40 text-primary bg-primary/5" : ""}`}
+            aria-label={t("landing.location")}
+          >
+            <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="text-xs">{t("landing.location")}</span>
+            {hasLocationFilter && (
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
+                {[filters.country, filters.city].filter(Boolean).length}
+              </span>
+            )}
+          </Button>
+        </div>
       </div>
 
       <ActiveFilterChips
