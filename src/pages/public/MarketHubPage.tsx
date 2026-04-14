@@ -26,6 +26,13 @@ export default function MarketHubPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in">
+      <nav aria-label="Breadcrumb" className="mb-4 text-xs text-muted-foreground">
+        <ol className="flex items-center gap-1.5">
+          <li><Link to="/" className="hover:text-foreground">Home</Link></li>
+          <li>/</li>
+          <li className="text-foreground">{MARKET_LABEL[marketKey]}</li>
+        </ol>
+      </nav>
       <h1 className="font-display text-2xl font-bold">{hub.h1}</h1>
       <p className="mt-2 text-muted-foreground">{hub.intro}</p>
       <div className="mt-6 grid gap-4 sm:grid-cols-2">

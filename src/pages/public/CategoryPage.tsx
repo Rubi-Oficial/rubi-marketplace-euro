@@ -65,13 +65,21 @@ export default function CategoryPage() {
     });
   }, [categoryDbValue, serviceFilter, cityFilter, countryFilter, countryCitySlugs]);
 
+  const countryName = countries.find((c) => c.slug === countryFilter)?.name;
+  const cityName = filteredCities.find((c) => c.slug === cityFilter)?.name;
+  const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
+
   usePageMeta({
     title: `${categoryName} — Profiles`,
     description: `Browse verified ${categoryName.toLowerCase()} profiles on Rubi Girls. Photos, reviews and direct contact across Europe.`,
     path: `/categoria/${slug}`,
     breadcrumbs: [
       { name: "Home", url: SITE_URL },
+      { name: "Explorar", url: `${SITE_URL}/buscar` },
       { name: categoryName, url: `${SITE_URL}/categoria/${slug}` },
+      ...(countryName ? [{ name: countryName, url: `${SITE_URL}/buscar?country=${countryFilter}` }] : []),
+      ...(cityName ? [{ name: cityName, url: `${SITE_URL}/buscar?country=${countryFilter}&city=${cityFilter}` }] : []),
+      ...(serviceName ? [{ name: serviceName, url: `${SITE_URL}/categoria/${slug}` }] : []),
     ],
     jsonLd: {
       "@context": "https://schema.org",
@@ -108,29 +116,25 @@ export default function CategoryPage() {
     setCityFilter("");
   };
 
-  const countryName = countries.find((c) => c.slug === countryFilter)?.name;
-  const cityName = filteredCities.find((c) => c.slug === cityFilter)?.name;
-  const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">
       <nav aria-label="Breadcrumb" className="mb-4 text-xs text-muted-foreground">
-        <ol className="flex items-center gap-1.5">
+        <ol className="flex items-center gap-1.5 flex-wrap">
           <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
           <li className="text-border">/</li>
+          <li><Link to="/buscar" className="hover:text-foreground transition-colors">Explorar</Link></li>
+          <li className="text-border">/</li>
           <li>
-            {serviceName ? (
+            {serviceName || cityName ? (
               <Link to={`/categoria/${slug}`} className="hover:text-foreground transition-colors">{categoryName}</Link>
             ) : (
               <span className="text-foreground">{categoryName}</span>
             )}
           </li>
-          {serviceName && (
-            <>
-              <li className="text-border">/</li>
-              <li className="text-foreground">{serviceName}</li>
-            </>
-          )}
+          {countryName && <><li className="text-border">/</li><li>{countryName}</li></>}
+          {cityName && <><li className="text-border">/</li><li>{cityName}</li></>}
+          {serviceName && <><li className="text-border">/</li><li className="text-foreground">{serviceName}</li></>}
         </ol>
       </nav>
 
@@ -208,6 +212,17 @@ export default function CategoryPage() {
             <ProfileCard key={p.id} profile={p} />
           ))}
         </div>
+      )}
+
+      {cityFilter && (
+        <section className="mt-8">
+          <h2 className="text-sm font-semibold">Páginas SEO relacionadas</h2>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs">
+            <Link to={`/es/escorts-${cityFilter}/massagem`} className="rounded-full border border-border/40 px-3 py-1 hover:border-primary/40">Massagem + cidade</Link>
+            <Link to={`/es/escorts-${cityFilter}/vip`} className="rounded-full border border-border/40 px-3 py-1 hover:border-primary/40">VIP + cidade</Link>
+            <Link to={`/es/escorts-${cityFilter}/independientes`} className="rounded-full border border-border/40 px-3 py-1 hover:border-primary/40">Categoria + cidade</Link>
+          </div>
+        </section>
       )}
 
       <SeoNavigationBlocks />

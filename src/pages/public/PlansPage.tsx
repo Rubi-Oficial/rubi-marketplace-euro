@@ -142,9 +142,6 @@ export default function PlansPage() {
       <div className="mt-16 text-center">
         <p className="text-muted-foreground">
           {t("plans.already_account")}{" "}
-          <Link to="/login" className="text-primary hover:underline">
-            {t("nav.sign_in")}
-          </Link>{" "}
           {t("plans.sign_in_subscribe")}
         </p>
       </div>

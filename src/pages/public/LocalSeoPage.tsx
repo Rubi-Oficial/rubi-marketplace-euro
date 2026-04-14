@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProfileCard, fetchEligibleProfiles, type EligibleProfile } from "@/components/public/ProfileCard";
 import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
-import { getSeoPageConfig, MARKET_LABEL, INDEX_MIN_PROFILES } from "@/config/localSeoPages";
+import { getSeoPageConfig, MARKET_LABEL, INDEX_MIN_PROFILES, LOCAL_SEO_CITIES } from "@/config/localSeoPages";
 import { SeoNavigationBlocks } from "@/components/public/SeoNavigationBlocks";
 
 export default function LocalSeoPage() {
@@ -53,6 +53,7 @@ export default function LocalSeoPage() {
     .slice(0, 6)
     .map((p) => ({ label: p.h1, to: `${data.city.basePath}/${p.slug}` }));
   const serviceLabel = data.page.serviceSlug ? data.page.serviceSlug.replace(/-/g, " ") : "";
+  const relatedCities = LOCAL_SEO_CITIES.filter((c) => c.citySlug !== data.city.citySlug).slice(0, 4);
 
   usePageMeta({
     title: data.page.title,
@@ -113,6 +114,17 @@ export default function LocalSeoPage() {
           {relatedLinks.map((link) => (
             <Link key={link.to} className="rounded-full border border-border/50 px-3 py-1 text-xs hover:border-primary/40" to={link.to}>
               {link.label}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="font-display text-lg font-semibold">Outras cidades europeias</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {relatedCities.map((city) => (
+            <Link key={city.basePath} className="rounded-full border border-border/50 px-3 py-1 text-xs hover:border-primary/40" to={city.basePath}>
+              {city.cityName}
             </Link>
           ))}
         </div>
