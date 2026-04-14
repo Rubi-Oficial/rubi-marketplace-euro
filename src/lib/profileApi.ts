@@ -225,44 +225,62 @@ export async function prefetchNextBatchUrls(filters?: {
   }
 }
 
+const FILTER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+let filterOptionsCache: { cities: string[]; categories: string[]; ts: number } | null = null;
+let filterOptionsPromise: Promise<{ cities: string[]; categories: string[] }> | null = null;
+
 export async function fetchFilterOptions() {
-  try {
-    // Fetch distinct cities and categories in parallel with minimal data transfer
-    const [citiesRes, categoriesRes] = await Promise.all([
-      supabase
-        .from("eligible_profiles")
-        .select("city")
-        .not("city", "is", null)
-        .order("city")
-        .limit(200),
-      supabase
-        .from("eligible_profiles")
-        .select("category")
-        .not("category", "is", null)
-        .order("category")
-        .limit(100),
-    ]);
-
-    if (citiesRes.error) {
-      console.error("[profileApi] Failed to fetch cities:", citiesRes.error.message);
-    }
-    if (categoriesRes.error) {
-      console.error("[profileApi] Failed to fetch categories:", categoriesRes.error.message);
-    }
-
-    const cities = [...new Set(
-      (citiesRes.data ?? []).map((r: { city: string | null }) => r.city).filter(Boolean)
-    )] as string[];
-
-    const categories = [...new Set(
-      (categoriesRes.data ?? []).map((r: { category: string | null }) => r.category).filter(Boolean)
-    )] as string[];
-
-    return { cities, categories };
-  } catch (err) {
-    console.error("[profileApi] Unexpected error in fetchFilterOptions:", err);
-    return { cities: [], categories: [] };
+  // Return cached if fresh
+  if (filterOptionsCache && Date.now() - filterOptionsCache.ts < FILTER_CACHE_TTL) {
+    return { cities: filterOptionsCache.cities, categories: filterOptionsCache.categories };
   }
+
+  // Deduplicate concurrent calls
+  if (filterOptionsPromise) return filterOptionsPromise;
+
+  filterOptionsPromise = (async () => {
+    try {
+      const [citiesRes, categoriesRes] = await Promise.all([
+        supabase
+          .from("eligible_profiles")
+          .select("city")
+          .not("city", "is", null)
+          .order("city")
+          .limit(200),
+        supabase
+          .from("eligible_profiles")
+          .select("category")
+          .not("category", "is", null)
+          .order("category")
+          .limit(100),
+      ]);
+
+      if (citiesRes.error) {
+        console.error("[profileApi] Failed to fetch cities:", citiesRes.error.message);
+      }
+      if (categoriesRes.error) {
+        console.error("[profileApi] Failed to fetch categories:", categoriesRes.error.message);
+      }
+
+      const cities = [...new Set(
+        (citiesRes.data ?? []).map((r: { city: string | null }) => r.city).filter(Boolean)
+      )] as string[];
+
+      const categories = [...new Set(
+        (categoriesRes.data ?? []).map((r: { category: string | null }) => r.category).filter(Boolean)
+      )] as string[];
+
+      filterOptionsCache = { cities, categories, ts: Date.now() };
+      return { cities, categories };
+    } catch (err) {
+      console.error("[profileApi] Unexpected error in fetchFilterOptions:", err);
+      return { cities: [], categories: [] };
+    } finally {
+      filterOptionsPromise = null;
+    }
+  })();
+
+  return filterOptionsPromise;
 }
 
 export async function fetchServices() {
