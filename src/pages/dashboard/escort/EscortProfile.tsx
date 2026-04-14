@@ -6,27 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Save, Send, Eye, Pause, Play } from "lucide-react";
 import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { CATEGORIES, type ServiceOption } from "@/components/onboarding/types";
 import { useLocations } from "@/hooks/useLocations";
-
-interface ProfileForm {
-  display_name: string;
-  age: string;
-  city: string;
-  city_slug: string;
-  country: string;
-  category: string;
-  bio: string;
-  languages: string;
-  pricing_from: string;
-  whatsapp: string;
-  telegram: string;
-}
+import {
+  useProfileForm,
+  buildProfilePayload,
+  validateProfileForm,
+  saveProfileServices,
+} from "@/hooks/useProfileForm";
+import LocationCategoryPicker from "@/components/profile/LocationCategoryPicker";
+import ServicesPicker from "@/components/profile/ServicesPicker";
+import ProfileStatusBanner from "@/components/profile/ProfileStatusBanner";
 
 const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   draft: { label: "Rascunho", variant: "secondary" },
@@ -43,30 +35,23 @@ export default function EscortProfile() {
   const [status, setStatus] = useState<string>("draft");
   const [slug, setSlug] = useState<string | null>(null);
   const [hasActiveSub, setHasActiveSub] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [services, setServices] = useState<ServiceOption[]>([]);
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [form, setForm] = useState<ProfileForm>({
-    display_name: "", age: "", city: "", city_slug: "", country: "",
-    category: "", bio: "", languages: "English",
-    pricing_from: "", whatsapp: "", telegram: "",
-  });
+
+  const {
+    form, setForm, update, selectCountry, selectCity,
+    saving, setSaving, selectedServices, setSelectedServices, toggleService,
+  } = useProfileForm();
 
   // Auto-detect country from existing city_slug
   useEffect(() => {
     if (form.city_slug && !form.country && !locLoading) {
       const country = getCountryByCity(form.city_slug);
-      if (country) setForm((prev) => ({ ...prev, country: country.slug }));
+      if (country) update("country", country.slug);
     }
-  }, [form.city_slug, form.country, locLoading]);
+  }, [form.city_slug, form.country, locLoading, getCountryByCity, update]);
 
   useEffect(() => {
     if (!user) return;
-
-    supabase.from("services").select("id, name, slug").eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .then(({ data }) => { if (data) setServices(data as ServiceOption[]); });
 
     supabase.from("subscriptions").select("id").eq("user_id", user.id).eq("status", "active").limit(1)
       .then(({ data }) => setHasActiveSub((data?.length ?? 0) > 0));
@@ -98,128 +83,32 @@ export default function EscortProfile() {
       });
   }, [user]);
 
-  const update = (field: keyof ProfileForm, value: string) =>
-    setForm((prev) => ({ ...prev, [field]: value }));
-
-  const selectCountry = (slug: string) => {
-    update("country", slug);
-    update("city", "");
-    update("city_slug", "");
-  };
-
-  const selectCity = (name: string, slug: string) => {
-    update("city", name);
-    update("city_slug", slug);
-  };
-
-  const toggleService = (id: string) => {
-    setSelectedServices((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
-  };
-
-  const generateSlug = (name: string, city?: string) => {
-    const base = city ? `${name}-${city}` : name;
-    return base.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  };
-
-  const validateForm = (): string | null => {
-    const name = form.display_name.trim();
-    if (name.length < 2) return "O nome deve ter pelo menos 2 caracteres.";
-    if (name.length > 60) return "O nome deve ter no máximo 60 caracteres.";
-
-    if (form.age) {
-      const age = parseInt(form.age);
-      if (isNaN(age) || age < 18 || age > 99) return "A idade deve estar entre 18 e 99.";
-    }
-
-    if (form.pricing_from) {
-      const price = parseFloat(form.pricing_from);
-      if (isNaN(price) || price < 0 || price > 99999) return "O preço deve estar entre 0 e 99.999€.";
-    }
-
-    if (form.whatsapp && form.whatsapp.trim().length > 0) {
-      const cleaned = form.whatsapp.trim();
-      if (cleaned.length > 20) return "O número de WhatsApp é inválido.";
-    }
-
-    if (form.bio && form.bio.length > 1000) return "A bio deve ter no máximo 1000 caracteres.";
-
-    // Validate country+city compatibility
-    if (form.country && form.city_slug) {
-      const citiesForCountry = getCitiesByCountry(form.country);
-      const cityValid = citiesForCountry.some((c) => c.slug === form.city_slug);
-      if (!cityValid) return "A cidade selecionada não pertence ao país escolhido. Selecione novamente.";
-    }
-
-    if (form.country && !form.city_slug) return "Selecione uma cidade.";
-    if (!form.country && form.city_slug) return "Selecione um país.";
-
-    return null;
-  };
-
   const handleSave = async (submitForReview = false) => {
     if (!user || !profileId) return;
-
-    const validationError = validateForm();
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
+    const err = validateProfileForm(form, getCitiesByCountry);
+    if (err) { toast.error(err); return; }
 
     setSaving(true);
-
     try {
-      const newSlug = generateSlug(form.display_name, form.city);
-      const payload: any = {
-        display_name: form.display_name.trim(),
-        age: form.age ? parseInt(form.age) : null,
-        city: form.city || null,
-        city_slug: form.city_slug || null,
-        country: countries.find((c) => c.slug === form.country)?.name || form.country || null,
-        country_slug: form.country || null,
-        category: form.category || null,
-        bio: form.bio.trim() || null,
-        languages: form.languages ? form.languages.split(",").map((l) => l.trim()).filter(Boolean) : null,
-        pricing_from: form.pricing_from ? parseFloat(form.pricing_from) : null,
-        whatsapp: form.whatsapp.trim() || null,
-        telegram: form.telegram.trim() || null,
-        slug: newSlug || null,
-        ...(submitForReview ? { status: "pending_review" as const } : {}),
-      };
-
+      const payload = buildProfilePayload(form, user.id, countries, 
+        submitForReview ? { status: "pending_review" as const } : {}
+      );
       const { error } = await supabase.from("profiles").update(payload).eq("id", profileId);
-
-      if (!error) {
-        const { error: delErr } = await supabase.from("profile_services").delete().eq("profile_id", profileId);
-        if (delErr) console.error("[EscortProfile] Failed to delete services:", delErr.message);
-
-        if (selectedServices.length > 0) {
-          const { error: insErr } = await supabase.from("profile_services").insert(
-            selectedServices.map((sid) => ({ profile_id: profileId, service_id: sid }))
-          );
-          if (insErr) console.error("[EscortProfile] Failed to insert services:", insErr.message);
-        }
-      }
+      if (!error) await saveProfileServices(profileId, selectedServices);
 
       setSaving(false);
-
       if (error) {
         toast.error("Não foi possível guardar as alterações. Tente novamente.");
-        console.error("[EscortProfile] Save error:", error.message);
         return;
       }
-
       if (submitForReview) {
         setStatus("pending_review");
         toast.success("Perfil enviado para revisão!");
       } else {
-        setSlug(newSlug);
+        setSlug(payload.slug);
         toast.success("Alterações guardadas!");
       }
-    } catch (err) {
-      console.error("[EscortProfile] Unexpected save error:", err);
+    } catch {
       toast.error("Ocorreu um erro inesperado. Tente novamente.");
       setSaving(false);
     }
@@ -230,19 +119,10 @@ export default function EscortProfile() {
     setSaving(true);
     try {
       const { error } = await supabase.from("profiles").update({ status: "paused" }).eq("id", profileId);
-      if (error) {
-        console.error("[EscortProfile] Pause error:", error.message);
-        toast.error("Não foi possível pausar o perfil. Tente novamente.");
-        return;
-      }
+      if (error) { toast.error("Não foi possível pausar o perfil."); return; }
       setStatus("paused");
       toast.success("Perfil despublicado.");
-    } catch (err) {
-      console.error("[EscortProfile] Unexpected pause error:", err);
-      toast.error("Ocorreu um erro inesperado.");
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   };
 
   const handleReactivate = async () => {
@@ -250,19 +130,10 @@ export default function EscortProfile() {
     setSaving(true);
     try {
       const { error } = await supabase.rpc("reactivate_profile", { _profile_id: profileId });
-      if (error) {
-        console.error("[EscortProfile] Reactivate error:", error.message);
-        toast.error("Não foi possível reativar o perfil. Tente novamente.");
-        return;
-      }
+      if (error) { toast.error("Não foi possível reativar o perfil."); return; }
       setStatus("approved");
       toast.success("Perfil reativado!");
-    } catch (err) {
-      console.error("[EscortProfile] Unexpected reactivate error:", err);
-      toast.error("Ocorreu um erro inesperado.");
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   };
 
   if (loading) {
@@ -289,6 +160,7 @@ export default function EscortProfile() {
 
   return (
     <div className="animate-fade-in">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold text-foreground">Meu Perfil</h1>
@@ -301,68 +173,19 @@ export default function EscortProfile() {
             <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
           )}
           <Button variant="outline" size="sm" asChild>
-            <Link to="/app/preview">
-              <Eye className="mr-1.5 h-4 w-4" /> Pré-visualizar
-            </Link>
+            <Link to="/app/preview"><Eye className="mr-1.5 h-4 w-4" /> Pré-visualizar</Link>
           </Button>
         </div>
       </div>
 
-      {/* Status banners */}
-      {status === "rejected" && (
-        <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-          <p className="text-sm text-destructive">
-            O seu perfil foi rejeitado. Corrija as informações e reenvie para revisão.
-          </p>
-        </div>
-      )}
-
-      {status === "approved" && !hasActiveSub && (
-        <div className="mt-4 rounded-lg border border-green-500/30 bg-green-500/5 p-4">
-          <p className="text-sm text-green-700">
-            ✓ Perfil aprovado! <Link to="/app/plano" className="underline font-medium">Escolha um plano</Link> para publicar o seu perfil.
-          </p>
-        </div>
-      )}
-
-      {status === "pending_review" && (
-        <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
-          <p className="text-sm text-yellow-700">
-            O seu perfil está em análise. Não é possível editar durante a revisão.
-          </p>
-        </div>
-      )}
-
-      {isPublished && (
-        <div className="mt-4 rounded-lg border border-green-500/30 bg-green-500/5 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <p className="text-sm text-green-700">
-            ✓ Perfil publicado e visível para os visitantes.
-          </p>
-          <div className="flex items-center gap-2">
-            {slug && (
-              <Button variant="outline" size="sm" asChild>
-                <Link to={`/perfil/${slug}`} target="_blank">
-                  <Eye className="mr-1.5 h-4 w-4" /> Ver público
-                </Link>
-              </Button>
-            )}
-            <Button variant="ghost" size="sm" onClick={handlePause} disabled={saving}>
-              <Pause className="mr-1.5 h-4 w-4" /> Despublicar
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {status === "paused" && hasActiveSub && (
-        <div className="mt-4 rounded-lg border border-border bg-card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <p className="text-sm text-muted-foreground">
-            Perfil pausado. Não está visível para os visitantes.
-          </p>
-          <Button size="sm" onClick={handleReactivate} disabled={saving}>
-            <Play className="mr-1.5 h-4 w-4" /> Republicar
-          </Button>
-        </div>
-      )}
+      <ProfileStatusBanner
+        status={status}
+        hasActiveSub={hasActiveSub}
+        slug={slug}
+        saving={saving}
+        onPause={handlePause}
+        onReactivate={handleReactivate}
+      />
 
       <div className="mt-8 space-y-6">
         {/* Basic info */}
@@ -382,97 +205,32 @@ export default function EscortProfile() {
           </div>
         </div>
 
-        {/* Country, City & Category */}
+        {/* Location & Category */}
         <div className="rounded-lg border border-border bg-card p-6">
           <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Localização & categoria</h2>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>País *</Label>
-              {locLoading ? (
-                <div className="h-10 animate-pulse rounded-md bg-muted" />
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {countries.map((c) => (
-                    <button key={c.slug} type="button" disabled={!canEdit}
-                      onClick={() => selectCountry(c.slug)}
-                      className={cn(
-                        "rounded-md border px-3 py-1.5 text-sm transition-colors disabled:opacity-50",
-                        form.country === c.slug
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border text-muted-foreground hover:border-primary/40"
-                      )}>
-                      {c.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            {form.country && (
-              <div className="space-y-2">
-                <Label>Cidade *</Label>
-                <div className="flex flex-wrap gap-2">
-                  {getCitiesByCountry(form.country).map((c) => (
-                    <button key={c.slug} type="button" disabled={!canEdit}
-                      onClick={() => selectCity(c.name, c.slug)}
-                      className={cn(
-                        "rounded-md border px-3 py-1.5 text-sm transition-colors disabled:opacity-50",
-                        form.city_slug === c.slug
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border text-muted-foreground hover:border-primary/40"
-                      )}>
-                      {c.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label>Categoria *</Label>
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((c) => (
-                  <button key={c} type="button" disabled={!canEdit}
-                    onClick={() => update("category", c)}
-                    className={cn(
-                      "rounded-md border px-3 py-1.5 text-sm transition-colors disabled:opacity-50",
-                      form.category === c
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:border-primary/40"
-                    )}>
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          <LocationCategoryPicker
+            country={form.country}
+            citySlug={form.city_slug}
+            category={form.category}
+            countries={countries}
+            getCitiesByCountry={getCitiesByCountry}
+            locLoading={locLoading}
+            disabled={!canEdit}
+            onSelectCountry={selectCountry}
+            onSelectCity={selectCity}
+            onSelectCategory={(c) => update("category", c)}
+          />
         </div>
 
         {/* Services */}
-        {services.length > 0 && (
-          <div className="rounded-lg border border-border bg-card p-6">
-            <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Serviços</h2>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {services.map((s) => (
-                <label
-                  key={s.id}
-                  className={cn(
-                    "flex items-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer transition-colors",
-                    !canEdit && "opacity-50 pointer-events-none",
-                    selectedServices.includes(s.id)
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:border-primary/40"
-                  )}
-                >
-                  <Checkbox
-                    checked={selectedServices.includes(s.id)}
-                    onCheckedChange={() => toggleService(s.id)}
-                    disabled={!canEdit}
-                  />
-                  {s.name}
-                </label>
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="rounded-lg border border-border bg-card p-6">
+          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">Serviços</h2>
+          <ServicesPicker
+            selectedServices={selectedServices}
+            onToggle={toggleService}
+            disabled={!canEdit}
+          />
+        </div>
 
         {/* Bio */}
         <div className="rounded-lg border border-border bg-card p-6">
