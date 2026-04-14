@@ -270,6 +270,27 @@ export default function EscortSubscription() {
                   O pagamento está a ser processado. Pode demorar alguns minutos.
                 </p>
               )}
+              {(subscription.status === "active" || subscription.status === "past_due") && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  disabled={portalLoading}
+                  onClick={handleManageSubscription}
+                >
+                  {portalLoading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Abrindo…
+                    </span>
+                  ) : (
+                    <>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Gerenciar Assinatura
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
         </div>
