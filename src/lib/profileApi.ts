@@ -78,7 +78,8 @@ export async function fetchEligibleProfiles(filters?: {
       .order("id", { ascending: false });
 
     if (serviceProfileIds) query = query.in("id", serviceProfileIds);
-    if (filters?.country) query = query.ilike("country", filters.country);
+    if (filters?.country_name) query = query.ilike("country", filters.country_name);
+    else if (filters?.country) query = query.ilike("country", filters.country);
     if (filters?.city_slugs && filters.city_slugs.length > 0) query = query.in("city_slug", filters.city_slugs);
 
     if (filters?.city_slug) {
