@@ -185,7 +185,8 @@ export async function prefetchNextBatchUrls(filters?: {
       .order("id", { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (filters?.country) query = query.ilike("country", filters.country);
+    if (filters?.country_name) query = query.ilike("country", filters.country_name);
+    else if (filters?.country) query = query.ilike("country", filters.country);
     if (filters?.city_slugs && filters.city_slugs.length > 0) query = query.in("city_slug", filters.city_slugs);
     if (filters?.city_slug) query = query.eq("city_slug", filters.city_slug);
     if (filters?.category) query = query.ilike("category", filters.category);
