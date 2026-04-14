@@ -251,6 +251,7 @@ const pt: TranslationMap = {
   "settings.data_updated": "Dados atualizados!",
   "settings.save_error": "Erro ao salvar.",
   "settings.password_changed": "Senha alterada!",
+  "settings.password_error": "Não foi possível alterar a senha. Tente novamente.",
   "settings.password_changed_success": "Senha alterada com sucesso!",
   "settings.password_min": "A senha deve ter pelo menos 6 caracteres.",
   "settings.password_min_new": "A nova senha deve ter pelo menos 6 caracteres.",
