@@ -2,7 +2,6 @@ import { forwardRef, useState, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Euro, Heart, ArrowRight, MessageCircle } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
