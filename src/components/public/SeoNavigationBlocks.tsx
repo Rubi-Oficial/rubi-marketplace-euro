@@ -10,8 +10,8 @@ const POPULAR_CITIES = [
 const POPULAR_SERVICES = [
   { label: "Massagem", to: "/buscar?service=massage" },
   { label: "VIP", to: "/buscar?service=vip" },
-  { label: "Jantar", to: "/buscar?service=dinner" },
-  { label: "Viagem", to: "/buscar?service=travel" },
+  { label: "Jantar", to: "/buscar?service=dinner-date" },
+  { label: "Viagem", to: "/buscar?service=travel-companion" },
 ];
 
 export function SeoNavigationBlocks() {
