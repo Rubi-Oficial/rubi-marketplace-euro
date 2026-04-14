@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -9,8 +9,12 @@ import StepBasicInfo from "@/components/onboarding/StepBasicInfo";
 import StepDetails from "@/components/onboarding/StepDetails";
 import StepDescription from "@/components/onboarding/StepDescription";
 import StepReview from "@/components/onboarding/StepReview";
-import { type ProfileDraft, INITIAL_DRAFT } from "@/components/onboarding/types";
 import { useLocations } from "@/hooks/useLocations";
+import {
+  useProfileForm,
+  buildProfilePayload,
+  saveProfileServices,
+} from "@/hooks/useProfileForm";
 
 const STEPS: StepConfig[] = [
   { label: "Basic Info" },
@@ -24,10 +28,13 @@ export default function EscortOnboarding() {
   const navigate = useNavigate();
   const { countries, getCitiesByCountry } = useLocations();
   const [step, setStep] = useState(0);
-  const [saving, setSaving] = useState(false);
   const [profileId, setProfileId] = useState<string | null>(null);
-  const [form, setForm] = useState<ProfileDraft>(INITIAL_DRAFT);
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+
+  const {
+    form, setForm, update,
+    saving, setSaving,
+    selectedServices, setSelectedServices,
+  } = useProfileForm();
 
   useEffect(() => {
     if (!user) return;
@@ -52,7 +59,6 @@ export default function EscortOnboarding() {
             whatsapp: data.whatsapp || "",
             telegram: data.telegram || "",
           });
-          // Load existing services
           const { data: ps } = await supabase
             .from("profile_services")
             .select("service_id")
@@ -62,50 +68,13 @@ export default function EscortOnboarding() {
       });
   }, [user]);
 
-  const update = useCallback(
-    (field: keyof ProfileDraft, value: string) =>
-      setForm((prev) => ({ ...prev, [field]: value })),
-    []
-  );
-
-  const buildPayload = () => {
-    const base = form.city ? `${form.display_name}-${form.city}` : form.display_name;
-    const slug = base
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-
-    return {
-      user_id: user!.id,
-      display_name: form.display_name.trim(),
-      age: form.age ? parseInt(form.age) : null,
-      city: form.city || null,
-      city_slug: form.city_slug || null,
-      country: countries.find((c) => c.slug === form.country)?.name || form.country || null,
-      country_slug: form.country || null,
-      category: form.category || null,
-      bio: form.bio.trim() || null,
-      languages: form.languages
-        ? form.languages.split(",").map((l) => l.trim()).filter(Boolean)
-        : null,
-      pricing_from: form.pricing_from ? parseFloat(form.pricing_from) : null,
-      whatsapp: form.whatsapp.trim() || null,
-      telegram: form.telegram.trim() || null,
-      slug: slug || null,
-      status: "draft" as const,
-    };
-  };
-
   const saveProgress = async () => {
     if (!user) return false;
     setSaving(true);
 
     try {
-      const payload = buildPayload();
+      const payload = buildProfilePayload(form, user.id, countries, { status: "draft" as const });
 
-      // Validate essential fields
       if (payload.display_name && payload.display_name.length > 60) {
         toast.error("O nome deve ter no máximo 60 caracteres.");
         setSaving(false);
@@ -120,16 +89,9 @@ export default function EscortOnboarding() {
       let error;
       let currentProfileId = profileId;
       if (currentProfileId) {
-        ({ error } = await supabase
-          .from("profiles")
-          .update(payload)
-          .eq("id", currentProfileId));
+        ({ error } = await supabase.from("profiles").update(payload).eq("id", currentProfileId));
       } else {
-        const res = await supabase
-          .from("profiles")
-          .insert(payload)
-          .select("id")
-          .single();
+        const res = await supabase.from("profiles").insert(payload).select("id").single();
         error = res.error;
         if (res.data) {
           currentProfileId = res.data.id;
@@ -137,28 +99,17 @@ export default function EscortOnboarding() {
         }
       }
 
-      // Save services
       if (!error && currentProfileId) {
-        const { error: delErr } = await supabase.from("profile_services").delete().eq("profile_id", currentProfileId);
-        if (delErr) console.error("[Onboarding] Failed to clear services:", delErr.message);
-
-        if (selectedServices.length > 0) {
-          const { error: insErr } = await supabase.from("profile_services").insert(
-            selectedServices.map((sid) => ({ profile_id: currentProfileId!, service_id: sid }))
-          );
-          if (insErr) console.error("[Onboarding] Failed to save services:", insErr.message);
-        }
+        await saveProfileServices(currentProfileId, selectedServices);
       }
 
       setSaving(false);
       if (error) {
-        console.error("[Onboarding] Save error:", error.message);
         toast.error("Não foi possível guardar. Tente novamente.");
         return false;
       }
       return true;
-    } catch (err) {
-      console.error("[Onboarding] Unexpected save error:", err);
+    } catch {
       toast.error("Ocorreu um erro inesperado. Tente novamente.");
       setSaving(false);
       return false;
@@ -171,16 +122,11 @@ export default function EscortOnboarding() {
         return form.display_name.trim().length >= 2;
       case 1: {
         if (!form.country || !form.city || !form.city_slug || !form.category) return false;
-        // Validate city belongs to selected country
         const citiesForCountry = getCitiesByCountry(form.country);
         return citiesForCountry.some((c) => c.slug === form.city_slug);
       }
-      case 2:
-        return true;
-      case 3:
-        return true;
       default:
-        return false;
+        return true;
     }
   };
 
@@ -201,12 +147,8 @@ export default function EscortOnboarding() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-lg animate-fade-in">
         <div className="mb-8 text-center">
-          <h1 className="font-display text-2xl font-bold text-foreground">
-            Set up your profile
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Fill in your details to create your listing
-          </p>
+          <h1 className="font-display text-2xl font-bold text-foreground">Set up your profile</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Fill in your details to create your listing</p>
         </div>
 
         <div className="mb-8">
@@ -214,9 +156,7 @@ export default function EscortOnboarding() {
         </div>
 
         <div className="rounded-lg border border-border bg-card p-6">
-          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">
-            {STEPS[step].label}
-          </h2>
+          <h2 className="mb-4 font-display text-lg font-semibold text-foreground">{STEPS[step].label}</h2>
 
           {step === 0 && <StepBasicInfo form={form} update={update} />}
           {step === 1 && (
@@ -231,14 +171,9 @@ export default function EscortOnboarding() {
           {step === 3 && <StepReview form={form} />}
 
           <div className="mt-6 flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={() => setStep((s) => s - 1)}
-              disabled={step === 0}
-            >
+            <Button variant="ghost" onClick={() => setStep((s) => s - 1)} disabled={step === 0}>
               Back
             </Button>
-
             {step < STEPS.length - 1 ? (
               <Button onClick={handleNext} disabled={!canAdvance() || saving}>
                 {saving ? "Saving..." : "Next"}
