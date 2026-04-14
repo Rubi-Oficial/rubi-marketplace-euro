@@ -75,6 +75,7 @@ export default function EscortSubscription() {
   const [highlightTier, setHighlightTier] = useState<string>("standard");
   const [highlightExpiresAt, setHighlightExpiresAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
   const handleManageSubscription = async () => {
