@@ -47,6 +47,7 @@ export default function LandingPage() {
     loadingMore,
     hasMore,
     loadMore,
+    refresh,
     services,
     countries,
     getCitiesByCountry,
@@ -64,6 +65,11 @@ export default function LandingPage() {
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
+  const isMobile = useIsMobile();
+
+  const { containerRef: pullRef, pullDistance, refreshing } = usePullToRefresh({
+    onRefresh: refresh,
+  });
 
   const generalCount = [filters.category, filters.service].filter(Boolean).length;
   const locationCount = [filters.country, filters.city].filter(Boolean).length;
@@ -89,7 +95,23 @@ export default function LandingPage() {
   }, [hasMore, loading, loadingMore, loadMore]);
 
   return (
-    <div className="min-h-screen pb-0">
+    <div className="min-h-screen pb-0" ref={isMobile ? pullRef : undefined}>
+      {/* Pull-to-refresh indicator */}
+      {isMobile && pullDistance > 0 && (
+        <div
+          className="flex items-center justify-center overflow-hidden transition-[height] duration-200 ease-out"
+          style={{ height: `${pullDistance}px` }}
+        >
+          <Loader2
+            className={`h-5 w-5 text-primary ${refreshing ? "animate-spin" : ""}`}
+            style={{
+              opacity: Math.min(pullDistance / 80, 1),
+              transform: `rotate(${pullDistance * 3}deg)`,
+            }}
+          />
+        </div>
+      )}
+
       {/* Hero — compact on mobile, elegant on desktop */}
       <section className="relative pt-4 pb-2 md:pt-12 md:pb-6 overflow-hidden">
         {/* Animated gradient background */}
