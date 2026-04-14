@@ -8,8 +8,8 @@ interface ProfileGridProps {
 }
 
 export const ProfileGrid = React.forwardRef<HTMLDivElement, ProfileGridProps>(
-  ({ profiles, columns = "grid-cols-1 md:grid-cols-2 lg:grid-cols-4" }, ref) => (
-    <div ref={ref} className={`grid gap-6 ${columns}`}>
+  ({ profiles, columns = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" }, ref) => (
+    <div ref={ref} className={`grid gap-4 sm:gap-5 lg:gap-6 ${columns}`}>
       {profiles.map((p) => (
         <ProfileCard key={p.id} profile={p} />
       ))}
@@ -19,8 +19,8 @@ export const ProfileGrid = React.forwardRef<HTMLDivElement, ProfileGridProps>(
 ProfileGrid.displayName = "ProfileGrid";
 
 export const ProfileGridSkeleton = React.forwardRef<HTMLDivElement, { count?: number; columns?: string }>(
-  ({ count = 8, columns = "grid-cols-1 md:grid-cols-2 lg:grid-cols-4" }, ref) => (
-    <div ref={ref} className={`grid gap-6 ${columns}`}>
+  ({ count = 8, columns = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" }, ref) => (
+    <div ref={ref} className={`grid gap-4 sm:gap-5 lg:gap-6 ${columns}`}>
       {Array.from({ length: count }, (_, i) => (
         <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-muted" />
       ))}
