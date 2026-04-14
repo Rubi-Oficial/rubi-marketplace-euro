@@ -147,7 +147,7 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
           onClick={signOut}
         >
           <LogOut className="h-4 w-4" />
-          {t("dash.signout")}
+          {t("dash.sign_out")}
         </Button>
       </div>
     </>
