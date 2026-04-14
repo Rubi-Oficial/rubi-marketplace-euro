@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
-import logoVelvetVip from "@/assets/logo-velvet-vip.svg";
+import logoVelvetVip from "@/assets/logo-velvet-vip.png";
 
 interface BrandLogoProps {
   className?: string;
