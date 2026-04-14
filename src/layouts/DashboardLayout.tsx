@@ -200,7 +200,7 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
         {sidebarContent}
       </aside>
 
-      <main className="flex-1 p-4 pt-18 md:ml-64 md:p-8 md:pt-8 lg:p-10">
+      <main className="flex-1 p-4 pt-[4.25rem] md:ml-64 md:p-8 md:pt-8 lg:p-10">
         <AnimatePresence mode="wait">
           <PageTransition key={location.pathname}>
             <Outlet />
