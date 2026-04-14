@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogOut, LayoutDashboard, Search, Menu, X } from "lucide-react";
+import { LogOut, LayoutDashboard, Search, Menu, X, CreditCard, Megaphone, Shield, Lock, HeadphonesIcon } from "lucide-react";
 import { useState, useCallback } from "react";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 
 export default function Navbar() {
   const { user, userRole, signOut } = useAuth();
@@ -53,13 +54,13 @@ export default function Navbar() {
       role="navigation"
       aria-label="Main navigation"
     >
-      {/* Top row: logo, search, auth */}
-      <div className="container mx-auto flex h-14 items-center justify-between gap-4 px-4">
+      {/* Top row: logo, search, quick actions, auth */}
+      <div className="container mx-auto flex h-14 items-center justify-between gap-3 px-4">
         <Link to="/" className="shrink-0" aria-label="Velvet Escorts VIP — Home">
           <BrandLogo imgClassName="h-9 sm:h-10" />
         </Link>
 
-        <form onSubmit={handleSearch} className="hidden sm:flex flex-1 max-w-md items-center gap-2" role="search">
+        <form onSubmit={handleSearch} className="hidden sm:flex flex-1 max-w-sm items-center gap-2" role="search">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -74,6 +75,22 @@ export default function Navbar() {
             <Search className="h-3.5 w-3.5" />
           </Button>
         </form>
+
+        {/* Quick access links — desktop only */}
+        <div className="hidden lg:flex items-center gap-1 shrink-0">
+          <Button variant="ghost" size="sm" asChild className="text-[12px] rounded-full h-8 px-3 text-muted-foreground hover:text-foreground">
+            <Link to="/planos">
+              <CreditCard className="mr-1 h-3 w-3" />
+              {t("landing.quick_plans")}
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild className="text-[12px] rounded-full h-8 px-3 text-muted-foreground hover:text-foreground">
+            <Link to="/cadastro?role=professional">
+              <Megaphone className="mr-1 h-3 w-3" />
+              {t("landing.quick_publish")}
+            </Link>
+          </Button>
+        </div>
 
         <div className="hidden md:flex items-center gap-2 shrink-0">
           {/* Language selector */}
@@ -135,10 +152,10 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Category row */}
+      {/* Category row + trust badges */}
       <div className="border-t border-border/20">
-        <div className="container mx-auto px-4">
-          <ScrollArea className="w-full">
+        <div className="container mx-auto px-4 flex items-center gap-2">
+          <ScrollArea className="flex-1">
             <div className="flex items-center gap-1 py-1.5" role="tablist" aria-label="Categories">
               <Link
                 to="/buscar"
@@ -170,14 +187,30 @@ export default function Navbar() {
             </div>
             <ScrollBar orientation="horizontal" className="h-0" />
           </ScrollArea>
+
+          {/* Trust badges — desktop only, inline with categories */}
+          <div className="hidden xl:flex items-center gap-3 pl-3 border-l border-border/20 shrink-0">
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
+              <Shield className="h-3 w-3 text-primary/50" />
+              {t("landing.quick_trust_verified")}
+            </span>
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
+              <Lock className="h-3 w-3 text-primary/50" />
+              {t("landing.quick_trust_privacy")}
+            </span>
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
+              <HeadphonesIcon className="h-3 w-3 text-primary/50" />
+              {t("landing.quick_trust_support")}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Mobile menu with smooth transition */}
+      {/* Mobile menu */}
       <div
         id="mobile-menu"
         className={`md:hidden border-t border-[hsl(0_0%_100%_/_0.08)] bg-[hsl(274_36%_8%_/_0.95)] backdrop-blur-lg px-4 space-y-1 shadow-[0_12px_40px_hsl(274_36%_4%_/_0.6)] overflow-hidden transition-all duration-300 ease-out ${
-          mobileOpen ? "max-h-[70vh] py-4 opacity-100" : "max-h-0 py-0 opacity-0 pointer-events-none"
+          mobileOpen ? "max-h-[80vh] py-4 opacity-100" : "max-h-0 py-0 opacity-0 pointer-events-none"
         }`}
         role="menu"
         aria-hidden={!mobileOpen}
@@ -198,8 +231,54 @@ export default function Navbar() {
           </Button>
         </form>
 
+        {/* Quick access — mobile */}
+        <div className="flex gap-2 mb-3">
+          <Link
+            to="/buscar"
+            onClick={closeMobile}
+            className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium py-2 px-3 rounded-full bg-primary text-primary-foreground shadow-sm"
+          >
+            <Search className="h-3 w-3" />
+            {t("landing.quick_search")}
+          </Link>
+          <Link
+            to="/planos"
+            onClick={closeMobile}
+            className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium py-2 px-3 rounded-full border border-border/50 text-foreground hover:bg-accent/40 transition-colors"
+          >
+            <CreditCard className="h-3 w-3" />
+            {t("landing.quick_plans")}
+          </Link>
+          <Link
+            to="/cadastro?role=professional"
+            onClick={closeMobile}
+            className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium py-2 px-3 rounded-full border border-border/50 text-foreground hover:bg-accent/40 transition-colors"
+          >
+            <Megaphone className="h-3 w-3" />
+            {t("landing.quick_publish")}
+          </Link>
+        </div>
+
+        {/* Trust badges — mobile */}
+        <div className="flex items-center justify-center gap-3 py-1.5 mb-2">
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
+            <Shield className="h-2.5 w-2.5 text-primary/40" />
+            {t("landing.quick_trust_verified")}
+          </span>
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
+            <Lock className="h-2.5 w-2.5 text-primary/40" />
+            {t("landing.quick_trust_privacy")}
+          </span>
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
+            <HeadphonesIcon className="h-2.5 w-2.5 text-primary/40" />
+            {t("landing.quick_trust_support")}
+          </span>
+        </div>
+
+        <Separator className="bg-border/20 my-1" />
+
         {/* Mobile language selector */}
-        <div className="flex items-center gap-1.5 px-2 py-2 mb-1">
+        <div className="flex items-center gap-1.5 px-2 py-2">
           {LANGUAGES.map((l) => (
             <button
               key={l.code}
@@ -226,7 +305,8 @@ export default function Navbar() {
         ))}
         <Link to="/planos" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.plans")}</Link>
         <Link to="/sobre" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.about")}</Link>
-        <div className="border-t border-border/30 pt-3 mt-2">
+        <Separator className="bg-border/20 my-1" />
+        <div>
           {user ? (
             <>
               <Link to={dashboardPath} onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.dashboard")}</Link>
