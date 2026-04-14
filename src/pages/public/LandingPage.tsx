@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { useProfileFilters } from "@/hooks/useProfileFilters";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { VideoSection } from "@/components/public/VideoSection";
 import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
