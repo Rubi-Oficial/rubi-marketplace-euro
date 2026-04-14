@@ -22,7 +22,7 @@ const STEPS: StepConfig[] = [
 export default function EscortOnboarding() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { countries } = useLocations();
+  const { countries, getCitiesByCountry } = useLocations();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [profileId, setProfileId] = useState<string | null>(null);
