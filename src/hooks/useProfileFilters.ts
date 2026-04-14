@@ -97,6 +97,14 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
       });
   }, [buildFilterParams, limit]);
 
+  const refresh = useCallback(async () => {
+    offsetRef.current = 0;
+    const data = await fetchEligibleProfiles({ ...buildFilterParams(), offset: 0 });
+    setProfiles(data);
+    setHasMore(data.length >= limit);
+    offsetRef.current = data.length;
+  }, [buildFilterParams, limit]);
+
   const loadMore = useCallback(() => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
@@ -162,6 +170,7 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
     loadingMore,
     hasMore,
     loadMore,
+    refresh,
     services,
     countries,
     filteredCities,
