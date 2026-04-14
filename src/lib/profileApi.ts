@@ -227,16 +227,38 @@ export async function prefetchNextBatchUrls(filters?: {
 
 export async function fetchFilterOptions() {
   try {
-    const { data: profiles, error } = await supabase
-      .from("eligible_profiles").select("city, city_slug, category");
-    if (error) {
-      console.error("[profileApi] Failed to fetch filter options:", error.message);
-      return { cities: [], categories: [] };
+    // Fetch distinct cities and categories in parallel with minimal data transfer
+    const [citiesRes, categoriesRes] = await Promise.all([
+      supabase
+        .from("eligible_profiles")
+        .select("city")
+        .not("city", "is", null)
+        .order("city")
+        .limit(200),
+      supabase
+        .from("eligible_profiles")
+        .select("category")
+        .not("category", "is", null)
+        .order("category")
+        .limit(100),
+    ]);
+
+    if (citiesRes.error) {
+      console.error("[profileApi] Failed to fetch cities:", citiesRes.error.message);
     }
-    const rows = (profiles ?? []) as Pick<EligibleProfileRow, "city" | "category">[];
-    const cities = [...new Set(rows.map((p) => p.city).filter(Boolean))] as string[];
-    const categories = [...new Set(rows.map((p) => p.category).filter(Boolean))] as string[];
-    return { cities: cities.sort(), categories: categories.sort() };
+    if (categoriesRes.error) {
+      console.error("[profileApi] Failed to fetch categories:", categoriesRes.error.message);
+    }
+
+    const cities = [...new Set(
+      (citiesRes.data ?? []).map((r: { city: string | null }) => r.city).filter(Boolean)
+    )] as string[];
+
+    const categories = [...new Set(
+      (categoriesRes.data ?? []).map((r: { category: string | null }) => r.category).filter(Boolean)
+    )] as string[];
+
+    return { cities, categories };
   } catch (err) {
     console.error("[profileApi] Unexpected error in fetchFilterOptions:", err);
     return { cities: [], categories: [] };
