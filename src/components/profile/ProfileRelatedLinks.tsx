@@ -12,16 +12,16 @@ export function ProfileRelatedLinks({ cityName, citySlug, category, services }: 
   const categorySlug = category?.toLowerCase().replace(/\s+/g, "-");
 
   return (
-    <section className="rounded-2xl border border-border/30 bg-card/60 p-5">
-      <h2 className="font-display text-lg font-semibold text-foreground">Links relacionados</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Continue explorando perfis e serviços semelhantes.</p>
+    <section className="rounded-2xl border border-border/30 bg-card/55 p-5">
+      <h2 className="font-display text-lg font-semibold text-foreground">Continue explorando</h2>
+      <p className="mt-1 text-sm text-muted-foreground">Atalhos rápidos para encontrar perfis semelhantes.</p>
       <div className="mt-4 flex flex-wrap gap-2 text-sm">
         {citySlug && cityName && (
           <Link
             to={`/cidade/${citySlug}`}
             className="rounded-full border border-border/40 bg-background px-3 py-1.5 hover:border-primary/40"
           >
-            Mais perfis em {cityName}
+            Perfis em {cityName}
           </Link>
         )}
 
@@ -30,7 +30,7 @@ export function ProfileRelatedLinks({ cityName, citySlug, category, services }: 
             to={`/categoria/${categorySlug}`}
             className="rounded-full border border-border/40 bg-background px-3 py-1.5 hover:border-primary/40"
           >
-            Mais perfis da categoria {category}
+            Categoria {category}
           </Link>
         )}
 
@@ -40,12 +40,12 @@ export function ProfileRelatedLinks({ cityName, citySlug, category, services }: 
             to={`/buscar?service=${service.slug}`}
             className="rounded-full border border-border/40 bg-background px-3 py-1.5 hover:border-primary/40"
           >
-            Mais perfis com {service.name}
+            Buscar por {service.name}
           </Link>
         ))}
 
         <Link to="/buscar" className="rounded-full border border-border/40 bg-background px-3 py-1.5 hover:border-primary/40">
-          Explorar todos os serviços
+          Ver todos os perfis
         </Link>
       </div>
     </section>

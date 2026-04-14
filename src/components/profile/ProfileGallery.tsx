@@ -63,7 +63,7 @@ export function ProfileGallery({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:space-y-4">
       <Carousel className="w-full" setApi={setApi}>
         <CarouselContent>
           {allMedia.map((item, idx) => (
@@ -79,7 +79,7 @@ export function ProfileGallery({
                 ) : (
                   <button
                     type="button"
-                    className="relative h-full w-full cursor-pointer group"
+                    className="group relative h-full w-full cursor-pointer"
                     onClick={() => handleVideoClick(item.id)}
                     aria-label="Reproduzir vídeo"
                   >
@@ -106,22 +106,22 @@ export function ProfileGallery({
         </CarouselContent>
         {allMedia.length > 1 && (
           <>
-            <CarouselPrevious className="left-3 h-9 w-9 bg-background/70 backdrop-blur-sm border-border/30 hover:bg-background/90" />
-            <CarouselNext className="right-3 h-9 w-9 bg-background/70 backdrop-blur-sm border-border/30 hover:bg-background/90" />
+            <CarouselPrevious className="left-3 h-9 w-9 border-border/30 bg-background/70 backdrop-blur-sm hover:bg-background/90" />
+            <CarouselNext className="right-3 h-9 w-9 border-border/30 bg-background/70 backdrop-blur-sm hover:bg-background/90" />
           </>
         )}
       </Carousel>
 
       {allMedia.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide md:gap-2.5">
           {allMedia.map((item, idx) => (
             <button
               key={item.id}
               onClick={() => api?.scrollTo(idx)}
-              className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-300 ${
+              className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-300 md:h-[72px] md:w-[72px] ${
                 idx === activeIndex
-                  ? "border-primary shadow-[0_0_10px_hsl(350_65%_52%_/_0.3)]"
-                  : "border-border/30 opacity-70 hover:opacity-100"
+                  ? "scale-[1.01] border-primary shadow-[0_0_0_2px_hsl(350_65%_52%_/_0.15)]"
+                  : "border-border/30 opacity-80 hover:opacity-100"
               }`}
               aria-label={`Abrir mídia ${idx + 1}`}
             >

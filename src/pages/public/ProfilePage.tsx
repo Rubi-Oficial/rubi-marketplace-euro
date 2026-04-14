@@ -269,13 +269,15 @@ export default function ProfilePage() {
     );
   }
 
+  const hasServices = services.length > 0;
+  const hasMobileFloatingBar = Boolean(profile.whatsapp || profile.telegram);
+  const sectionStyle = { scrollMarginTop: "var(--profile-section-nav-offset, 108px)" };
+
   const navItems = [
     { id: "overview", label: "Visão geral", enabled: true },
-    { id: "services", label: "Serviços", enabled: services.length > 0 },
+    { id: "services", label: "Serviços", enabled: hasServices },
     { id: "pricing", label: "Preços", enabled: true },
     { id: "contact", label: "Contato", enabled: true },
-    { id: "availability", label: "Disponibilidade", enabled: true },
-    { id: "reviews", label: "Avaliações", enabled: true },
   ];
 
   return (
@@ -325,24 +327,24 @@ export default function ProfilePage() {
 
       <ProfileSectionNav items={navItems} className="sticky top-0 z-30 mt-4 lg:mt-6" />
 
-      <main className="mt-6 space-y-6 pb-24 md:pb-10">
-        <section id="overview" className="scroll-mt-28 rounded-2xl border border-border/30 bg-card/60 p-5">
-          <h2 className="font-display text-xl font-semibold text-foreground">Sobre {profile.display_name}</h2>
+      <main className={`mt-6 space-y-6 ${hasMobileFloatingBar ? "pb-28" : "pb-10"}`}>
+        <section id="overview" style={sectionStyle} className="rounded-2xl border border-border/30 bg-card/60 p-5">
+          <h2 className="font-display text-xl font-semibold text-foreground">Resumo do perfil</h2>
           <p className="mt-2 max-w-3xl whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-            {profile.bio || "Perfil com atendimento dedicado. Entre em contato para disponibilidade e detalhes do atendimento."}
+            {profile.bio || "Perfil com atendimento dedicado. Entre em contato para confirmar agenda e detalhes do atendimento."}
           </p>
         </section>
 
-        {services.length > 0 && (
-          <section id="services" className="scroll-mt-28 rounded-2xl border border-border/30 bg-card/60 p-5">
+        {hasServices && (
+          <section id="services" style={sectionStyle} className="rounded-2xl border border-border/30 bg-card/60 p-5">
             <h2 className="font-display text-xl font-semibold text-foreground">Serviços em destaque</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Explore serviços relacionados e encontre exatamente o que procura.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Escolha o serviço e continue sua busca com filtros prontos.</p>
             <ProfileServiceChips services={services} className="mt-4" />
           </section>
         )}
 
-        <section id="pricing" className="scroll-mt-28 rounded-2xl border border-border/30 bg-card/60 p-5">
-          <h2 className="font-display text-xl font-semibold text-foreground">Preços</h2>
+        <section id="pricing" style={sectionStyle} className="rounded-2xl border border-border/30 bg-card/60 p-5">
+          <h2 className="font-display text-xl font-semibold text-foreground">Faixa de valores</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             {profile.pricing_from
               ? `Atendimentos a partir de €${Number(profile.pricing_from).toLocaleString("de-DE")}. Valores podem variar conforme serviço e duração.`
@@ -350,9 +352,9 @@ export default function ProfilePage() {
           </p>
         </section>
 
-        <section id="contact" className="scroll-mt-28 rounded-2xl border border-border/30 bg-card/60 p-5">
-          <h2 className="font-display text-xl font-semibold text-foreground">Contato rápido</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Resposta direta pelos canais oficiais do perfil.</p>
+        <section id="contact" style={sectionStyle} className="rounded-2xl border border-border/30 bg-card/60 p-5">
+          <h2 className="font-display text-xl font-semibold text-foreground">Contato direto</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Resposta pelos canais oficiais do perfil.</p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             {profile.whatsapp && (
               <Button className="bg-green-600 hover:bg-green-700 sm:flex-1" asChild>
@@ -363,7 +365,7 @@ export default function ProfilePage() {
                   aria-label="Entrar em contato por WhatsApp"
                   onClick={() => trackContact("whatsapp_profile")}
                 >
-                  <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
+                  <MessageCircle className="mr-2 h-4 w-4" /> Falar no WhatsApp
                 </a>
               </Button>
             )}
@@ -376,25 +378,11 @@ export default function ProfilePage() {
                   aria-label="Entrar em contato por Telegram"
                   onClick={() => trackContact("telegram_profile")}
                 >
-                  <Send className="mr-2 h-4 w-4" /> Telegram
+                  <Send className="mr-2 h-4 w-4" /> Conversar no Telegram
                 </a>
               </Button>
             )}
           </div>
-        </section>
-
-        <section id="availability" className="scroll-mt-28 rounded-2xl border border-dashed border-border/40 bg-card/30 p-5">
-          <h2 className="font-display text-xl font-semibold text-foreground">Disponibilidade</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Atualizações de agenda são informadas diretamente no contato.
-          </p>
-        </section>
-
-        <section id="reviews" className="scroll-mt-28 rounded-2xl border border-dashed border-border/40 bg-card/30 p-5">
-          <h2 className="font-display text-xl font-semibold text-foreground">Avaliações</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Ainda não há avaliações públicas disponíveis para este perfil.
-          </p>
         </section>
 
         <ProfileRelatedLinks

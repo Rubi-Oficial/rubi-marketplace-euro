@@ -13,7 +13,7 @@ export function ProfileServiceChips({ services, limit, className }: ProfileServi
 
   return (
     <div className={className}>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-2">
         {visibleServices.map((service) => (
           <Link
             key={service.slug}
