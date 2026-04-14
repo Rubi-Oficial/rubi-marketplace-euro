@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ProfileCard, fetchEligibleProfiles, type EligibleProfile } from "@/components/public/ProfileCard";
 import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 import { getSeoPageConfig, MARKET_LABEL, INDEX_MIN_PROFILES } from "@/config/localSeoPages";
+import { SeoNavigationBlocks } from "@/components/public/SeoNavigationBlocks";
 
 export default function LocalSeoPage() {
   const { market, cityBase, pageSlug } = useParams();
@@ -51,6 +52,7 @@ export default function LocalSeoPage() {
     .filter((p) => p.slug && p.slug !== data.page.slug)
     .slice(0, 6)
     .map((p) => ({ label: p.h1, to: `${data.city.basePath}/${p.slug}` }));
+  const serviceLabel = data.page.serviceSlug ? data.page.serviceSlug.replace(/-/g, " ") : "";
 
   usePageMeta({
     title: data.page.title,
@@ -79,6 +81,7 @@ export default function LocalSeoPage() {
           <li><Link to={`/${data.city.market}`}>{MARKET_LABEL[data.city.market]}</Link></li><li>/</li>
           <li><Link to={data.city.basePath}>{data.city.cityName}</Link></li>
           {data.page.slug && <><li>/</li><li className="text-foreground">{data.page.h1}</li></>}
+          {serviceLabel && <><li>/</li><li className="text-foreground capitalize">{serviceLabel}</li></>}
         </ol>
       </nav>
 
@@ -101,6 +104,8 @@ export default function LocalSeoPage() {
           </div>
         )}
       </div>
+
+      <SeoNavigationBlocks />
 
       <section className="mt-12">
         <h2 className="font-display text-lg font-semibold">Páginas relacionadas</h2>

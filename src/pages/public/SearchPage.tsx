@@ -9,6 +9,7 @@ import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
 import { ProfileGrid, ProfileGridSkeleton } from "@/components/public/ProfileGrid";
 import { EmptyState } from "@/components/public/EmptyState";
+import { SeoNavigationBlocks } from "@/components/public/SeoNavigationBlocks";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
@@ -155,7 +156,19 @@ export default function SearchPage() {
               <li className="text-foreground">{cityName}</li>
             </>
           )}
-          {!countryName && <li className="text-foreground">{t("nav.explore")}</li>}
+          {!countryName && <li>{(filters.service || filters.category) ? <Link to="/buscar" className="hover:text-foreground transition-colors">{t("nav.explore")}</Link> : <span className="text-foreground">{t("nav.explore")}</span>}</li>}
+          {serviceName && (
+            <>
+              <li className="text-border">/</li>
+              <li className="text-foreground">{serviceName}</li>
+            </>
+          )}
+          {filters.category && (
+            <>
+              <li className="text-border">/</li>
+              <li className="text-foreground">{filters.category}</li>
+            </>
+          )}
         </ol>
       </nav>
 
@@ -243,6 +256,8 @@ export default function SearchPage() {
       ) : (
         <ProfileGrid profiles={profiles} />
       )}
+
+      <SeoNavigationBlocks />
 
       <FilterModal
         open={filterOpen}

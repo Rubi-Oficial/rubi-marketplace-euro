@@ -11,6 +11,7 @@ import { FilterBar } from "@/components/public/FilterBar";
 import { MobileFilterBar } from "@/components/public/MobileFilterBar";
 import { ProfileGrid, ProfileGridSkeleton } from "@/components/public/ProfileGrid";
 import { EmptyState } from "@/components/public/EmptyState";
+import { SeoNavigationBlocks } from "@/components/public/SeoNavigationBlocks";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -192,6 +193,8 @@ export default function LandingPage() {
           </Button>
         </div>
       </section>
+
+      <SeoNavigationBlocks />
 
       <FilterModal
         open={filterOpen}

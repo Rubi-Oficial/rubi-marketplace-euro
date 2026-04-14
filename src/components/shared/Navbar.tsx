@@ -233,14 +233,22 @@ export default function Navbar() {
               <button onClick={() => { signOut(); closeMobile(); }} className="block w-full text-left text-sm text-muted-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.sign_out")}</button>
             </>
           ) : (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid gap-2">
               <Link
-                to="/login"
+                to="/login?redirect=/app"
                 onClick={closeMobile}
                 className="inline-flex items-center justify-center text-sm font-medium py-2.5 px-3 rounded-lg border border-border/50 bg-card/60 text-foreground hover:bg-accent/45 transition-colors"
                 role="menuitem"
               >
-                {t("nav.sign_in")}
+                Login profissionais
+              </Link>
+              <Link
+                to="/login?redirect=/cliente"
+                onClick={closeMobile}
+                className="inline-flex items-center justify-center text-sm font-medium py-2.5 px-3 rounded-lg border border-border/50 bg-card/60 text-foreground hover:bg-accent/45 transition-colors"
+                role="menuitem"
+              >
+                Login clientes
               </Link>
               <Link
                 to="/cadastro"
