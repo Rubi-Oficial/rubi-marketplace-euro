@@ -26,18 +26,11 @@ export const INITIAL_DRAFT: ProfileDraft = {
   telegram: "",
 };
 
+/** @deprecated Use useLocations() hook instead — cities come from the database */
 export interface CityOption {
   name: string;
   slug: string;
 }
-
-export const CITIES: CityOption[] = [
-  { name: "Amsterdam", slug: "amsterdam" },
-  { name: "Eindhoven", slug: "eindhoven" },
-  { name: "Den Haag", slug: "den-haag" },
-  { name: "Barcelona", slug: "barcelona" },
-  { name: "Madrid", slug: "madrid" },
-];
 
 export const CATEGORIES = [
   "Companion",
