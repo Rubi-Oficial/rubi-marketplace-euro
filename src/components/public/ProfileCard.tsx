@@ -1,7 +1,6 @@
 import { forwardRef, useState, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Euro, Heart, ArrowRight, MessageCircle } from "lucide-react";
-import { motion } from "framer-motion";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -86,24 +85,18 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
     );
 
     return (
-      <motion.div
+      <div
         ref={ref}
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{
-          duration: 0.4,
-          delay: Math.min(index * 0.06, 0.48),
-          ease: [0.25, 0.46, 0.45, 0.94],
-        }}
         className={cn(
           "group relative flex flex-col overflow-hidden rounded-2xl bg-card border cursor-pointer",
-          "transition-all duration-300 ease-out",
+          "transition-all duration-300 ease-out animate-fade-in",
           "hover:shadow-[0_20px_60px_-12px_hsl(274_36%_4%_/_0.6),0_0_20px_hsl(var(--primary)_/_0.06)]",
           "hover:-translate-y-1 hover:border-[hsl(var(--primary)_/_0.2)]",
           "focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-background",
           "active:scale-[0.98] active:transition-transform active:duration-100",
           tierClasses
         )}
+        style={{ animationDelay: `${Math.min(index * 60, 480)}ms`, animationFillMode: "backwards" }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onClick={handleNavigate}
@@ -211,7 +204,7 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
             )}
           </div>
         </div>
-      </motion.div>
+      </div>
     );
   }
 );

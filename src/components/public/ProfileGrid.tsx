@@ -1,5 +1,4 @@
 import React from "react";
-import { AnimatePresence } from "framer-motion";
 import { ProfileCard } from "@/components/public/ProfileCard";
 import type { EligibleProfile } from "@/lib/profileApi";
 
@@ -11,11 +10,9 @@ interface ProfileGridProps {
 export const ProfileGrid = React.forwardRef<HTMLDivElement, ProfileGridProps>(
   ({ profiles, columns = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" }, ref) => (
     <div ref={ref} className={`grid gap-4 sm:gap-5 lg:gap-6 ${columns}`}>
-      <AnimatePresence mode="popLayout">
-        {profiles.map((p, i) => (
-          <ProfileCard key={p.id} profile={p} index={i} />
-        ))}
-      </AnimatePresence>
+      {profiles.map((p, i) => (
+        <ProfileCard key={p.id} profile={p} index={i} />
+      ))}
     </div>
   )
 );
