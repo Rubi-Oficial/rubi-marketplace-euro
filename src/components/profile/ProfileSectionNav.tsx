@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface NavItem {
   id: string;
@@ -11,20 +11,27 @@ interface ProfileSectionNavProps {
   className?: string;
 }
 
+const PUBLIC_LAYOUT_HEADER_OFFSET_PX = 104; // matches PublicLayout pt-[6.5rem]
+const SECTION_NAV_GAP_PX = 28;
+
 export function ProfileSectionNav({ items, className = "" }: ProfileSectionNavProps) {
   const visibleItems = useMemo(() => items.filter((item) => item.enabled !== false), [items]);
   const [activeId, setActiveId] = useState<string>(visibleItems[0]?.id || "");
   const navRef = useRef<HTMLElement | null>(null);
 
+  const getSectionScrollOffset = useCallback(() => {
+    const navHeight = navRef.current?.getBoundingClientRect().height ?? 0;
+    return Math.round(PUBLIC_LAYOUT_HEADER_OFFSET_PX + navHeight + SECTION_NAV_GAP_PX);
+  }, []);
+
   useEffect(() => {
     if (!navRef.current) return;
-    const navHeight = navRef.current.getBoundingClientRect().height;
-    document.documentElement.style.setProperty("--profile-section-nav-offset", `${Math.round(navHeight) + 28}px`);
+    document.documentElement.style.setProperty("--profile-section-nav-offset", `${getSectionScrollOffset()}px`);
 
     return () => {
       document.documentElement.style.removeProperty("--profile-section-nav-offset");
     };
-  }, []);
+  }, [getSectionScrollOffset]);
 
   useEffect(() => {
     if (visibleItems.length === 0) return;
@@ -59,10 +66,7 @@ export function ProfileSectionNav({ items, className = "" }: ProfileSectionNavPr
     const target = document.getElementById(sectionId);
     if (!target) return;
 
-    const dynamicOffset = Number.parseInt(
-      getComputedStyle(document.documentElement).getPropertyValue("--profile-section-nav-offset") || "104",
-      10
-    );
+    const dynamicOffset = getSectionScrollOffset();
 
     const targetTop = target.getBoundingClientRect().top + window.scrollY - dynamicOffset;
     window.scrollTo({ top: Math.max(targetTop, 0), behavior: "smooth" });
