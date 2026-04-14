@@ -10,6 +10,7 @@ import { CATEGORY_DB_VALUE_BY_SLUG, CATEGORY_DEFINITIONS } from "@/lib/categoryM
 import { useLocations } from "@/hooks/useLocations";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
+import { SeoNavigationBlocks } from "@/components/public/SeoNavigationBlocks";
 
 export default function CategoryPage() {
   const { t } = useLanguage();
@@ -117,7 +118,19 @@ export default function CategoryPage() {
         <ol className="flex items-center gap-1.5">
           <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
           <li className="text-border">/</li>
-          <li className="text-foreground">{categoryName}</li>
+          <li>
+            {serviceName ? (
+              <Link to={`/categoria/${slug}`} className="hover:text-foreground transition-colors">{categoryName}</Link>
+            ) : (
+              <span className="text-foreground">{categoryName}</span>
+            )}
+          </li>
+          {serviceName && (
+            <>
+              <li className="text-border">/</li>
+              <li className="text-foreground">{serviceName}</li>
+            </>
+          )}
         </ol>
       </nav>
 
@@ -196,6 +209,8 @@ export default function CategoryPage() {
           ))}
         </div>
       )}
+
+      <SeoNavigationBlocks />
 
       <section className="mt-16 mx-auto max-w-lg text-center">
         <h2 className="font-display text-lg font-semibold text-foreground">{t("category.cta_title")}</h2>

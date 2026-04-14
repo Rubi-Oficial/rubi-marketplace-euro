@@ -1,11 +1,12 @@
 import { useParams, Link } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLocations } from "@/hooks/useLocations";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
+import { SeoNavigationBlocks } from "@/components/public/SeoNavigationBlocks";
 
 // Cities with custom microcopy keys
 const CITY_OVERRIDES = new Set(["barcelona", "madrid"]);
@@ -46,6 +47,7 @@ export default function CityPage() {
   const cityObj = cities.find((c) => c.slug === slug);
   const cityName = cityObj?.name || slug?.replace(/-/g, " ") || "";
   const countryObj = cityObj ? countries.find((c) => c.id === cityObj.country_id) : null;
+  const activeServiceObj = services.find((s) => s.slug === activeService);
 
   // Resolve city-specific or default translation keys
   const hasOverride = slug ? CITY_OVERRIDES.has(slug) : false;
@@ -103,7 +105,19 @@ export default function CityPage() {
               <li className="text-border">/</li>
             </>
           )}
-          <li className="text-foreground">{cityName}</li>
+          <li>
+            {activeService ? (
+              <Link to={`/cidade/${slug}`} className="hover:text-foreground transition-colors">{cityName}</Link>
+            ) : (
+              <span className="text-foreground">{cityName}</span>
+            )}
+          </li>
+          {activeServiceObj && (
+            <>
+              <li className="text-border">/</li>
+              <li className="text-foreground">{activeServiceObj.name}</li>
+            </>
+          )}
         </ol>
       </nav>
 
@@ -167,6 +181,8 @@ export default function CityPage() {
           ))}
         </div>
       )}
+
+      <SeoNavigationBlocks />
 
       <section className="mt-14 mx-auto max-w-lg text-center">
         <h2 className="font-display text-lg font-semibold text-foreground">{t("city.cta_title", { city: cityName })}</h2>
