@@ -1,0 +1,55 @@
+import { Button } from "@/components/ui/button";
+import { MessageCircle, Send } from "lucide-react";
+
+interface ProfileFloatingActionsMobileProps {
+  whatsapp: string | null;
+  telegram: string | null;
+  onWhatsappClick: () => void;
+  onTelegramClick: () => void;
+}
+
+export function ProfileFloatingActionsMobile({
+  whatsapp,
+  telegram,
+  onWhatsappClick,
+  onTelegramClick,
+}: ProfileFloatingActionsMobileProps) {
+  if (!whatsapp && !telegram) return null;
+
+  return (
+    <div
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/30 bg-background/85 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur-2xl md:hidden"
+      role="region"
+      aria-label="Ações rápidas de contato"
+    >
+      <div className="mx-auto flex max-w-xl gap-2">
+        {whatsapp && (
+          <Button size="lg" className="h-11 flex-1 bg-green-600 text-sm font-semibold hover:bg-green-700" asChild>
+            <a
+              href={`https://wa.me/${whatsapp.replace(/\D/g, "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Entrar em contato por WhatsApp"
+              onClick={onWhatsappClick}
+            >
+              <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
+            </a>
+          </Button>
+        )}
+        {telegram && (
+          <Button size="lg" variant="outline" className="h-11 flex-1 text-sm font-semibold" asChild>
+            <a
+              href={`https://t.me/${telegram.replace("@", "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Entrar em contato por Telegram"
+              onClick={onTelegramClick}
+            >
+              <Send className="mr-1.5 h-4 w-4" /> Telegram
+            </a>
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}

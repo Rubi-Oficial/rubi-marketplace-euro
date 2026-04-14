@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { getSignedUrls } from "@/lib/storageUrls";
-import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { ArrowLeft, AlertTriangle, MessageCircle, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
 import { ProfileGallery } from "@/components/profile/ProfileGallery";
@@ -10,6 +10,11 @@ import { ProfileInfo } from "@/components/profile/ProfileInfo";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 import { getCanonicalSeoProfilePath, LOCAL_SEO_CITIES, MARKET_LABEL } from "@/config/localSeoPages";
+import { ProfileSectionNav } from "@/components/profile/ProfileSectionNav";
+import { ProfileDesktopSidebar } from "@/components/profile/ProfileDesktopSidebar";
+import { ProfileRelatedLinks } from "@/components/profile/ProfileRelatedLinks";
+import { ProfileFloatingActionsMobile } from "@/components/profile/ProfileFloatingActionsMobile";
+import { ProfileServiceChips } from "@/components/profile/ProfileServiceChips";
 
 interface PublicProfile {
   id: string;
@@ -65,9 +70,11 @@ export default function ProfilePage() {
           return;
         }
 
-        if (!eligible) { setLoading(false); return; }
+        if (!eligible) {
+          setLoading(false);
+          return;
+        }
 
-        // Parallel fetches: contact, images, videos, services (with names)
         const [contactResult, imgResult, vidResult, psResult] = await Promise.all([
           supabase.rpc("get_profile_contact", { p_profile_id: eligible.id }),
           supabase
@@ -88,7 +95,6 @@ export default function ProfilePage() {
             .eq("profile_id", eligible.id),
         ]);
 
-        // Set profile with contact info
         const contact = contactResult.data as { whatsapp: string | null; telegram: string | null } | null;
         const mappedProfile: PublicProfile = {
           id: eligible.id ?? "",
@@ -108,7 +114,6 @@ export default function ProfilePage() {
         };
         setProfile(mappedProfile);
 
-        // Process images + videos signed URLs in a single batch
         const allPaths: string[] = [];
         const imgData = imgResult.data ?? [];
         const vidData = vidResult.data ?? [];
@@ -117,34 +122,39 @@ export default function ProfilePage() {
         if (vidResult.error) console.error("[ProfilePage] Failed to fetch videos:", vidResult.error.message);
 
         imgData.forEach((img) => allPaths.push(img.storage_path));
-        vidData.forEach((v) => allPaths.push(v.storage_path));
+        vidData.forEach((video) => allPaths.push(video.storage_path));
 
         const signedMap = allPaths.length > 0 ? await getSignedUrls(allPaths) : {};
 
-        setImages(imgData.map((img) => ({
-          ...img,
-          url: signedMap[img.storage_path] || "",
-        })));
+        setImages(
+          imgData.map((img) => ({
+            ...img,
+            url: signedMap[img.storage_path] || "",
+          }))
+        );
 
-        setVideos(vidData.map((v) => ({
-          ...v,
-          url: signedMap[v.storage_path] || "",
-        })));
+        setVideos(
+          vidData.map((video) => ({
+            ...video,
+            url: signedMap[video.storage_path] || "",
+          }))
+        );
 
-        // Extract service names from the joined query (no sequential fetch needed)
         const psData = psResult.data;
         if (psData && psData.length > 0) {
           const svcList = psData
-            .map((r: any) => r.services)
+            .map((record: any) => record.services)
             .filter(Boolean)
-            .map((s: any) => ({ name: s.name, slug: s.slug }));
+            .map((service: any) => ({ name: service.name, slug: service.slug }));
           setServices(svcList);
         }
 
-        // Track lead (non-critical, fire and forget)
-        supabase.from("leads").insert({ profile_id: eligible.id, source: "profile_view" }).then(({ error: leadErr }) => {
-          if (leadErr) console.warn("[ProfilePage] Lead insert failed:", leadErr.message);
-        });
+        supabase
+          .from("leads")
+          .insert({ profile_id: eligible.id, source: "profile_view" })
+          .then(({ error: leadErr }) => {
+            if (leadErr) console.warn("[ProfilePage] Lead insert failed:", leadErr.message);
+          });
 
         setLoading(false);
       } catch (err) {
@@ -157,6 +167,10 @@ export default function ProfilePage() {
     load();
   }, [slug]);
 
+  const trackContact = (source: "whatsapp_profile" | "telegram_profile") => {
+    if (!profile?.id) return;
+    supabase.from("leads").insert({ profile_id: profile.id, source });
+  };
 
   const canonicalProfilePath = useMemo(() => {
     if (!slug) return "/perfil";
@@ -174,7 +188,9 @@ export default function ProfilePage() {
       mainEntity: {
         "@type": "Person",
         name: profile.display_name,
-        address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "NL" } : undefined,
+        address: profile.city
+          ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: profile.country || "NL" }
+          : undefined,
         image: images[0]?.url,
       },
     };
@@ -182,7 +198,7 @@ export default function ProfilePage() {
 
   const breadcrumbs = useMemo(() => {
     const crumbs = [{ name: "Home", url: SITE_URL }];
-    const seoCity = LOCAL_SEO_CITIES.find((c) => c.citySlug === profile?.city_slug);
+    const seoCity = LOCAL_SEO_CITIES.find((city) => city.citySlug === profile?.city_slug);
     if (seoCity) {
       crumbs.push({ name: MARKET_LABEL[seoCity.market], url: `${SITE_URL}/${seoCity.market}` });
       crumbs.push({ name: seoCity.cityName, url: `${SITE_URL}${seoCity.basePath}` });
@@ -222,15 +238,17 @@ export default function ProfilePage() {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-20 text-center animate-fade-in">
-        <AlertTriangle className="mx-auto h-10 w-10 text-destructive mb-3" />
+        <AlertTriangle className="mx-auto mb-3 h-10 w-10 text-destructive" />
         <h1 className="font-display text-2xl font-bold text-foreground">Erro ao carregar</h1>
         <p className="mt-2 text-muted-foreground">{error}</p>
-        <div className="flex items-center justify-center gap-3 mt-6">
+        <div className="mt-6 flex items-center justify-center gap-3">
           <Button variant="outline" onClick={() => window.location.reload()}>
             Tentar novamente
           </Button>
           <Button variant="ghost" asChild>
-            <Link to="/buscar"><ArrowLeft className="mr-1.5 h-4 w-4" /> Voltar</Link>
+            <Link to="/buscar">
+              <ArrowLeft className="mr-1.5 h-4 w-4" /> Voltar
+            </Link>
           </Button>
         </div>
       </div>
@@ -243,72 +261,156 @@ export default function ProfilePage() {
         <h1 className="font-display text-2xl font-bold text-foreground">{t("profile.unavailable")}</h1>
         <p className="mt-2 text-muted-foreground">{t("profile.unavailable_desc")}</p>
         <Button variant="ghost" className="mt-6" asChild>
-          <Link to="/buscar"><ArrowLeft className="mr-1.5 h-4 w-4" /> {t("profile.browse")}</Link>
+          <Link to="/buscar">
+            <ArrowLeft className="mr-1.5 h-4 w-4" /> {t("profile.browse")}
+          </Link>
         </Button>
       </div>
     );
   }
 
+  const navItems = [
+    { id: "overview", label: "Visão geral", enabled: true },
+    { id: "services", label: "Serviços", enabled: services.length > 0 },
+    { id: "pricing", label: "Preços", enabled: true },
+    { id: "contact", label: "Contato", enabled: true },
+    { id: "availability", label: "Disponibilidade", enabled: true },
+    { id: "reviews", label: "Avaliações", enabled: true },
+  ];
+
   return (
-    <div className="container mx-auto px-4 py-6 animate-fade-in">
-      <nav aria-label="Breadcrumb" className="mb-3 text-xs text-muted-foreground">
-        <ol className="flex items-center gap-1.5 flex-wrap">
+    <div className="container mx-auto animate-fade-in px-4 py-4 md:py-6">
+      <nav aria-label="Breadcrumb" className="mb-3 text-[11px] text-muted-foreground md:text-xs">
+        <ol className="flex flex-wrap items-center gap-1.5">
           {breadcrumbs.map((crumb, index) => (
             <li key={crumb.url} className="flex items-center gap-1.5">
               {index > 0 && <span className="text-border">/</span>}
               {index === breadcrumbs.length - 1 ? (
-                <span className="text-foreground">{crumb.name}</span>
+                <span className="max-w-[190px] truncate text-foreground md:max-w-none">{crumb.name}</span>
               ) : (
-                <Link to={crumb.url.replace(SITE_URL, "") || "/"} className="hover:text-foreground transition-colors">{crumb.name}</Link>
+                <Link to={crumb.url.replace(SITE_URL, "") || "/"} className="transition-colors hover:text-foreground">
+                  {crumb.name}
+                </Link>
               )}
             </li>
           ))}
         </ol>
       </nav>
 
-      <div className="flex items-center gap-1.5 flex-wrap mb-5">
-        {profile.category && (
-          <Link
-            to={`/categoria/${profile.category.toLowerCase().replace(/\s+/g, "-")}`}
-            className="rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
-          >
-            {profile.category}
-          </Link>
-        )}
-        {profile.city && profile.city_slug && (
-          <Link
-            to={`/cidade/${profile.city_slug}`}
-            className="rounded-full bg-card border border-border/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:border-primary/30 hover:text-foreground transition-colors"
-          >
-            {profile.city}
-          </Link>
-        )}
-        {services.map((s) => (
-          <Link
-            key={s.slug}
-            to={`/buscar?service=${s.slug}`}
-            className="rounded-full bg-card border border-border/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:border-primary/30 hover:text-foreground transition-colors"
-          >
-            {s.name}
-          </Link>
-        ))}
-      </div>
-
-      {profile.city_slug && (
-        <div className="mb-5 flex flex-wrap gap-2 text-xs">
-          <Link to={getCanonicalSeoProfilePath(profile.city_slug, profile.slug || slug || "")?.replace(`/modelo/${profile.slug || slug}`, "") || "/"} className="rounded-full border border-border/40 px-3 py-1 hover:border-primary/40">Voltar para a cidade</Link>
-          <Link to="/buscar" className="rounded-full border border-border/40 px-3 py-1 hover:border-primary/40">Explorar mais perfis</Link>
-        </div>
-      )}
-
-      <div className="grid gap-8 lg:grid-cols-5">
-        <div className="lg:col-span-3">
+      <section className="grid gap-5 lg:grid-cols-12 lg:gap-8">
+        <div className="space-y-4 lg:col-span-8">
           <ProfileGallery images={images} videos={videos} name={profile.display_name} />
+
+          <div className="lg:hidden">
+            <ProfileInfo
+              profile={profile}
+              services={services}
+              showContactButtons={false}
+              maxServices={6}
+              onWhatsappClick={() => trackContact("whatsapp_profile")}
+              onTelegramClick={() => trackContact("telegram_profile")}
+            />
+          </div>
         </div>
-        <div className="lg:col-span-2">
-          <ProfileInfo profile={profile} services={services} />
+
+        <div className="lg:col-span-4">
+          <ProfileDesktopSidebar
+            profile={profile}
+            services={services}
+            onWhatsappClick={() => trackContact("whatsapp_profile")}
+            onTelegramClick={() => trackContact("telegram_profile")}
+          />
         </div>
-      </div>
+      </section>
+
+      <ProfileSectionNav items={navItems} className="sticky top-0 z-30 mt-4 lg:mt-6" />
+
+      <main className="mt-6 space-y-6 pb-24 md:pb-10">
+        <section id="overview" className="scroll-mt-28 rounded-2xl border border-border/30 bg-card/60 p-5">
+          <h2 className="font-display text-xl font-semibold text-foreground">Sobre {profile.display_name}</h2>
+          <p className="mt-2 max-w-3xl whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+            {profile.bio || "Perfil com atendimento dedicado. Entre em contato para disponibilidade e detalhes do atendimento."}
+          </p>
+        </section>
+
+        {services.length > 0 && (
+          <section id="services" className="scroll-mt-28 rounded-2xl border border-border/30 bg-card/60 p-5">
+            <h2 className="font-display text-xl font-semibold text-foreground">Serviços em destaque</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Explore serviços relacionados e encontre exatamente o que procura.</p>
+            <ProfileServiceChips services={services} className="mt-4" />
+          </section>
+        )}
+
+        <section id="pricing" className="scroll-mt-28 rounded-2xl border border-border/30 bg-card/60 p-5">
+          <h2 className="font-display text-xl font-semibold text-foreground">Preços</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {profile.pricing_from
+              ? `Atendimentos a partir de €${Number(profile.pricing_from).toLocaleString("de-DE")}. Valores podem variar conforme serviço e duração.`
+              : "Valores sob consulta. Fale diretamente no WhatsApp ou Telegram para detalhes atualizados."}
+          </p>
+        </section>
+
+        <section id="contact" className="scroll-mt-28 rounded-2xl border border-border/30 bg-card/60 p-5">
+          <h2 className="font-display text-xl font-semibold text-foreground">Contato rápido</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Resposta direta pelos canais oficiais do perfil.</p>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            {profile.whatsapp && (
+              <Button className="bg-green-600 hover:bg-green-700 sm:flex-1" asChild>
+                <a
+                  href={`https://wa.me/${profile.whatsapp.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Entrar em contato por WhatsApp"
+                  onClick={() => trackContact("whatsapp_profile")}
+                >
+                  <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
+                </a>
+              </Button>
+            )}
+            {profile.telegram && (
+              <Button variant="outline" className="sm:flex-1" asChild>
+                <a
+                  href={`https://t.me/${profile.telegram.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Entrar em contato por Telegram"
+                  onClick={() => trackContact("telegram_profile")}
+                >
+                  <Send className="mr-2 h-4 w-4" /> Telegram
+                </a>
+              </Button>
+            )}
+          </div>
+        </section>
+
+        <section id="availability" className="scroll-mt-28 rounded-2xl border border-dashed border-border/40 bg-card/30 p-5">
+          <h2 className="font-display text-xl font-semibold text-foreground">Disponibilidade</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Atualizações de agenda são informadas diretamente no contato.
+          </p>
+        </section>
+
+        <section id="reviews" className="scroll-mt-28 rounded-2xl border border-dashed border-border/40 bg-card/30 p-5">
+          <h2 className="font-display text-xl font-semibold text-foreground">Avaliações</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Ainda não há avaliações públicas disponíveis para este perfil.
+          </p>
+        </section>
+
+        <ProfileRelatedLinks
+          cityName={profile.city}
+          citySlug={profile.city_slug}
+          category={profile.category}
+          services={services}
+        />
+      </main>
+
+      <ProfileFloatingActionsMobile
+        whatsapp={profile.whatsapp}
+        telegram={profile.telegram}
+        onWhatsappClick={() => trackContact("whatsapp_profile")}
+        onTelegramClick={() => trackContact("telegram_profile")}
+      />
     </div>
   );
 }
