@@ -86,7 +86,7 @@ export default function LandingPage() {
   }, [hasMore, loading, loadingMore, loadMore]);
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0">
+    <div className="min-h-screen pb-0">
       {/* Hero — refined with subtle accent line */}
       <section className="relative pt-8 pb-3 md:pt-12 md:pb-5 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-accent/8 via-transparent to-transparent pointer-events-none" />
