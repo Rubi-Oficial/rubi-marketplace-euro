@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Check, CreditCard, Calendar, AlertCircle, XCircle, Clock, Sparkles, Zap } from "lucide-react";
+import { Check, CreditCard, Calendar, AlertCircle, XCircle, Clock, Sparkles, Zap, Settings } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Plan {
@@ -76,6 +76,39 @@ export default function EscortSubscription() {
   const [highlightExpiresAt, setHighlightExpiresAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  const handleManageSubscription = async () => {
+    if (!session?.access_token) {
+      toast.error("Precisa estar autenticado.");
+      return;
+    }
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) {
+        let serverMsg = "";
+        try {
+          const ctx = (error as any).context;
+          if (ctx && typeof ctx.json === "function") {
+            const body = await ctx.json();
+            serverMsg = body?.error || "";
+          }
+        } catch { /* ignore */ }
+        throw new Error(serverMsg || error.message || "Erro ao abrir portal.");
+      }
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      } else {
+        throw new Error("Não foi possível abrir o portal.");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao abrir portal de gestão.");
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
 
   useEffect(() => {
     const status = searchParams.get("status");
@@ -236,6 +269,27 @@ export default function EscortSubscription() {
                 <p className="mt-3 text-xs text-yellow-600">
                   O pagamento está a ser processado. Pode demorar alguns minutos.
                 </p>
+              )}
+              {(subscription.status === "active" || subscription.status === "past_due") && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  disabled={portalLoading}
+                  onClick={handleManageSubscription}
+                >
+                  {portalLoading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Abrindo…
+                    </span>
+                  ) : (
+                    <>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Gerenciar Assinatura
+                    </>
+                  )}
+                </Button>
               )}
             </div>
           </div>
