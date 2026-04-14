@@ -230,6 +230,7 @@ const de: TranslationMap = {
   "settings.data_updated": "Daten aktualisiert!",
   "settings.save_error": "Fehler beim Speichern.",
   "settings.password_changed": "Passwort geändert!",
+  "settings.password_error": "Passwort konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
   "settings.password_changed_success": "Passwort erfolgreich geändert!",
   "settings.password_min": "Das Passwort muss mindestens 6 Zeichen lang sein.",
   "settings.password_min_new": "Das neue Passwort muss mindestens 6 Zeichen lang sein.",
