@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { Search, SlidersHorizontal, MapPin } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useProfileFilters } from "@/hooks/useProfileFilters";
 import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
-import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
 import { ProfileGrid, ProfileGridSkeleton } from "@/components/public/ProfileGrid";
 import { EmptyState } from "@/components/public/EmptyState";
 import { SeoNavigationBlocks } from "@/components/public/SeoNavigationBlocks";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
+import { FilterBar } from "@/components/public/FilterBar";
+import { MobileFilterBar } from "@/components/public/MobileFilterBar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 
@@ -40,7 +40,6 @@ export default function SearchPage() {
     countryName,
     cityName,
     serviceName,
-    filteredCities,
   } = useProfileFilters({
     limit: 50,
     initialFilters: {
@@ -126,6 +125,9 @@ export default function SearchPage() {
       : t("search.subtitle_default");
 
   const searchTitle = cityName ? `${t("nav.explore")} in ${cityName}` : t("nav.explore");
+  const generalCount = [filters.category, filters.service].filter(Boolean).length;
+  const locationCount = [filters.country, filters.city].filter(Boolean).length;
+
   usePageMeta({
     title: searchTitle,
     description: `Search and browse verified professional profiles on Rubi Girls${cityName ? ` in ${cityName}` : ""}. Filter by category, service and location.`,
@@ -177,8 +179,8 @@ export default function SearchPage() {
         <p className="mt-1 text-sm text-muted-foreground max-w-2xl">{pageSubtitle}</p>
       </div>
 
-      <div className="mb-4 space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-2">
-        <div className="relative min-w-0 sm:flex-1">
+      <div className="mb-4">
+        <div className="relative min-w-0">
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder={t("nav.search_placeholder")}
@@ -188,48 +190,33 @@ export default function SearchPage() {
             aria-label={t("nav.search_placeholder")}
           />
         </div>
-
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:w-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setFilterOpen(true)}
-            className={`h-10 justify-center gap-1.5 rounded-xl border-border/40 px-3 sm:rounded-full sm:shrink-0 ${hasGeneralFilter ? "border-primary/40 text-primary bg-primary/5" : ""}`}
-            aria-label={t("landing.filters")}
-          >
-            <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="text-xs">{t("landing.filters")}</span>
-            {hasGeneralFilter && (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
-                {[filters.category, filters.service].filter(Boolean).length}
-              </span>
-            )}
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setLocationOpen(true)}
-            className={`h-10 justify-center gap-1.5 rounded-xl border-border/40 px-3 sm:rounded-full sm:shrink-0 ${hasLocationFilter ? "border-primary/40 text-primary bg-primary/5" : ""}`}
-            aria-label={t("landing.location")}
-          >
-            <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="text-xs">{t("landing.location")}</span>
-            {hasLocationFilter && (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
-                {[filters.country, filters.city].filter(Boolean).length}
-              </span>
-            )}
-          </Button>
-        </div>
       </div>
 
-      <ActiveFilterChips
-        filters={{ country: filters.country, city: filters.city, category: filters.category, service: filters.service }}
+      <MobileFilterBar
+        hasGeneralFilter={hasGeneralFilter}
+        hasLocationFilter={hasLocationFilter}
+        generalCount={generalCount}
+        locationCount={locationCount}
+        onOpenFilters={() => setFilterOpen(true)}
+        onOpenLocation={() => setLocationOpen(true)}
+      />
+
+      <FilterBar
+        hasGeneralFilter={hasGeneralFilter}
+        hasLocationFilter={hasLocationFilter}
+        hasFilters={hasFilters}
+        generalCount={generalCount}
+        locationCount={locationCount}
+        countryFilter={filters.country}
+        cityFilter={filters.city}
+        categoryFilter={filters.category}
+        serviceFilter={filters.service}
         countryName={countryName}
         cityName={cityName}
         serviceName={serviceName}
-        onRemove={handleRemoveFilter}
+        onOpenFilters={() => setFilterOpen(true)}
+        onOpenLocation={() => setLocationOpen(true)}
+        onRemoveFilter={handleRemoveFilter}
         onClearAll={clearFilters}
       />
 
