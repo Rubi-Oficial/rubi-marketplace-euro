@@ -1,39 +1,25 @@
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
-import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogOut, LayoutDashboard, Search, Menu, X, CreditCard, Megaphone, Shield, Lock, HeadphonesIcon } from "lucide-react";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Search, Menu, X } from "lucide-react";
 import { useState, useCallback } from "react";
-import { CATEGORIES } from "@/components/shared/CategoryBar";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { LANGUAGES } from "@/i18n/translations";
 import BrandLogo from "@/components/shared/BrandLogo";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
+import DesktopNav from "./navbar/DesktopNav";
+import MobileMenu from "./navbar/MobileMenu";
+import CategoryRow from "./navbar/CategoryRow";
 
 export default function Navbar() {
-  const { user, userRole, signOut } = useAuth();
-  const { lang, setLang, t } = useLanguage();
+  const { t } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const dashboardPath = getRoleDashboard(userRole as any);
   const navigate = useNavigate();
   const location = useLocation();
   const { slug } = useParams();
-
   const [searchValue, setSearchValue] = useState("");
 
   const isCategory = location.pathname.startsWith("/categoria/");
   const activeSlug = isCategory ? slug : "";
   const isAllActive = !isCategory && (location.pathname === "/" || location.pathname === "/buscar");
-
-  const currentLang = LANGUAGES.find((l) => l.code === lang)!;
 
   const handleSearch = useCallback(
     (e: React.FormEvent) => {
@@ -55,7 +41,6 @@ export default function Navbar() {
       role="navigation"
       aria-label="Main navigation"
     >
-      {/* Top row: logo, search, quick actions, auth */}
       <div className="container mx-auto flex h-14 items-center justify-between gap-3 px-4">
         <Link to="/" className="shrink-0" aria-label="Velvet Escorts VIP — Home">
           <BrandLogo imgClassName="h-9 sm:h-10" />
@@ -77,77 +62,7 @@ export default function Navbar() {
           </Button>
         </form>
 
-        {/* Quick access links — desktop only */}
-        <div className="hidden lg:flex items-center gap-1 shrink-0">
-          <Button variant="ghost" size="sm" asChild className="text-[12px] rounded-full h-8 px-3 text-muted-foreground hover:text-foreground">
-            <Link to="/planos">
-              <CreditCard className="mr-1 h-3 w-3" />
-              {t("landing.quick_plans")}
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" asChild className="text-[12px] rounded-full h-8 px-3 text-muted-foreground hover:text-foreground">
-            <Link to="/cadastro?role=professional">
-              <Megaphone className="mr-1 h-3 w-3" />
-              {t("landing.quick_publish")}
-            </Link>
-          </Button>
-        </div>
-
-        <div className="hidden md:flex items-center gap-2 shrink-0">
-          {/* Language selector */}
-          <DropdownMenu>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="shrink-0 rounded-full h-8 w-8 flex items-center justify-center text-lg leading-none transition-colors hover:bg-accent/35"
-                    aria-label={`Language: ${currentLang.name}`}
-                  >
-                    {currentLang.flag}
-                  </button>
-                </DropdownMenuTrigger>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-xs">
-                {currentLang.name}
-              </TooltipContent>
-            </Tooltip>
-            <DropdownMenuContent align="end" className="min-w-[120px]">
-              {LANGUAGES.map((l) => (
-                <DropdownMenuItem
-                  key={l.code}
-                  onClick={() => setLang(l.code)}
-                  className={`text-sm gap-2 ${lang === l.code ? "bg-accent font-semibold" : ""}`}
-                >
-                  <span className="text-base">{l.flag}</span>
-                  <span>{l.name}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {user ? (
-            <>
-              <Button variant="ghost" size="sm" asChild className="text-[13px] rounded-full">
-                <Link to={dashboardPath}>
-                  <LayoutDashboard className="mr-1.5 h-3.5 w-3.5" />
-                  {t("nav.dashboard")}
-                </Link>
-              </Button>
-              <Button variant="ghost" size="icon" onClick={signOut} className="h-8 w-8 rounded-full" aria-label={t("nav.sign_out")}>
-                <LogOut className="h-3.5 w-3.5" />
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" size="sm" asChild className="text-[13px] rounded-full">
-                <Link to="/login">{t("nav.sign_in")}</Link>
-              </Button>
-              <Button variant="premium" size="sm" asChild className="text-[13px] h-8 px-4 rounded-full shadow-md">
-                <Link to="/cadastro">{t("nav.get_started")}</Link>
-              </Button>
-            </>
-          )}
-        </div>
+        <DesktopNav />
 
         <button
           className="p-2 text-foreground rounded-full hover:bg-accent transition-colors md:hidden"
@@ -160,196 +75,15 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Category row + trust badges */}
-      <div className="border-t border-border/20">
-        <div className="container mx-auto px-4 flex items-center gap-2">
-          <ScrollArea className="flex-1">
-            <div className="flex items-center gap-1 py-1.5" role="tablist" aria-label="Categories">
-              <Link
-                to="/buscar"
-                role="tab"
-                aria-selected={isAllActive}
-                className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
-                  isAllActive
-                    ? "bg-primary/95 text-primary-foreground shadow-[0_8px_18px_hsl(41_49%_69%_/_0.18)]"
-                    : "text-secondary-foreground hover:text-foreground hover:bg-accent/35"
-                }`}
-              >
-                {t("nav.all")}
-              </Link>
-              {CATEGORIES.map((cat) => (
-                <Link
-                  key={cat.slug}
-                  to={`/categoria/${cat.slug}`}
-                  role="tab"
-                  aria-selected={activeSlug === cat.slug}
-                  className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
-                    activeSlug === cat.slug
-                      ? "bg-primary/95 text-primary-foreground shadow-[0_8px_18px_hsl(41_49%_69%_/_0.18)]"
-                      : "text-secondary-foreground hover:text-foreground hover:bg-accent/35"
-                  }`}
-                >
-                  {t(cat.key)}
-                </Link>
-              ))}
-            </div>
-            <ScrollBar orientation="horizontal" className="h-0" />
-          </ScrollArea>
+      <CategoryRow activeSlug={activeSlug} isAllActive={isAllActive} />
 
-          {/* Trust badges — desktop only, inline with categories */}
-          <div className="hidden xl:flex items-center gap-3 pl-3 border-l border-border/20 shrink-0">
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
-              <Shield className="h-3 w-3 text-primary/50" />
-              {t("landing.quick_trust_verified")}
-            </span>
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
-              <Lock className="h-3 w-3 text-primary/50" />
-              {t("landing.quick_trust_privacy")}
-            </span>
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
-              <HeadphonesIcon className="h-3 w-3 text-primary/50" />
-              {t("landing.quick_trust_support")}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      <div
-        id="mobile-menu"
-        className={`md:hidden border-t border-[hsl(0_0%_100%_/_0.08)] bg-[hsl(274_36%_8%_/_0.95)] backdrop-blur-lg px-4 space-y-1 shadow-[0_12px_40px_hsl(274_36%_4%_/_0.6)] overflow-hidden transition-all duration-300 ease-out ${
-          mobileOpen ? "max-h-[80vh] py-4 opacity-100" : "max-h-0 py-0 opacity-0 pointer-events-none"
-        }`}
-        role="menu"
-        aria-hidden={!mobileOpen}
-      >
-        <form onSubmit={(e) => { handleSearch(e); closeMobile(); }} className="flex gap-2 mb-3 sm:hidden" role="search">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-            <Input
-              placeholder={t("nav.search_placeholder")}
-              className="pl-9 h-9 bg-card border-border/40 text-sm rounded-full"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              aria-label={t("nav.search_placeholder")}
-            />
-          </div>
-          <Button type="submit" variant="premium" size="sm" className="h-9 px-3 rounded-full">
-            <Search className="h-3.5 w-3.5" />
-          </Button>
-        </form>
-
-        {/* Quick access — mobile */}
-        <div className="flex gap-2 mb-3">
-          <Link
-            to="/buscar"
-            onClick={closeMobile}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium py-2 px-3 rounded-full bg-primary text-primary-foreground shadow-sm"
-          >
-            <Search className="h-3 w-3" />
-            {t("landing.quick_search")}
-          </Link>
-          <Link
-            to="/planos"
-            onClick={closeMobile}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium py-2 px-3 rounded-full border border-border/50 text-foreground hover:bg-accent/40 transition-colors"
-          >
-            <CreditCard className="h-3 w-3" />
-            {t("landing.quick_plans")}
-          </Link>
-          <Link
-            to="/cadastro?role=professional"
-            onClick={closeMobile}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium py-2 px-3 rounded-full border border-border/50 text-foreground hover:bg-accent/40 transition-colors"
-          >
-            <Megaphone className="h-3 w-3" />
-            {t("landing.quick_publish")}
-          </Link>
-        </div>
-
-        {/* Trust badges — mobile */}
-        <div className="flex items-center justify-center gap-3 py-1.5 mb-2">
-          <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
-            <Shield className="h-2.5 w-2.5 text-primary/40" />
-            {t("landing.quick_trust_verified")}
-          </span>
-          <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
-            <Lock className="h-2.5 w-2.5 text-primary/40" />
-            {t("landing.quick_trust_privacy")}
-          </span>
-          <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
-            <HeadphonesIcon className="h-2.5 w-2.5 text-primary/40" />
-            {t("landing.quick_trust_support")}
-          </span>
-        </div>
-
-        <Separator className="bg-border/20 my-1" />
-
-        {/* Mobile language selector */}
-        <div className="flex items-center gap-1.5 px-2 py-2">
-          {LANGUAGES.map((l) => (
-            <button
-              key={l.code}
-              onClick={() => setLang(l.code)}
-              className={`rounded-full px-2.5 py-1.5 text-base transition-all duration-200 ${
-                lang === l.code
-                  ? "bg-primary/20 ring-1 ring-primary/70 scale-110"
-                  : "hover:bg-accent/35"
-              }`}
-              aria-label={l.name}
-            >
-              {l.flag}
-            </button>
-          ))}
-        </div>
-
-        <Link to="/buscar" onClick={closeMobile} className="flex items-center gap-2.5 text-sm text-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">
-          <Search className="h-4 w-4 text-muted-foreground" /> {t("nav.explore")}
-        </Link>
-        {CATEGORIES.map((cat) => (
-          <Link key={cat.slug} to={`/categoria/${cat.slug}`} onClick={closeMobile} className="block text-sm text-muted-foreground py-2 px-5 rounded-lg hover:bg-accent/40 hover:text-foreground transition-colors" role="menuitem">
-            {t(cat.key)}
-          </Link>
-        ))}
-        <Link to="/planos" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.plans")}</Link>
-        <Link to="/sobre" onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.about")}</Link>
-        <Separator className="bg-border/20 my-1" />
-        <div>
-          {user ? (
-            <>
-              <Link to={dashboardPath} onClick={closeMobile} className="block text-sm text-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.dashboard")}</Link>
-              <button onClick={() => { signOut(); closeMobile(); }} className="block w-full text-left text-sm text-muted-foreground py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors" role="menuitem">{t("nav.sign_out")}</button>
-            </>
-          ) : (
-            <div className="grid gap-2">
-              <Link
-                to="/login?redirect=/app"
-                onClick={closeMobile}
-                className="inline-flex items-center justify-center text-sm font-medium py-2.5 px-3 rounded-lg border border-border/50 bg-card/60 text-foreground hover:bg-accent/45 transition-colors"
-                role="menuitem"
-              >
-                Login profissionais
-              </Link>
-              <Link
-                to="/login?redirect=/cliente"
-                onClick={closeMobile}
-                className="inline-flex items-center justify-center text-sm font-medium py-2.5 px-3 rounded-lg border border-border/50 bg-card/60 text-foreground hover:bg-accent/45 transition-colors"
-                role="menuitem"
-              >
-                Login clientes
-              </Link>
-              <Link
-                to="/cadastro"
-                onClick={closeMobile}
-                className="inline-flex items-center justify-center text-sm font-semibold py-2.5 px-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-[0_8px_20px_hsl(var(--primary)_/_0.28)]"
-                role="menuitem"
-              >
-                {t("nav.get_started")}
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
+      <MobileMenu
+        isOpen={mobileOpen}
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+        onSearch={handleSearch}
+        onClose={closeMobile}
+      />
     </nav>
   );
 }
