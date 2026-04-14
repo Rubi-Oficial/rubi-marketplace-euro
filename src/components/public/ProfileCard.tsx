@@ -22,10 +22,10 @@ function getTierStyles(tier: string | null, expiresAt: string | null, isFeatured
   const isActive = expiresAt && new Date(expiresAt) > new Date();
 
   if (tier === "exclusive" && isActive) {
-    return "border-[hsl(41_49%_69%_/_0.35)] shadow-[0_0_20px_hsl(41_49%_69%_/_0.08),inset_0_0_0_1px_hsl(41_49%_69%_/_0.06)]";
+    return "border-[hsl(41_49%_69%_/_0.35)] shadow-[0_0_20px_hsl(41_49%_69%_/_0.08),inset_0_0_0_1px_hsl(41_49%_69%_/_0.06)] animate-tier-pulse-gold";
   }
   if (tier === "premium" && isActive) {
-    return "border-[hsl(278_31%_51%_/_0.35)] shadow-[0_0_18px_hsl(278_31%_51%_/_0.08),inset_0_0_0_1px_hsl(278_31%_51%_/_0.06)]";
+    return "border-[hsl(278_31%_51%_/_0.35)] shadow-[0_0_18px_hsl(278_31%_51%_/_0.08),inset_0_0_0_1px_hsl(278_31%_51%_/_0.06)] animate-tier-pulse-purple";
   }
   if (isFeatured) {
     return "border-[hsl(41_49%_69%_/_0.22)]";
