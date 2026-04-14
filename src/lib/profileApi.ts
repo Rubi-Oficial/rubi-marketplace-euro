@@ -26,6 +26,7 @@ type ProfileServiceRow = Pick<Database["public"]["Tables"]["profile_services"]["
 
 export async function fetchEligibleProfiles(filters?: {
   country?: string;
+  country_name?: string;
   city?: string;
   city_slug?: string;
   city_slugs?: string[];
