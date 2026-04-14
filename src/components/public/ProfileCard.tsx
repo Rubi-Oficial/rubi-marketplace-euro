@@ -116,7 +116,7 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
         onClick={handleNavigate}
       >
         {/* Image section with overlay gradient */}
-        <div className="relative h-[300px] sm:h-[360px] overflow-hidden bg-muted">
+        <div className="relative h-[320px] sm:h-[380px] overflow-hidden bg-muted">
           <ImageCarousel urls={urls} displayName={profile.display_name} hovered={hovered} />
 
           {/* Bottom gradient for text readability */}
@@ -162,7 +162,7 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
         </div>
 
         {/* Info sections */}
-        <div className="flex flex-1 flex-col px-4 sm:px-5 py-4 space-y-2.5">
+        <div className="flex flex-1 flex-col px-4 sm:px-5 py-4 sm:py-5 space-y-3">
           <div className="flex items-baseline gap-2">
             <h3 className="font-display text-xl font-bold text-foreground leading-tight truncate">
               {profile.display_name}
