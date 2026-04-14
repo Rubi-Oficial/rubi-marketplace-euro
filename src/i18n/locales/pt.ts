@@ -27,6 +27,14 @@ const pt: TranslationMap = {
   "landing.empty_remove_service": "Remover serviço",
   "landing.empty_remove_category": "Remover categoria",
   "landing.empty_browse_all": "Ver todos os perfis",
+  "landing.quick_title": "Acesso rápido",
+  "landing.quick_subtitle": "Encontre resultados em poucos cliques",
+  "landing.quick_search": "Buscar agora",
+  "landing.quick_plans": "Ver planos",
+  "landing.quick_publish": "Publicar anúncio",
+  "landing.quick_trust_verified": "Perfis verificados",
+  "landing.quick_trust_privacy": "Privacidade protegida",
+  "landing.quick_trust_support": "Suporte dedicado",
 
   // Search
   "search.loading": "Carregando...",
