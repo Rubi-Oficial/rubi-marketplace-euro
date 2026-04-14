@@ -99,6 +99,7 @@ export default function EscortSubscription() {
       }
       if (data?.url) {
         window.open(data.url, "_blank");
+        toast.success("Portal de gestão aberto com sucesso.");
       } else {
         throw new Error("Não foi possível abrir o portal.");
       }
