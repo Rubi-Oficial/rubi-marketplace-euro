@@ -105,6 +105,15 @@ export default function LandingPage() {
 
       <section className="pt-2 pb-8 md:pb-8">
         <div className="container mx-auto px-4">
+          <MobileFilterBar
+            hasGeneralFilter={hasGeneralFilter}
+            hasLocationFilter={hasLocationFilter}
+            generalCount={generalCount}
+            locationCount={locationCount}
+            onOpenFilters={() => setFilterOpen(true)}
+            onOpenLocation={() => setLocationOpen(true)}
+          />
+
           <FilterBar
             hasGeneralFilter={hasGeneralFilter}
             hasLocationFilter={hasLocationFilter}
