@@ -74,6 +74,12 @@ export async function fetchLocations() {
     supabase.from("countries").select("id, name, slug, iso_code").eq("is_active", true).order("sort_order"),
     supabase.from("cities").select("id, country_id, name, slug, is_featured").eq("is_active", true).order("sort_order"),
   ]);
+
+  if (cRes.error || ciRes.error) {
+    const details = [cRes.error?.message, ciRes.error?.message].filter(Boolean).join(" | ");
+    throw new Error(details || "Failed to fetch locations");
+  }
+
   return {
     countries: (cRes.data || []) as Country[],
     cities: (ciRes.data || []) as City[],
