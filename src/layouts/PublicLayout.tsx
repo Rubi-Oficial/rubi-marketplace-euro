@@ -92,10 +92,12 @@ export default function PublicLayout() {
               <nav aria-label="Local SEO links" className="flex flex-col gap-2.5 text-[13px]">
                 <Link to="/es/escorts-barcelona" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Barcelona</Link>
                 <Link to="/es/escorts-madrid" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Madrid</Link>
-                <Link to="/es/escorts-barcelona/vip" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">VIP Escorts Barcelona</Link>
-                <Link to="/es/escorts-madrid/luxury" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Luxury Escorts Madrid</Link>
-                <Link to="/br/acompanhantes-florianopolis" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Florianópolis</Link>
-                <Link to="/br/acompanhantes-sao-paulo" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">São Paulo</Link>
+                <Link to="/es/escorts-paris" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Paris</Link>
+                <Link to="/es/escorts-lisbon" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Lisbon</Link>
+                <Link to="/es/escorts-milan" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Milan</Link>
+                <Link to="/es/escorts-marbella" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Marbella</Link>
+                <Link to="/es/escorts-barcelona/vip" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">VIP Barcelona</Link>
+                <Link to="/es/escorts-paris/jantar" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Jantar Paris</Link>
               </nav>
             </div>
           </div>

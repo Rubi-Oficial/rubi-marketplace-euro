@@ -100,6 +100,15 @@ export default function LandingPage() {
             {t("home.subtitle")}
           </p>
           <div className="mx-auto mt-4 h-px w-20 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        <nav aria-label="Breadcrumb" className="mt-4 text-xs text-muted-foreground">
+          <ol className="flex items-center justify-center gap-1.5 flex-wrap">
+            <li className="text-foreground">Home</li>
+            <li className="text-border">/</li>
+            <li><Link to="/es" className="hover:text-foreground transition-colors">Europa</Link></li>
+            <li className="text-border">/</li>
+            <li><Link to="/buscar" className="hover:text-foreground transition-colors">Explorar perfis</Link></li>
+          </ol>
+        </nav>
         </div>
       </section>
 

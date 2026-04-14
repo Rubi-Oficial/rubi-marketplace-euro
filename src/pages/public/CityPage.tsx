@@ -2,37 +2,45 @@ import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useLocations } from "@/hooks/useLocations";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 import { SeoNavigationBlocks } from "@/components/public/SeoNavigationBlocks";
 
-// Cities with custom microcopy keys
-const CITY_OVERRIDES = new Set(["barcelona", "madrid"]);
-
 const SEO_CITY_COPY: Record<string, { title: string; desc: string; h1: string }> = {
   barcelona: {
-    title: "Escorts en Barcelona | Perfiles verificados y contacto directo",
-    desc: "Descubre escorts en Barcelona con perfiles verificados, fotos y contacto directo. Explora perfiles por zona, estilo y servicio.",
-    h1: "Escorts en Barcelona",
+    title: "Serviços premium em Barcelona | Perfis verificados e contato direto",
+    desc: "Descubra perfis premium em Barcelona com fotos reais e filtros por serviço.",
+    h1: "Serviços premium em Barcelona",
   },
   madrid: {
-    title: "Escorts en Madrid | Perfiles verificados",
-    desc: "Encuentra escorts en Madrid con perfiles verificados, fotos y contacto directo. Explora perfiles por zona, estilo y servicio.",
-    h1: "Escorts en Madrid",
+    title: "Serviços premium em Madrid | Perfis verificados",
+    desc: "Encontre perfis premium em Madrid com contato direto e navegação por serviço.",
+    h1: "Serviços premium em Madrid",
   },
-  florianopolis: {
-    title: "Acompanhantes em Florianópolis | Perfis verificados",
-    desc: "Encontre acompanhantes em Florianópolis com perfis verificados, fotos e contato direto.",
-    h1: "Acompanhantes em Florianópolis",
+  paris: {
+    title: "Serviços premium em Paris | Perfis verificados",
+    desc: "Explore perfis premium em Paris com foco em turismo e demanda de alto padrão.",
+    h1: "Serviços premium em Paris",
   },
-  "sao-paulo": {
-    title: "Acompanhantes em São Paulo | Contato direto",
-    desc: "Explore acompanhantes em São Paulo com perfis verificados, fotos e contato direto.",
-    h1: "Acompanhantes em São Paulo",
+  lisbon: {
+    title: "Serviços premium em Lisbon | Perfis verificados",
+    desc: "Navegue por perfis premium em Lisbon com filtros por Massagem, VIP, Jantar e Viagem.",
+    h1: "Serviços premium em Lisbon",
+  },
+  milan: {
+    title: "Serviços premium em Milan | Perfis verificados",
+    desc: "Descubra perfis premium em Milan com links internos para categoria e serviços.",
+    h1: "Serviços premium em Milan",
+  },
+  marbella: {
+    title: "Serviços premium em Marbella | Perfis verificados",
+    desc: "Explore perfis premium em Marbella com foco em turismo de luxo e vida noturna.",
+    h1: "Serviços premium em Marbella",
   },
 };
+
 
 
 export default function CityPage() {
@@ -49,14 +57,10 @@ export default function CityPage() {
   const countryObj = cityObj ? countries.find((c) => c.id === cityObj.country_id) : null;
   const activeServiceObj = services.find((s) => s.slug === activeService);
 
-  // Resolve city-specific or default translation keys
-  const hasOverride = slug ? CITY_OVERRIDES.has(slug) : false;
   const seoCopy = slug ? SEO_CITY_COPY[slug] : undefined;
-  const metaTitle = seoCopy?.title || (hasOverride ? t(`city.meta_title_${slug}`) : t("city.meta_title_default", { city: cityName }));
-  const metaDesc = seoCopy?.desc || (hasOverride ? t(`city.meta_desc_${slug}`) : t("city.meta_desc_default", { city: cityName }));
-  const introText = hasOverride
-    ? t(`city.intro_${slug}`)
-    : t("city.intro_default", { city: cityName });
+  const metaTitle = seoCopy?.title || t("city.meta_title_default", { city: cityName });
+  const metaDesc = seoCopy?.desc || t("city.meta_desc_default", { city: cityName });
+  const introText = seoCopy?.desc || t("city.intro_default", { city: cityName });
   const h1Text = seoCopy?.h1 || t("city.h1_default", { city: cityName });
 
   useEffect(() => { fetchServices().then(setServices); }, []);
@@ -180,6 +184,18 @@ export default function CityPage() {
             <ProfileCard key={p.id} profile={p} />
           ))}
         </div>
+      )}
+
+      {slug && (
+        <section className="mt-8">
+          <h2 className="text-sm font-semibold text-foreground">Explorar por serviço em {cityName}</h2>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs">
+            <Link className="rounded-full border border-border/40 px-3 py-1 hover:border-primary/40" to={`/es/escorts-${slug}/massagem`}>Massagem em {cityName}</Link>
+            <Link className="rounded-full border border-border/40 px-3 py-1 hover:border-primary/40" to={`/es/escorts-${slug}/vip`}>VIP em {cityName}</Link>
+            <Link className="rounded-full border border-border/40 px-3 py-1 hover:border-primary/40" to={`/es/escorts-${slug}/jantar`}>Jantar em {cityName}</Link>
+            <Link className="rounded-full border border-border/40 px-3 py-1 hover:border-primary/40" to={`/es/escorts-${slug}/viagem`}>Viagem em {cityName}</Link>
+          </div>
+        </section>
       )}
 
       <SeoNavigationBlocks />
