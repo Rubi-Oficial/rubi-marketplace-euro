@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import logoVelvetVip from "@/assets/logo-velvet-vip.svg";
 
@@ -7,19 +8,20 @@ interface BrandLogoProps {
   alt?: string;
 }
 
-export default function BrandLogo({
-  className,
-  imgClassName,
-  alt = "Velvet Escorts VIP",
-}: BrandLogoProps) {
-  return (
-    <span className={cn("inline-flex items-center", className)}>
-      <img
-        src={logoVelvetVip}
-        alt={alt}
-        className={cn("h-8 w-auto object-contain", imgClassName)}
-        loading="eager"
-      />
-    </span>
-  );
-}
+const BrandLogo = forwardRef<HTMLSpanElement, BrandLogoProps>(
+  ({ className, imgClassName, alt = "Velvet Escorts VIP" }, ref) => {
+    return (
+      <span ref={ref} className={cn("inline-flex items-center", className)}>
+        <img
+          src={logoVelvetVip}
+          alt={alt}
+          className={cn("h-8 w-auto object-contain", imgClassName)}
+          loading="eager"
+        />
+      </span>
+    );
+  }
+);
+BrandLogo.displayName = "BrandLogo";
+
+export default BrandLogo;
