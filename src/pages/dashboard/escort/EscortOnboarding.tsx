@@ -22,7 +22,7 @@ const STEPS: StepConfig[] = [
 export default function EscortOnboarding() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { countries } = useLocations();
+  const { countries, getCitiesByCountry } = useLocations();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -169,8 +169,12 @@ export default function EscortOnboarding() {
     switch (step) {
       case 0:
         return form.display_name.trim().length >= 2;
-      case 1:
-        return form.country.length > 0 && form.city.length > 0 && form.category.length > 0;
+      case 1: {
+        if (!form.country || !form.city || !form.city_slug || !form.category) return false;
+        // Validate city belongs to selected country
+        const citiesForCountry = getCitiesByCountry(form.country);
+        return citiesForCountry.some((c) => c.slug === form.city_slug);
+      }
       case 2:
         return true;
       case 3:

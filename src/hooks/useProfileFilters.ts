@@ -59,15 +59,20 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
     });
   }, []);
 
+  const countryObj = useMemo(
+    () => countries.find((c) => c.slug === filters.country),
+    [countries, filters.country]
+  );
+
   const buildFilterParams = useCallback(() => ({
     search: debouncedSearch || undefined,
-    country: filters.country || undefined,
+    country_name: countryObj?.name || undefined,
     city_slugs: filters.country && !filters.city ? filteredCities.map((c) => c.slug) : undefined,
     city_slug: filters.city || undefined,
     category: filters.category || undefined,
     service_slug: filters.service || undefined,
     limit,
-  }), [debouncedSearch, filters.country, filters.city, filters.category, filters.service, filteredCities, limit]);
+  }), [debouncedSearch, countryObj, filters.country, filters.city, filters.category, filters.service, filteredCities, limit]);
 
   // Initial load + filter changes
   useEffect(() => {
@@ -145,7 +150,7 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
     }
   };
 
-  const countryName = countries.find((c) => c.slug === filters.country)?.name;
+  const countryName = countryObj?.name;
   const cityName = filteredCities.find((c) => c.slug === filters.city)?.name;
   const serviceName = services.find((s) => s.slug === filters.service)?.name;
 

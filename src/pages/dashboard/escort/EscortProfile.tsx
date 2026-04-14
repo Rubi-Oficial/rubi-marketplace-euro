@@ -146,6 +146,16 @@ export default function EscortProfile() {
 
     if (form.bio && form.bio.length > 1000) return "A bio deve ter no máximo 1000 caracteres.";
 
+    // Validate country+city compatibility
+    if (form.country && form.city_slug) {
+      const citiesForCountry = getCitiesByCountry(form.country);
+      const cityValid = citiesForCountry.some((c) => c.slug === form.city_slug);
+      if (!cityValid) return "A cidade selecionada não pertence ao país escolhido. Selecione novamente.";
+    }
+
+    if (form.country && !form.city_slug) return "Selecione uma cidade.";
+    if (!form.country && form.city_slug) return "Selecione um país.";
+
     return null;
   };
 
