@@ -104,18 +104,147 @@ const cityPages = (city: string): SeoLocalPageConfig[] => [
   },
 ];
 
+const seoCity = (slug: string, name: string): SeoCityConfig => ({
+  market: "es",
+  citySlug: slug,
+  cityName: name,
+  label: `Servicios premium ${name}`,
+  basePath: `/es/escorts-${slug}`,
+  profileBasePath: `/es/escorts-${slug}/modelo`,
+  pages: cityPages(name),
+});
+
 export const LOCAL_SEO_CITIES: SeoCityConfig[] = [
-  { market: "es", citySlug: "barcelona", cityName: "Barcelona", label: "Servicios premium Barcelona", basePath: "/es/escorts-barcelona", profileBasePath: "/es/escorts-barcelona/modelo", pages: cityPages("Barcelona") },
-  { market: "es", citySlug: "madrid", cityName: "Madrid", label: "Servicios premium Madrid", basePath: "/es/escorts-madrid", profileBasePath: "/es/escorts-madrid/modelo", pages: cityPages("Madrid") },
-  { market: "es", citySlug: "paris", cityName: "Paris", label: "Servicios premium Paris", basePath: "/es/escorts-paris", profileBasePath: "/es/escorts-paris/modelo", pages: cityPages("Paris") },
-  { market: "es", citySlug: "lisbon", cityName: "Lisbon", label: "Servicios premium Lisbon", basePath: "/es/escorts-lisbon", profileBasePath: "/es/escorts-lisbon/modelo", pages: cityPages("Lisbon") },
-  { market: "es", citySlug: "milan", cityName: "Milan", label: "Servicios premium Milan", basePath: "/es/escorts-milan", profileBasePath: "/es/escorts-milan/modelo", pages: cityPages("Milan") },
-  { market: "es", citySlug: "marbella", cityName: "Marbella", label: "Servicios premium Marbella", basePath: "/es/escorts-marbella", profileBasePath: "/es/escorts-marbella/modelo", pages: cityPages("Marbella") },
+  // Spain
+  seoCity("barcelona", "Barcelona"),
+  seoCity("madrid", "Madrid"),
+  seoCity("valencia", "Valencia"),
+  seoCity("seville", "Seville"),
+  seoCity("malaga", "Malaga"),
+  seoCity("bilbao", "Bilbao"),
+  seoCity("ibiza", "Ibiza"),
+  seoCity("marbella", "Marbella"),
+  seoCity("palma-de-mallorca", "Palma de Mallorca"),
+  // Portugal
+  seoCity("lisbon", "Lisbon"),
+  seoCity("porto", "Porto"),
+  seoCity("faro", "Faro"),
+  seoCity("braga", "Braga"),
+  seoCity("coimbra", "Coimbra"),
+  seoCity("funchal", "Funchal"),
+  seoCity("albufeira", "Albufeira"),
+  // France
+  seoCity("paris", "Paris"),
+  seoCity("lyon", "Lyon"),
+  seoCity("marseille", "Marseille"),
+  seoCity("nice", "Nice"),
+  seoCity("toulouse", "Toulouse"),
+  seoCity("bordeaux", "Bordeaux"),
+  seoCity("strasbourg", "Strasbourg"),
+  seoCity("cannes", "Cannes"),
+  seoCity("monaco", "Monaco"),
+  // Italy
+  seoCity("milan", "Milan"),
+  seoCity("rome", "Rome"),
+  seoCity("florence", "Florence"),
+  seoCity("naples", "Naples"),
+  seoCity("venice", "Venice"),
+  seoCity("turin", "Turin"),
+  seoCity("bologna", "Bologna"),
+  seoCity("verona", "Verona"),
+  // Germany
+  seoCity("berlin", "Berlin"),
+  seoCity("munich", "Munich"),
+  seoCity("frankfurt", "Frankfurt"),
+  seoCity("hamburg", "Hamburg"),
+  seoCity("cologne", "Cologne"),
+  seoCity("dusseldorf", "Düsseldorf"),
+  seoCity("stuttgart", "Stuttgart"),
+  seoCity("hanover", "Hanover"),
+  // Netherlands
+  seoCity("amsterdam", "Amsterdam"),
+  seoCity("rotterdam", "Rotterdam"),
+  seoCity("den-haag", "Den Haag"),
+  seoCity("utrecht", "Utrecht"),
+  seoCity("eindhoven", "Eindhoven"),
+  seoCity("groningen", "Groningen"),
+  seoCity("maastricht", "Maastricht"),
+  // Belgium
+  seoCity("brussels", "Brussels"),
+  seoCity("antwerp", "Antwerp"),
+  seoCity("ghent", "Ghent"),
+  seoCity("bruges", "Bruges"),
+  seoCity("liege", "Liège"),
+  seoCity("leuven", "Leuven"),
+  seoCity("namur", "Namur"),
+  // United Kingdom
+  seoCity("london", "London"),
+  seoCity("manchester", "Manchester"),
+  seoCity("birmingham", "Birmingham"),
+  seoCity("edinburgh", "Edinburgh"),
+  seoCity("liverpool", "Liverpool"),
+  seoCity("glasgow", "Glasgow"),
+  seoCity("bristol", "Bristol"),
+  seoCity("leeds", "Leeds"),
+  // Switzerland
+  seoCity("zurich", "Zurich"),
+  seoCity("geneva", "Geneva"),
+  seoCity("basel", "Basel"),
+  seoCity("bern", "Bern"),
+  seoCity("lausanne", "Lausanne"),
+  // Austria
+  seoCity("vienna", "Vienna"),
+  seoCity("salzburg", "Salzburg"),
+  seoCity("innsbruck", "Innsbruck"),
+  seoCity("graz", "Graz"),
+  seoCity("linz", "Linz"),
+  // Ireland
+  seoCity("dublin", "Dublin"),
+  seoCity("cork", "Cork"),
+  seoCity("galway", "Galway"),
+  seoCity("limerick", "Limerick"),
+  // Sweden
+  seoCity("stockholm", "Stockholm"),
+  seoCity("gothenburg", "Gothenburg"),
+  seoCity("malmo", "Malmö"),
+  seoCity("uppsala", "Uppsala"),
+  // Denmark
+  seoCity("copenhagen", "Copenhagen"),
+  seoCity("aarhus", "Aarhus"),
+  seoCity("odense", "Odense"),
+  // Norway
+  seoCity("oslo", "Oslo"),
+  seoCity("bergen", "Bergen"),
+  seoCity("stavanger", "Stavanger"),
+  seoCity("trondheim", "Trondheim"),
+  // Poland
+  seoCity("warsaw", "Warsaw"),
+  seoCity("krakow", "Krakow"),
+  seoCity("wroclaw", "Wroclaw"),
+  seoCity("gdansk", "Gdansk"),
+  seoCity("poznan", "Poznan"),
+  // Czech Republic
+  seoCity("prague", "Prague"),
+  seoCity("brno", "Brno"),
+  seoCity("ostrava", "Ostrava"),
+  // Greece
+  seoCity("athens", "Athens"),
+  seoCity("thessaloniki", "Thessaloniki"),
+  seoCity("mykonos", "Mykonos"),
+  seoCity("santorini", "Santorini"),
+  // Luxembourg
+  seoCity("luxembourg-city", "Luxembourg City"),
+  seoCity("esch-sur-alzette", "Esch-sur-Alzette"),
 ];
+
+const allCityNames = LOCAL_SEO_CITIES.map((c) => c.cityName);
+const hubCities = allCityNames.length > 6
+  ? allCityNames.slice(0, 5).join(", ") + " y más"
+  : allCityNames.join(", ");
 
 export const MARKET_HUBS: Record<SeoMarket, { title: string; description: string; h1: string; intro: string }> = {
   es: {
-    title: "Servicios premium en Europa | Barcelona, Madrid, Paris, Lisbon, Milan y Marbella",
+    title: `Servicios premium en Europa | ${hubCities}`,
     h1: "Servicios premium en Europa",
     description: "Explora hubs locales en Europa con páginas indexables por ciudad, categoría y servicio.",
     intro: "Elige una ciudad para navegar entre listados, páginas de servicio y perfiles detallados con breadcrumbs consistentes.",
