@@ -214,14 +214,8 @@ export default function LandingPage() {
         getCitiesByCountry={getCitiesByCountry}
       />
 
-      <MobileFilterBar
-        hasGeneralFilter={hasGeneralFilter}
-        hasLocationFilter={hasLocationFilter}
-        generalCount={generalCount}
-        locationCount={locationCount}
-        onOpenFilters={() => setFilterOpen(true)}
-        onOpenLocation={() => setLocationOpen(true)}
-      />
+
+
     </div>
   );
 }
