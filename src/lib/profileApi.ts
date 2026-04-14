@@ -18,6 +18,9 @@ export interface EligibleProfile {
   image_urls: string[];
   bio: string | null;
   has_whatsapp: boolean;
+  created_at: string | null;
+  languages: string[] | null;
+  service_count: number;
 }
 
 type EligibleProfileRow = Database["public"]["Views"]["eligible_profiles"]["Row"];
@@ -70,7 +73,7 @@ export async function fetchEligibleProfiles(filters?: {
 
     let query = supabase
       .from("eligible_profiles")
-      .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, highlight_tier, highlight_expires_at, bio, has_whatsapp, tier_rank, effective_sort_key, created_at")
+      .select("id, display_name, age, city, city_slug, category, gender, slug, pricing_from, is_featured, highlight_tier, highlight_expires_at, bio, has_whatsapp, tier_rank, effective_sort_key, created_at, languages")
       .order("tier_rank" as any, { ascending: false })
       .order("effective_sort_key" as any, { ascending: false })
       .order("is_featured", { ascending: false })
@@ -90,7 +93,6 @@ export async function fetchEligibleProfiles(filters?: {
     if (filters?.category) query = query.ilike("category", filters.category);
     if (filters?.gender) query = query.ilike("gender", filters.gender);
     if (filters?.search) {
-      // Sanitize search input: remove PostgREST special characters to prevent filter injection
       const sanitized = filters.search
         .replace(/[%_\\(),."']/g, "")
         .trim()
@@ -111,16 +113,22 @@ export async function fetchEligibleProfiles(filters?: {
 
     const filteredProfileIds = (profiles as unknown as EligibleProfileRow[]).map((p) => p.id).filter(Boolean) as string[];
 
-    const { data: images, error: imgErr } = await supabase
-      .from("profile_images").select("profile_id, storage_path")
-      .in("profile_id", filteredProfileIds).eq("moderation_status", "approved")
-      .order("sort_order", { ascending: true });
+    // Fetch images and service counts in parallel
+    const [imagesResult, servicesResult] = await Promise.all([
+      supabase
+        .from("profile_images").select("profile_id, storage_path")
+        .in("profile_id", filteredProfileIds).eq("moderation_status", "approved")
+        .order("sort_order", { ascending: true }),
+      supabase
+        .from("profile_services").select("profile_id")
+        .in("profile_id", filteredProfileIds),
+    ]);
 
-    if (imgErr) {
-      console.error("[profileApi] Failed to fetch images:", imgErr.message);
+    if (imagesResult.error) {
+      console.error("[profileApi] Failed to fetch images:", imagesResult.error.message);
     }
 
-    const imgRows = (images ?? []) as ProfileImageRow[];
+    const imgRows = (imagesResult.data ?? []) as ProfileImageRow[];
     const allPaths = imgRows.map((img) => img.storage_path);
     const signedUrlMap = await getSignedUrls(allPaths);
 
@@ -131,11 +139,16 @@ export async function fetchEligibleProfiles(filters?: {
       if (url) imageMap[img.profile_id].push(url);
     });
 
+    // Count services per profile
+    const serviceCountMap: Record<string, number> = {};
+    (servicesResult.data ?? []).forEach((row: ProfileServiceRow) => {
+      serviceCountMap[row.profile_id] = (serviceCountMap[row.profile_id] || 0) + 1;
+    });
+
     const profileMap = new Map((profiles as unknown as EligibleProfileRow[]).map((p) => [p.id, p]));
 
     return filteredProfileIds.map((id) => {
       const p = profileMap.get(id)!;
-      // deno-lint-ignore no-explicit-any
       const pAny = p as any;
       return {
         id: p.id!, display_name: p.display_name ?? "", age: p.age ?? null, gender: p.gender ?? null,
@@ -146,6 +159,9 @@ export async function fetchEligibleProfiles(filters?: {
         highlight_expires_at: (pAny.highlight_expires_at as string | null) ?? null,
         image_urls: imageMap[p.id!] || [],
         bio: p.bio ?? null, has_whatsapp: p.has_whatsapp ?? false,
+        created_at: p.created_at ?? null,
+        languages: p.languages ?? null,
+        service_count: serviceCountMap[p.id!] || 0,
       };
     });
   } catch (err) {
@@ -156,7 +172,6 @@ export async function fetchEligibleProfiles(filters?: {
 
 /**
  * Prefetch signed URLs for the next batch of profiles (warms the cache).
- * Call this after loading a batch so signed URLs are ready before the user scrolls.
  */
 export async function prefetchNextBatchUrls(filters?: {
   country?: string;
@@ -204,10 +219,9 @@ export async function prefetchNextBatchUrls(filters?: {
 
     if (!images || images.length === 0) return;
 
-    // Just warm the signed URL cache — result is discarded
     await getSignedUrls(images.map((img) => img.storage_path));
   } catch {
-    // Prefetch is best-effort, never block UI
+    // Prefetch is best-effort
   }
 }
 
