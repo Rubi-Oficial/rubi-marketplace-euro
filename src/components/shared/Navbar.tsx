@@ -3,6 +3,7 @@ import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LogOut, LayoutDashboard, Search, Menu, X, CreditCard, Megaphone, Shield, Lock, HeadphonesIcon } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useState, useCallback } from "react";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -95,14 +96,21 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-2 shrink-0">
           {/* Language selector */}
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className="shrink-0 rounded-full h-8 w-8 flex items-center justify-center text-lg leading-none transition-colors hover:bg-accent/35"
-                aria-label={`Language: ${currentLang.name}`}
-              >
-                {currentLang.flag}
-              </button>
-            </DropdownMenuTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="shrink-0 rounded-full h-8 w-8 flex items-center justify-center text-lg leading-none transition-colors hover:bg-accent/35"
+                    aria-label={`Language: ${currentLang.name}`}
+                  >
+                    {currentLang.flag}
+                  </button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                {currentLang.name}
+              </TooltipContent>
+            </Tooltip>
             <DropdownMenuContent align="end" className="min-w-[120px]">
               {LANGUAGES.map((l) => (
                 <DropdownMenuItem
