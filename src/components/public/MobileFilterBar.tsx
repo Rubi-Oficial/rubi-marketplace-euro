@@ -19,17 +19,17 @@ export const MobileFilterBar = React.forwardRef<HTMLDivElement, MobileFilterBarP
     return (
       <div
         ref={ref}
-        className="sticky top-0 z-30 -mx-4 bg-background/80 px-4 py-2.5 backdrop-blur-2xl md:hidden border-b border-border/10 shadow-[0_2px_12px_hsl(0_0%_0%_/_0.15)]"
+        className="sticky top-0 z-30 -mx-4 bg-background/85 px-4 py-3 backdrop-blur-2xl md:hidden border-b border-border/10 shadow-[0_4px_16px_hsl(0_0%_0%_/_0.18)]"
         role="toolbar"
         aria-label="Filters"
       >
-        <div className="mx-auto flex max-w-lg items-center gap-2.5">
+        <div className="mx-auto flex max-w-lg items-center gap-3">
           <Button
             variant="outline"
             size="sm"
             onClick={onOpenFilters}
-            className={`h-10 flex-1 rounded-full border-border/40 text-xs font-semibold tracking-wide transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/50 ${
-              hasGeneralFilter ? "border-primary/50 text-primary bg-primary/8 shadow-sm" : "hover:bg-accent/20"
+            className={`h-11 flex-1 rounded-full border-border/40 text-[13px] font-semibold tracking-wide transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/50 active:scale-[0.97] ${
+              hasGeneralFilter ? "border-primary/50 text-primary bg-primary/10 shadow-[0_2px_8px_hsl(var(--primary)_/_0.15)]" : "hover:bg-accent/25"
             }`}
             aria-label={`${t("landing.filters")}${hasGeneralFilter ? ` (${generalCount} active)` : ""}`}
           >
@@ -45,8 +45,8 @@ export const MobileFilterBar = React.forwardRef<HTMLDivElement, MobileFilterBarP
             variant="outline"
             size="sm"
             onClick={onOpenLocation}
-            className={`h-10 flex-1 rounded-full border-border/40 text-xs font-semibold tracking-wide transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/50 ${
-              hasLocationFilter ? "border-primary/50 text-primary bg-primary/8 shadow-sm" : "hover:bg-accent/20"
+            className={`h-11 flex-1 rounded-full border-border/40 text-[13px] font-semibold tracking-wide transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/50 active:scale-[0.97] ${
+              hasLocationFilter ? "border-primary/50 text-primary bg-primary/10 shadow-[0_2px_8px_hsl(var(--primary)_/_0.15)]" : "hover:bg-accent/25"
             }`}
             aria-label={`${t("landing.location")}${hasLocationFilter ? ` (${locationCount} active)` : ""}`}
           >
