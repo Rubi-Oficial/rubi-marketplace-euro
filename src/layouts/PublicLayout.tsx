@@ -29,10 +29,13 @@ export default function PublicLayout() {
         </main>
       </div>
 
-      <footer className="border-t border-[hsl(0_0%_100%_/_0.06)] py-12 mt-10 bg-[hsl(273_35%_10%_/_0.9)] backdrop-blur-sm" role="contentinfo">
+      <footer
+        className="border-t border-border/30 py-14 mt-10 bg-[hsl(273_35%_10%_/_0.9)] backdrop-blur-sm"
+        role="contentinfo"
+      >
         <div className="container mx-auto px-4">
-          <div className="grid gap-10 md:grid-cols-5">
-            <div className="md:col-span-1">
+          <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-5">
+            <div className="sm:col-span-2 md:col-span-1">
               <Link to="/" className="inline-block" aria-label="Velvet Escorts VIP — Home">
                 <BrandLogo imgClassName="h-10" />
               </Link>
@@ -40,75 +43,68 @@ export default function PublicLayout() {
                 {t("footer.desc")}
               </p>
             </div>
-            <div>
-              <h4 className="font-display text-[11px] font-semibold uppercase tracking-[0.15em] text-primary/70 mb-4">
-                {t("footer.platform")}
-              </h4>
-              <nav aria-label="Platform links" className="flex flex-col gap-2.5 text-sm">
-                <Link to="/buscar" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">
-                  {t("footer.explore")}
-                </Link>
-                <Link to="/planos" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">
-                  {t("footer.plans")}
-                </Link>
-                <Link to="/blog" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">
-                  {t("footer.blog")}
-                </Link>
-              </nav>
-            </div>
-            <div>
-              <h4 className="font-display text-[11px] font-semibold uppercase tracking-[0.15em] text-primary/70 mb-4">
-                {t("footer.company")}
-              </h4>
-              <nav aria-label="Company links" className="flex flex-col gap-2.5 text-sm">
-                <Link to="/sobre" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">
-                  {t("footer.about")}
-                </Link>
-                <Link to="/contato" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">
-                  {t("footer.contact")}
-                </Link>
-              </nav>
-            </div>
-            <div>
-              <h4 className="font-display text-[11px] font-semibold uppercase tracking-[0.15em] text-primary/70 mb-4">
-                {t("footer.legal")}
-              </h4>
-              <nav aria-label="Legal links" className="flex flex-col gap-2.5 text-sm">
-                <Link to="/termos" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">
-                  {t("footer.terms")}
-                </Link>
-                <Link to="/privacidade" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">
-                  {t("footer.privacy")}
-                </Link>
-                <Link to="/cookies" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">
-                  {t("footer.cookies")}
-                </Link>
-              </nav>
-            </div>
-            <div>
-              <h4 className="font-display text-[11px] font-semibold uppercase tracking-[0.15em] text-primary/70 mb-4">
-                SEO Local
-              </h4>
-              <nav aria-label="Local SEO links" className="flex flex-col gap-2.5 text-[13px]">
-                <Link to="/es/escorts-barcelona" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Barcelona</Link>
-                <Link to="/es/escorts-madrid" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Madrid</Link>
-                <Link to="/es/escorts-paris" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Paris</Link>
-                <Link to="/es/escorts-lisbon" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Lisbon</Link>
-                <Link to="/es/escorts-milan" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Milan</Link>
-                <Link to="/es/escorts-marbella" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Marbella</Link>
-                <Link to="/es/escorts-barcelona/vip" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">VIP Barcelona</Link>
-                <Link to="/es/escorts-paris/jantar" className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit">Jantar Paris</Link>
-              </nav>
-            </div>
+
+            <FooterColumn title={t("footer.platform")} ariaLabel="Platform links">
+              <FooterLink to="/buscar">{t("footer.explore")}</FooterLink>
+              <FooterLink to="/planos">{t("footer.plans")}</FooterLink>
+              <FooterLink to="/blog">{t("footer.blog")}</FooterLink>
+            </FooterColumn>
+
+            <FooterColumn title={t("footer.company")} ariaLabel="Company links">
+              <FooterLink to="/sobre">{t("footer.about")}</FooterLink>
+              <FooterLink to="/contato">{t("footer.contact")}</FooterLink>
+            </FooterColumn>
+
+            <FooterColumn title={t("footer.legal")} ariaLabel="Legal links">
+              <FooterLink to="/termos">{t("footer.terms")}</FooterLink>
+              <FooterLink to="/privacidade">{t("footer.privacy")}</FooterLink>
+              <FooterLink to="/cookies">{t("footer.cookies")}</FooterLink>
+            </FooterColumn>
+
+            <FooterColumn title="SEO Local" ariaLabel="Local SEO links">
+              <FooterLink to="/es/escorts-barcelona">Barcelona</FooterLink>
+              <FooterLink to="/es/escorts-madrid">Madrid</FooterLink>
+              <FooterLink to="/es/escorts-paris">Paris</FooterLink>
+              <FooterLink to="/es/escorts-lisbon">Lisbon</FooterLink>
+              <FooterLink to="/es/escorts-milan">Milan</FooterLink>
+              <FooterLink to="/es/escorts-marbella">Marbella</FooterLink>
+              <FooterLink to="/es/escorts-barcelona/vip">VIP Barcelona</FooterLink>
+              <FooterLink to="/es/escorts-paris/jantar">Jantar Paris</FooterLink>
+            </FooterColumn>
           </div>
-          <div className="mt-10 pt-6 text-center">
+
+          <div className="mt-12 pt-6 text-center">
             <div className="mx-auto mb-4 h-px w-24 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-            <p className="text-xs text-secondary-foreground/60">
+            <p className="text-xs text-secondary-foreground/50">
               © {new Date().getFullYear()} Velvet Escorts VIP. {t("footer.rights")}
             </p>
           </div>
         </div>
       </footer>
     </div>
+  );
+}
+
+function FooterColumn({ title, ariaLabel, children }: { title: string; ariaLabel: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h4 className="font-display text-[11px] font-semibold uppercase tracking-[0.15em] text-primary/70 mb-4">
+        {title}
+      </h4>
+      <nav aria-label={ariaLabel} className="flex flex-col gap-2.5 text-sm">
+        {children}
+      </nav>
+    </div>
+  );
+}
+
+function FooterLink({ to, children }: { to: string; children: React.ReactNode }) {
+  return (
+    <Link
+      to={to}
+      className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit focus-visible:ring-2 focus-visible:ring-primary/40"
+    >
+      {children}
+    </Link>
   );
 }

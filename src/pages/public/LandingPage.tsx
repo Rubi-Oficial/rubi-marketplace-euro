@@ -89,18 +89,21 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen pb-0">
       {/* Hero — compact on mobile, elegant on desktop */}
-      <section className="relative pt-4 pb-2 md:pt-10 md:pb-5 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-accent/8 via-transparent to-transparent pointer-events-none" />
+      <section className="relative pt-4 pb-2 md:pt-12 md:pb-6 overflow-hidden">
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-accent/10 via-accent/4 to-transparent pointer-events-none animate-gradient-shift" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-20%,hsl(var(--primary)_/_0.06),transparent_70%)] pointer-events-none" />
+
         <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="mx-auto mb-2 md:mb-3 h-px w-12 bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
-          <h1 className="font-display text-2xl font-bold text-foreground md:text-4xl lg:text-[2.75rem] leading-tight tracking-tight">
+          <div className="mx-auto mb-3 md:mb-4 h-px w-16 bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+          <h1 className="font-display text-3xl font-bold text-foreground md:text-4xl lg:text-5xl leading-tight tracking-tight text-balance">
             {t("home.h1")}
           </h1>
-          <p className="mt-1 md:mt-2 text-xs md:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
+          <p className="mt-2 md:mt-3 text-sm md:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed text-pretty">
             {t("home.subtitle")}
           </p>
           {/* Breadcrumb — desktop only */}
-          <nav aria-label="Breadcrumb" className="hidden md:block mt-4 text-xs text-muted-foreground">
+          <nav aria-label="Breadcrumb" className="hidden md:block mt-5 text-xs text-muted-foreground">
             <ol className="flex items-center justify-center gap-1.5 flex-wrap">
               <li className="text-foreground">Home</li>
               <li className="text-border">/</li>
@@ -112,8 +115,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-
-      <section className="pt-2 pb-8 md:pb-8">
+      <section className="pt-2 pb-8 md:pb-10">
         <div className="container mx-auto px-4">
           <MobileFilterBar
             hasGeneralFilter={hasGeneralFilter}
@@ -159,7 +161,7 @@ export default function LandingPage() {
               )}
 
               {!hasMore && profiles.length > 0 && (
-                <p className="py-6 text-center text-sm text-muted-foreground">
+                <p className="py-8 text-center text-sm text-muted-foreground">
                   {t("landing.view_all") ?? "Todos os perfis carregados"}
                 </p>
               )}
@@ -182,20 +184,23 @@ export default function LandingPage() {
 
       <VideoSection filters={{ activeCity: filters.city, activeService: filters.service }} />
 
-
-      <section className="relative py-16 md:py-20 overflow-hidden">
+      {/* CTA Section */}
+      <section className="relative py-20 md:py-24 overflow-hidden">
         <div className="absolute inset-0 ruby-gradient opacity-90" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(41_49%_69%_/_0.08),transparent_60%)]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/30 via-transparent to-background/30" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(41_49%_69%_/_0.1),transparent_60%)]" />
         <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="mx-auto mb-4 h-px w-10 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-white leading-tight">
+          <div className="mx-auto mb-5 h-px w-12 bg-gradient-to-r from-transparent via-foreground/30 to-transparent" />
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground leading-tight text-balance">
             {t("landing.cta_title")}
           </h2>
-          <p className="mt-3 text-sm md:text-base text-white/75 max-w-md mx-auto leading-relaxed">
+          <p className="mt-4 text-sm md:text-base text-foreground/70 max-w-md mx-auto leading-relaxed text-pretty">
             {t("landing.cta_desc")}
           </p>
-          <Button className="mt-8 bg-white text-primary hover:bg-white/90 font-semibold shadow-[0_8px_32px_hsl(0_0%_0%_/_0.25)] h-11 px-6 rounded-full text-sm" asChild>
+          <Button
+            className="mt-10 bg-foreground text-background hover:bg-foreground/90 font-semibold shadow-[0_8px_32px_hsl(0_0%_0%_/_0.25)] h-12 px-8 rounded-full text-sm transition-smooth hover:shadow-[0_12px_40px_hsl(0_0%_0%_/_0.35)] hover:-translate-y-0.5"
+            asChild
+          >
             <Link to="/cadastro?role=professional">
               {t("landing.cta_button")} <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
@@ -225,9 +230,6 @@ export default function LandingPage() {
         countries={countries}
         getCitiesByCountry={getCitiesByCountry}
       />
-
-
-
     </div>
   );
 }

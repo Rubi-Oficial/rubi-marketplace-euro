@@ -67,9 +67,15 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -83,6 +89,39 @@
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
     border-radius: 6px;
+  }
+
+  /* Improved focus for interactive elements */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+    border-radius: var(--radius);
+  }
+
+  /* Better selection colors */
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
+  }
+
+  /* Smooth scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.4);
   }
 }
 
@@ -114,11 +153,22 @@
   .glass {
     @apply bg-card/70 backdrop-blur-md border border-[hsl(0_0%_100%_/_0.08)];
   }
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-lg border border-[hsl(0_0%_100%_/_0.06)] shadow-[0_8px_32px_hsl(274_36%_4%_/_0.4)];
+  }
   .glow-ruby {
     box-shadow: 0 0 24px hsl(278 31% 51% / 0.15), inset 0 1px 0 hsl(41 49% 69% / 0.14);
   }
   .glow-gold {
     box-shadow: 0 10px 24px hsl(41 49% 69% / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.3);
+  }
+
+  /* Smooth transition utilities */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .transition-spring {
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   .skip-link {
@@ -127,6 +177,16 @@
   .skip-link:focus {
     @apply not-sr-only fixed top-2 left-2 z-[100] rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg;
   }
+}
+
+/* Subtle hero gradient animation */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease-in-out infinite;
 }
 
 @keyframes carousel-scroll {
@@ -163,4 +223,24 @@
 }
 .animate-tier-pulse-purple {
   animation: tier-pulse-purple 3.5s ease-in-out infinite;
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--muted-foreground) / 0.08) 50%, hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Fade-in-up animation for staggered elements */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
 }
