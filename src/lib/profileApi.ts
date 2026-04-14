@@ -160,6 +160,7 @@ export async function fetchEligibleProfiles(filters?: {
  */
 export async function prefetchNextBatchUrls(filters?: {
   country?: string;
+  country_name?: string;
   city?: string;
   city_slug?: string;
   city_slugs?: string[];
