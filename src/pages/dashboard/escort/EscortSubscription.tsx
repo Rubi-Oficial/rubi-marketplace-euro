@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Check, CreditCard, Calendar, AlertCircle, XCircle, Clock, Sparkles, Zap } from "lucide-react";
+import { Check, CreditCard, Calendar, AlertCircle, XCircle, Clock, Sparkles, Zap, Settings } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Plan {
