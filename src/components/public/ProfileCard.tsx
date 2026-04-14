@@ -96,16 +96,24 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
           ease: [0.25, 0.46, 0.45, 0.94],
         }}
         className={cn(
-          "group relative flex flex-col overflow-hidden rounded-2xl bg-card shadow-sm border transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-0.5 cursor-pointer focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-background",
+          "group relative flex flex-col overflow-hidden rounded-2xl bg-card border cursor-pointer",
+          "transition-all duration-300 ease-out",
+          "hover:shadow-[0_20px_60px_-12px_hsl(274_36%_4%_/_0.6),0_0_20px_hsl(var(--primary)_/_0.06)]",
+          "hover:-translate-y-1 hover:border-[hsl(var(--primary)_/_0.2)]",
+          "focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-background",
+          "active:scale-[0.98] active:transition-transform active:duration-100",
           tierClasses
         )}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onClick={handleNavigate}
       >
-        {/* Image section */}
+        {/* Image section with overlay gradient */}
         <div className="relative h-[300px] sm:h-[360px] overflow-hidden bg-muted">
           <ImageCarousel urls={urls} displayName={profile.display_name} hovered={hovered} />
+
+          {/* Bottom gradient for text readability */}
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-card/80 via-card/20 to-transparent pointer-events-none" />
 
           <TierBadge
             highlight_tier={profile.highlight_tier}
@@ -114,14 +122,30 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
           />
 
           {profile.category && (
-            <div className="absolute top-3 right-3 rounded-full bg-black/50 backdrop-blur-sm px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/90">
+            <div className="absolute top-3 right-3 rounded-full bg-background/60 backdrop-blur-md px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground/90 border border-border/20">
               {profile.category}
             </div>
           )}
+
+          {/* Favorite button overlay - top-left for easier mobile reach */}
+          <button
+            className={cn(
+              "absolute top-3 left-3 flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-md transition-all duration-200",
+              "focus-visible:ring-2 focus-visible:ring-primary",
+              favorited
+                ? "bg-primary/20 border border-primary/40 text-primary"
+                : "bg-background/40 border border-border/20 text-foreground/70 hover:bg-background/60 hover:text-primary"
+            )}
+            disabled={isToggling}
+            onClick={(e) => { e.stopPropagation(); toggleFavorite(profile.id); }}
+            aria-label={favorited ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+          >
+            <Heart className={cn("h-4 w-4 transition-transform", favorited ? "fill-primary scale-110" : "group-hover:scale-110")} />
+          </button>
         </div>
 
         {/* Info sections */}
-        <div className="flex flex-1 flex-col px-5 py-4 space-y-3">
+        <div className="flex flex-1 flex-col px-4 sm:px-5 py-4 space-y-2.5">
           <div className="flex items-baseline gap-2">
             <h3 className="font-display text-xl font-bold text-foreground leading-tight truncate">
               {profile.display_name}
@@ -140,13 +164,14 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
             )}
           </div>
 
-          <div className={cn("min-h-[5.5rem]", truncatedBio && "rounded-lg bg-surface-light px-3 py-2.5")}>
-            {truncatedBio && (
-              <p className="text-sm leading-relaxed text-foreground/80 line-clamp-3">
+          {truncatedBio && (
+            <div className="rounded-xl bg-[hsl(var(--surface-light)_/_0.6)] backdrop-blur-sm px-3.5 py-2.5 border border-border/10">
+              <p className="text-sm leading-relaxed text-foreground/75 line-clamp-3">
                 {truncatedBio}
               </p>
-            )}
-          </div>
+            </div>
+          )}
+          {!truncatedBio && <div className="min-h-[4rem]" />}
 
           <div className="flex min-h-[1.5rem] items-center gap-1.5 text-base font-semibold text-primary">
             {profile.pricing_from != null && profile.pricing_from > 0 && (
@@ -161,18 +186,18 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
           <div className="flex items-center gap-2 pt-1 mt-auto" onClick={(e) => e.stopPropagation()}>
             <Button
               size="sm"
-              className="flex-1 gap-1.5 rounded-lg text-sm font-semibold"
+              className="flex-1 gap-1.5 rounded-xl text-sm font-semibold h-10 transition-smooth"
               onClick={handleNavigate}
               aria-label={`${t("common.view_profile")} - ${profile.display_name}`}
             >
               {t("common.view_profile")}
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </Button>
 
             {profile.has_whatsapp && (
               <Button
                 size="sm"
-                className="shrink-0 rounded-lg px-3 bg-success hover:bg-success/90 text-success-foreground border-0"
+                className="shrink-0 rounded-xl px-3 h-10 bg-success hover:bg-success/90 text-success-foreground border-0 transition-smooth hover:shadow-[0_4px_12px_hsl(var(--success)_/_0.3)]"
                 disabled={whatsappLoading}
                 onClick={handleWhatsApp}
                 aria-label={`WhatsApp — ${profile.display_name}`}
@@ -184,21 +209,6 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
                 )}
               </Button>
             )}
-
-            <Button
-              size="sm"
-              variant="outline"
-              className={`shrink-0 rounded-lg px-3 transition-colors duration-200 ${
-                favorited
-                  ? "bg-primary/10 border-primary/30 text-primary"
-                  : "bg-surface-light border-border/60 text-muted-foreground hover:text-primary hover:border-primary/30"
-              }`}
-              disabled={isToggling}
-              onClick={() => toggleFavorite(profile.id)}
-              aria-label={favorited ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-            >
-              <Heart className={`h-4 w-4 ${favorited ? "fill-primary" : ""}`} />
-            </Button>
           </div>
         </div>
       </motion.div>

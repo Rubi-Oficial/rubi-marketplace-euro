@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import PageTransition from "@/components/shared/PageTransition";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -58,23 +58,40 @@ function SidebarNav({ items, onNavigate }: { items: NavItem[]; onNavigate?: () =
   const location = useLocation();
 
   return (
-    <nav className="flex flex-col gap-1">
-      {items.map((item) => (
-        <Link
-          key={item.path}
-          to={item.path}
-          onClick={onNavigate}
-          className={cn(
-            "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-            location.pathname === item.path
-              ? "bg-primary/10 text-primary font-medium"
-              : "text-muted-foreground hover:bg-accent hover:text-foreground"
-          )}
-        >
-          {item.icon}
-          {item.label}
-        </Link>
-      ))}
+    <nav className="flex flex-col gap-0.5" aria-label="Dashboard navigation">
+      {items.map((item) => {
+        const isActive = location.pathname === item.path;
+        return (
+          <Link
+            key={item.path}
+            to={item.path}
+            onClick={onNavigate}
+            aria-current={isActive ? "page" : undefined}
+            className={cn(
+              "group/nav relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
+              isActive
+                ? "bg-primary/12 text-primary font-medium shadow-[inset_0_0_0_1px_hsl(var(--primary)_/_0.15)]"
+                : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+            )}
+          >
+            {/* Active indicator bar */}
+            {isActive && (
+              <motion.div
+                layoutId="sidebar-indicator"
+                className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-full bg-primary"
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+            <span className={cn(
+              "transition-colors duration-200",
+              isActive ? "text-primary" : "text-muted-foreground group-hover/nav:text-foreground"
+            )}>
+              {item.icon}
+            </span>
+            {item.label}
+          </Link>
+        );
+      })}
     </nav>
   );
 }
@@ -93,26 +110,42 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
 
   const sidebarContent = (
     <>
-      <div className="flex h-16 items-center justify-between px-6">
+      <div className="flex h-16 items-center justify-between px-6 border-b border-border/40">
         <Link to="/" className="shrink-0" aria-label="Velvet Escorts VIP — Home">
           <BrandLogo imgClassName="h-9" />
         </Link>
-        <button className="md:hidden text-muted-foreground" onClick={() => setSidebarOpen(false)}>
+        <button
+          className="md:hidden text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Close sidebar"
+        >
           <X className="h-5 w-5" />
         </button>
       </div>
 
-      <div className="px-4 pb-2">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{roleLabel}</p>
+      <div className="px-4 py-3">
+        <span className="inline-flex items-center rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary">
+          {roleLabel}
+        </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3">
+      <div className="flex-1 overflow-y-auto px-3 py-1">
         <SidebarNav items={navItems} onNavigate={() => setSidebarOpen(false)} />
       </div>
 
-      <div className="border-t border-border p-4">
-        <p className="mb-2 truncate text-xs text-muted-foreground">{user?.email}</p>
-        <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-muted-foreground" onClick={signOut}>
+      <div className="border-t border-border/40 p-4 space-y-2">
+        <div className="flex items-center gap-3 px-1">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold uppercase">
+            {user?.email?.charAt(0) || "?"}
+          </div>
+          <p className="truncate text-xs text-muted-foreground flex-1">{user?.email}</p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+          onClick={signOut}
+        >
           <LogOut className="h-4 w-4" />
           {t("dash.signout")}
         </Button>
@@ -122,29 +155,52 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <div className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-border bg-card/95 px-4 backdrop-blur-sm md:hidden">
+      {/* Mobile header */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-border/40 bg-card/95 px-4 backdrop-blur-md md:hidden shadow-[0_1px_8px_hsl(274_36%_4%_/_0.3)]">
         <Link to="/" className="shrink-0" aria-label="Velvet Escorts VIP — Home">
-          <BrandLogo imgClassName="h-9" />
+          <BrandLogo imgClassName="h-8" />
         </Link>
-        <button onClick={() => setSidebarOpen(true)} className="text-foreground">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground hover:bg-accent/40 transition-colors"
+          aria-label="Open menu"
+          aria-expanded={sidebarOpen}
+        >
           <Menu className="h-5 w-5" />
         </button>
       </div>
 
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-card animate-fade-in">
-            {sidebarContent}
-          </aside>
-        </div>
-      )}
+      {/* Mobile overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-50 md:hidden">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-background/60 backdrop-blur-sm"
+              onClick={() => setSidebarOpen(false)}
+            />
+            <motion.aside
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="absolute inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-border/40 bg-card shadow-[8px_0_32px_hsl(274_36%_4%_/_0.5)]"
+            >
+              {sidebarContent}
+            </motion.aside>
+          </div>
+        )}
+      </AnimatePresence>
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card md:flex">
+      {/* Desktop sidebar */}
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border/40 bg-card md:flex">
         {sidebarContent}
       </aside>
 
-      <main className="flex-1 p-4 pt-20 md:ml-64 md:p-8 md:pt-8 lg:p-10">
+      <main className="flex-1 p-4 pt-18 md:ml-64 md:p-8 md:pt-8 lg:p-10">
         <AnimatePresence mode="wait">
           <PageTransition key={location.pathname}>
             <Outlet />
