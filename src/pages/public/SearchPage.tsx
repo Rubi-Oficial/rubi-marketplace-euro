@@ -145,8 +145,9 @@ export default function SearchPage() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-6 animate-fade-in">
-      <nav aria-label="Breadcrumb" className="mb-4 text-xs text-muted-foreground">
+    <div className="container mx-auto px-4 py-4 md:py-6 animate-fade-in">
+      {/* Breadcrumb — desktop only */}
+      <nav aria-label="Breadcrumb" className="hidden md:block mb-4 text-xs text-muted-foreground">
         <ol className="flex items-center gap-1.5">
           <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
           <li className="text-border">/</li>
@@ -174,9 +175,9 @@ export default function SearchPage() {
         </ol>
       </nav>
 
-      <div className="mb-4">
-        <h1 className="font-display text-xl font-bold text-foreground sm:text-2xl">{pageHeading}</h1>
-        <p className="mt-1 text-sm text-muted-foreground max-w-2xl">{pageSubtitle}</p>
+      <div className="mb-3 md:mb-4">
+        <h1 className="font-display text-xl font-bold text-foreground md:text-2xl">{pageHeading}</h1>
+        <p className="mt-1 text-xs md:text-sm text-muted-foreground max-w-2xl">{pageSubtitle}</p>
       </div>
 
       <div className="mb-4">
@@ -229,7 +230,7 @@ export default function SearchPage() {
       </p>
 
       {loading ? (
-        <ProfileGridSkeleton count={6} columns="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" />
+        <ProfileGridSkeleton count={6} columns="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
       ) : profiles.length === 0 ? (
         <EmptyState
           hasFilters={hasFilters || !!filters.search}
