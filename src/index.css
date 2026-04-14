@@ -140,3 +140,27 @@
 @media (min-width: 641px) and (max-width: 1024px) {
   .carousel-track { animation-duration: 60s; }
 }
+
+/* Tier pulse animations — subtle glow breathing */
+@keyframes tier-pulse-gold {
+  0%, 100% {
+    box-shadow: 0 0 16px hsl(41 49% 69% / 0.06), inset 0 0 0 1px hsl(41 49% 69% / 0.04);
+  }
+  50% {
+    box-shadow: 0 0 28px hsl(41 49% 69% / 0.14), inset 0 0 0 1px hsl(41 49% 69% / 0.1);
+  }
+}
+@keyframes tier-pulse-purple {
+  0%, 100% {
+    box-shadow: 0 0 14px hsl(278 31% 51% / 0.06), inset 0 0 0 1px hsl(278 31% 51% / 0.04);
+  }
+  50% {
+    box-shadow: 0 0 26px hsl(278 31% 51% / 0.14), inset 0 0 0 1px hsl(278 31% 51% / 0.1);
+  }
+}
+.animate-tier-pulse-gold {
+  animation: tier-pulse-gold 3s ease-in-out infinite;
+}
+.animate-tier-pulse-purple {
+  animation: tier-pulse-purple 3.5s ease-in-out infinite;
+}
