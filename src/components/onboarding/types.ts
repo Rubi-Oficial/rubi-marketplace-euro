@@ -34,10 +34,11 @@ export interface CityOption {
 
 export const CATEGORIES = [
   "Companion",
-  "Massage",
-  "Events",
-  "Travel",
   "Premium",
+  "Elite",
+  "Events",
+  "Massage",
+  "Travel",
 ];
 
 export interface ServiceOption {
