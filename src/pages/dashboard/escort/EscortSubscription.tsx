@@ -75,7 +75,39 @@ export default function EscortSubscription() {
   const [highlightTier, setHighlightTier] = useState<string>("standard");
   const [highlightExpiresAt, setHighlightExpiresAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  const handleManageSubscription = async () => {
+    if (!session?.access_token) {
+      toast.error("Precisa estar autenticado.");
+      return;
+    }
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) {
+        let serverMsg = "";
+        try {
+          const ctx = (error as any).context;
+          if (ctx && typeof ctx.json === "function") {
+            const body = await ctx.json();
+            serverMsg = body?.error || "";
+          }
+        } catch { /* ignore */ }
+        throw new Error(serverMsg || error.message || "Erro ao abrir portal.");
+      }
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      } else {
+        throw new Error("Não foi possível abrir o portal.");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao abrir portal de gestão.");
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
 
   useEffect(() => {
     const status = searchParams.get("status");
