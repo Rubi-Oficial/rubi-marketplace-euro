@@ -19,7 +19,7 @@ export const MobileFilterBar = React.forwardRef<HTMLDivElement, MobileFilterBarP
     return (
       <div
         ref={ref}
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/50 bg-card/95 px-4 py-3 backdrop-blur-xl md:hidden safe-area-bottom"
+        className="sticky top-0 z-30 -mx-4 border-b border-border/20 bg-background/75 px-4 py-2 backdrop-blur-xl md:hidden"
         role="toolbar"
         aria-label="Filters"
       >
@@ -28,7 +28,7 @@ export const MobileFilterBar = React.forwardRef<HTMLDivElement, MobileFilterBarP
             variant="outline"
             size="sm"
             onClick={onOpenFilters}
-            className={`h-11 flex-1 rounded-full border-border/50 text-sm font-medium transition-all duration-200 ${
+            className={`h-9 flex-1 rounded-full border-border/50 text-xs font-medium transition-all duration-200 ${
               hasGeneralFilter ? "border-primary/40 text-primary bg-primary/5" : ""
             }`}
             aria-label={`${t("landing.filters")}${hasGeneralFilter ? ` (${generalCount} active)` : ""}`}
@@ -45,7 +45,7 @@ export const MobileFilterBar = React.forwardRef<HTMLDivElement, MobileFilterBarP
             variant="outline"
             size="sm"
             onClick={onOpenLocation}
-            className={`h-11 flex-1 rounded-full border-border/50 text-sm font-medium transition-all duration-200 ${
+            className={`h-9 flex-1 rounded-full border-border/50 text-xs font-medium transition-all duration-200 ${
               hasLocationFilter ? "border-primary/40 text-primary bg-primary/5" : ""
             }`}
             aria-label={`${t("landing.location")}${hasLocationFilter ? ` (${locationCount} active)` : ""}`}

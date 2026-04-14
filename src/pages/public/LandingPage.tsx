@@ -86,7 +86,7 @@ export default function LandingPage() {
   }, [hasMore, loading, loadingMore, loadMore]);
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0">
+    <div className="min-h-screen pb-0">
       {/* Hero — refined with subtle accent line */}
       <section className="relative pt-8 pb-3 md:pt-12 md:pb-5 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-accent/8 via-transparent to-transparent pointer-events-none" />
@@ -105,6 +105,15 @@ export default function LandingPage() {
 
       <section className="pt-2 pb-8 md:pb-8">
         <div className="container mx-auto px-4">
+          <MobileFilterBar
+            hasGeneralFilter={hasGeneralFilter}
+            hasLocationFilter={hasLocationFilter}
+            generalCount={generalCount}
+            locationCount={locationCount}
+            onOpenFilters={() => setFilterOpen(true)}
+            onOpenLocation={() => setLocationOpen(true)}
+          />
+
           <FilterBar
             hasGeneralFilter={hasGeneralFilter}
             hasLocationFilter={hasLocationFilter}
@@ -205,14 +214,8 @@ export default function LandingPage() {
         getCitiesByCountry={getCitiesByCountry}
       />
 
-      <MobileFilterBar
-        hasGeneralFilter={hasGeneralFilter}
-        hasLocationFilter={hasLocationFilter}
-        generalCount={generalCount}
-        locationCount={locationCount}
-        onOpenFilters={() => setFilterOpen(true)}
-        onOpenLocation={() => setLocationOpen(true)}
-      />
+
+
     </div>
   );
 }
