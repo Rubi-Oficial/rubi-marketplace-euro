@@ -111,7 +111,7 @@ export default function Navbar() {
                   className={`text-sm gap-2 ${lang === l.code ? "bg-accent font-semibold" : ""}`}
                 >
                   <span className="text-base">{l.flag}</span>
-                  <span>{l.label}</span>
+                  <span>{l.name}</span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
