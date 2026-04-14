@@ -150,7 +150,7 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
     }
   };
 
-  const countryName = countries.find((c) => c.slug === filters.country)?.name;
+  const countryName = countryObj?.name;
   const cityName = filteredCities.find((c) => c.slug === filters.city)?.name;
   const serviceName = services.find((s) => s.slug === filters.service)?.name;
 
