@@ -117,6 +117,39 @@ export default function LandingPage() {
 
       <section className="pt-2 pb-8 md:pb-10">
         <div className="container mx-auto px-4">
+          <section className="mb-6 rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-sm md:p-5">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-primary/80">
+                  {t("landing.quick_title") ?? "Acesso rápido"}
+                </p>
+                <h2 className="mt-1 text-base font-semibold text-foreground md:text-lg">
+                  {t("landing.quick_subtitle") ?? "Encontre resultados em poucos cliques"}
+                </h2>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild size="sm" className="rounded-full">
+                  <Link to="/buscar">{t("landing.quick_search") ?? "Buscar agora"}</Link>
+                </Button>
+                <Button asChild size="sm" variant="outline" className="rounded-full">
+                  <Link to="/planos">{t("landing.quick_plans") ?? "Ver planos"}</Link>
+                </Button>
+                <Button asChild size="sm" variant="ghost" className="rounded-full">
+                  <Link to="/cadastro?role=professional">
+                    {t("landing.quick_publish") ?? "Publicar anúncio"}
+                  </Link>
+                </Button>
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span>{t("landing.quick_trust_verified") ?? "Perfis verificados"}</span>
+              <span className="hidden h-1 w-1 rounded-full bg-border sm:inline-block" />
+              <span>{t("landing.quick_trust_privacy") ?? "Privacidade protegida"}</span>
+              <span className="hidden h-1 w-1 rounded-full bg-border sm:inline-block" />
+              <span>{t("landing.quick_trust_support") ?? "Suporte dedicado"}</span>
+            </div>
+          </section>
+
           <MobileFilterBar
             hasGeneralFilter={hasGeneralFilter}
             hasLocationFilter={hasLocationFilter}
