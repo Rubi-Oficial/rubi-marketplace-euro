@@ -1,6 +1,6 @@
 import { useState, useEffect, forwardRef } from "react";
 import { Link, useNavigate, useSearchParams, Navigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import { getStoredReferralCode } from "@/hooks/useReferralCapture";
