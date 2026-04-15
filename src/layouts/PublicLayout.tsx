@@ -30,16 +30,21 @@ export default function PublicLayout() {
       </div>
 
       <footer
-        className="border-t border-border/30 py-14 mt-10 bg-[hsl(273_35%_10%_/_0.9)] backdrop-blur-sm"
+        className="relative border-t border-border/20 py-16 mt-12 overflow-hidden"
         role="contentinfo"
       >
-        <div className="container mx-auto px-4">
+        {/* Subtle background texture */}
+        <div className="absolute inset-0 bg-[hsl(273_35%_9%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_80%,hsl(278_31%_51%_/_0.04),transparent_60%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,hsl(41_49%_69%_/_0.03),transparent_60%)] pointer-events-none" />
+
+        <div className="container mx-auto px-4 relative z-10">
           <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-5">
             <div className="sm:col-span-2 md:col-span-1">
-              <Link to="/" className="inline-block" aria-label="Velvet Escorts VIP — Home">
+              <Link to="/" className="inline-block transition-opacity hover:opacity-80" aria-label="Velvet Escorts VIP — Home">
                 <BrandLogo imgClassName="h-10" />
               </Link>
-              <p className="mt-4 text-sm text-muted-foreground/80 leading-relaxed max-w-[220px]">
+              <p className="mt-4 text-sm text-muted-foreground/70 leading-relaxed max-w-[220px]">
                 {t("footer.desc")}
               </p>
             </div>
@@ -73,11 +78,16 @@ export default function PublicLayout() {
             </FooterColumn>
           </div>
 
-          <div className="mt-12 pt-6 text-center">
-            <div className="mx-auto mb-4 h-px w-24 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-            <p className="text-xs text-secondary-foreground/50">
+          <div className="mt-14 pt-6 border-t border-border/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-muted-foreground/40">
               © {new Date().getFullYear()} Velvet Escorts VIP. {t("footer.rights")}
             </p>
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse-dot" />
+              <span className="text-[11px] text-muted-foreground/50">
+                {t("footer.secure") || "Secure & encrypted"}
+              </span>
+            </div>
           </div>
         </div>
       </footer>
@@ -102,7 +112,7 @@ function FooterLink({ to, children }: { to: string; children: React.ReactNode })
   return (
     <Link
       to={to}
-      className="text-secondary-foreground hover:text-primary transition-colors duration-200 rounded-sm w-fit focus-visible:ring-2 focus-visible:ring-primary/40"
+      className="text-secondary-foreground/70 hover:text-primary transition-colors duration-200 rounded-sm w-fit focus-visible:ring-2 focus-visible:ring-primary/40 hover:translate-x-0.5 transform transition-transform"
     >
       {children}
     </Link>

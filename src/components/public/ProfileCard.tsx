@@ -102,23 +102,24 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
       <div
         ref={ref}
         className={cn(
-          "group relative flex flex-col overflow-hidden rounded-2xl bg-card border cursor-pointer",
-          "transition-shadow duration-300 ease-out",
-          "hover:shadow-[0_20px_60px_-12px_hsl(274_36%_4%_/_0.6),0_0_20px_hsl(var(--primary)_/_0.06)]",
-          "hover:border-[hsl(var(--primary)_/_0.2)]",
+          "group relative flex flex-col overflow-hidden rounded-2xl bg-card border cursor-pointer card-hover-lift",
+          "hover:shadow-[0_24px_64px_-16px_hsl(274_36%_4%_/_0.65),0_0_24px_hsl(var(--primary)_/_0.08)]",
+          "hover:border-[hsl(var(--primary)_/_0.25)]",
           "focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-background",
           tierClasses
         )}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onClick={handleNavigate}
+        role="article"
+        aria-label={`${profile.display_name}${profile.age ? `, ${profile.age}` : ""}${profile.city ? ` — ${profile.city}` : ""}`}
       >
         {/* Image section with overlay gradient */}
         <div className="relative h-[320px] sm:h-[380px] overflow-hidden bg-muted">
           <ImageCarousel urls={urls} displayName={profile.display_name} hovered={hovered} />
 
-          {/* Bottom gradient for text readability */}
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-card/80 via-card/20 to-transparent pointer-events-none" />
+          {/* Multi-layer gradient for depth */}
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-card via-card/40 to-transparent pointer-events-none" />
 
           {/* Tier badge — top center */}
           <TierBadge
@@ -227,12 +228,12 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
           <div className="flex items-center gap-2 pt-1 mt-auto" onClick={(e) => e.stopPropagation()}>
             <Button
               size="sm"
-              className="flex-1 gap-1.5 rounded-xl text-sm font-semibold h-10 transition-smooth"
+              className="flex-1 gap-1.5 rounded-xl text-sm font-semibold h-10 transition-all duration-300 hover:shadow-[0_4px_16px_hsl(var(--primary)_/_0.25)] hover:-translate-y-0.5 active:scale-[0.97]"
               onClick={handleNavigate}
               aria-label={`${t("common.view_profile")} - ${profile.display_name}`}
             >
               {t("common.view_profile")}
-              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
 
             {profile.has_whatsapp && (
