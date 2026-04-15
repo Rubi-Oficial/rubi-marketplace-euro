@@ -15,6 +15,7 @@ import { ProfileGrid, ProfileGridSkeleton } from "@/components/public/ProfileGri
 import { EmptyState } from "@/components/public/EmptyState";
 import { SeoNavigationBlocks } from "@/components/public/SeoNavigationBlocks";
 import { ScrollToTop } from "@/components/shared/ScrollToTop";
+import { SectionErrorBoundary } from "@/components/shared/SectionErrorBoundary";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -172,6 +173,7 @@ export default function LandingPage() {
             onClearAll={clearFilters}
           />
 
+          <SectionErrorBoundary section="perfis">
           {loading ? (
             <ProfileGridSkeleton count={8} />
           ) : profiles.length > 0 ? (
@@ -206,6 +208,7 @@ export default function LandingPage() {
               onClearAll={clearFilters}
             />
           )}
+          </SectionErrorBoundary>
         </div>
       </section>
 

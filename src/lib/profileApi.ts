@@ -1,6 +1,26 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getSignedUrls } from "@/lib/storageUrls";
 
+/** Retry a function with exponential backoff */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  { retries = 2, baseDelay = 500 }: { retries?: number; baseDelay?: number } = {}
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt < retries) {
+        const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 200;
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+  }
+  throw lastError;
+}
+
 export interface EligibleProfile {
   id: string;
   display_name: string;
@@ -35,63 +55,62 @@ export async function fetchEligibleProfiles(filters?: {
   limit?: number;
   offset?: number;
 }): Promise<EligibleProfile[]> {
+  const limit = Math.min(Math.max(filters?.limit ?? 50, 1), 100);
+  const offset = Math.max(filters?.offset ?? 0, 0);
+
   try {
-    const limit = Math.min(Math.max(filters?.limit ?? 50, 1), 100);
-    const offset = Math.max(filters?.offset ?? 0, 0);
+    return await withRetry(async () => {
+      const { data: rows, error } = await supabase.rpc("search_profiles", {
+        p_country_name: filters?.country_name || filters?.country || null,
+        p_city_slug: filters?.city_slug || filters?.city || null,
+        p_city_slugs: filters?.city_slugs?.length ? filters.city_slugs : null,
+        p_category: filters?.category || null,
+        p_gender: filters?.gender || null,
+        p_search: filters?.search || null,
+        p_service_slug: filters?.service_slug || null,
+        p_limit: limit,
+        p_offset: offset,
+      });
 
-    const { data: rows, error } = await supabase.rpc("search_profiles", {
-      p_country_name: filters?.country_name || filters?.country || null,
-      p_city_slug: filters?.city_slug || filters?.city || null,
-      p_city_slugs: filters?.city_slugs?.length ? filters.city_slugs : null,
-      p_category: filters?.category || null,
-      p_gender: filters?.gender || null,
-      p_search: filters?.search || null,
-      p_service_slug: filters?.service_slug || null,
-      p_limit: limit,
-      p_offset: offset,
+      if (error) {
+        throw new Error(`search_profiles RPC error: ${error.message}`);
+      }
+      if (!rows || rows.length === 0) return [];
+
+      const allPaths: string[] = [];
+      const pathsByProfile: Record<string, string[]> = {};
+
+      for (const row of rows as any[]) {
+        const paths = row.image_paths ? (row.image_paths as string).split(",") : [];
+        pathsByProfile[row.id] = paths;
+        allPaths.push(...paths);
+      }
+
+      const signedUrlMap = allPaths.length > 0 ? await getSignedUrls(allPaths) : {};
+
+      return (rows as any[]).map((r) => ({
+        id: r.id,
+        display_name: r.display_name ?? "",
+        age: r.age ?? null,
+        gender: r.gender ?? null,
+        city: r.city ?? null,
+        city_slug: r.city_slug ?? null,
+        category: r.category ?? null,
+        slug: r.slug ?? null,
+        pricing_from: r.pricing_from ?? null,
+        is_featured: r.is_featured ?? false,
+        highlight_tier: (r.highlight_tier as string) ?? "standard",
+        highlight_expires_at: r.highlight_expires_at ?? null,
+        image_urls: (pathsByProfile[r.id] || []).map((p) => signedUrlMap[p]).filter(Boolean),
+        bio: r.bio ?? null,
+        has_whatsapp: r.has_whatsapp ?? false,
+        created_at: r.created_at ?? null,
+        languages: r.languages ?? null,
+        service_count: Number(r.service_count) || 0,
+      }));
     });
-
-    if (error) {
-      console.error("[profileApi] search_profiles RPC error:", error.message);
-      return [];
-    }
-    if (!rows || rows.length === 0) return [];
-
-    // Collect all image paths from the comma-separated strings
-    const allPaths: string[] = [];
-    const pathsByProfile: Record<string, string[]> = {};
-
-    for (const row of rows as any[]) {
-      const paths = row.image_paths ? (row.image_paths as string).split(",") : [];
-      pathsByProfile[row.id] = paths;
-      allPaths.push(...paths);
-    }
-
-    // Single batch call for signed URLs
-    const signedUrlMap = allPaths.length > 0 ? await getSignedUrls(allPaths) : {};
-
-    return (rows as any[]).map((r) => ({
-      id: r.id,
-      display_name: r.display_name ?? "",
-      age: r.age ?? null,
-      gender: r.gender ?? null,
-      city: r.city ?? null,
-      city_slug: r.city_slug ?? null,
-      category: r.category ?? null,
-      slug: r.slug ?? null,
-      pricing_from: r.pricing_from ?? null,
-      is_featured: r.is_featured ?? false,
-      highlight_tier: (r.highlight_tier as string) ?? "standard",
-      highlight_expires_at: r.highlight_expires_at ?? null,
-      image_urls: (pathsByProfile[r.id] || []).map((p) => signedUrlMap[p]).filter(Boolean),
-      bio: r.bio ?? null,
-      has_whatsapp: r.has_whatsapp ?? false,
-      created_at: r.created_at ?? null,
-      languages: r.languages ?? null,
-      service_count: Number(r.service_count) || 0,
-    }));
   } catch (err) {
-    console.error("[profileApi] Unexpected error in fetchEligibleProfiles:", err);
+    console.error("[profileApi] fetchEligibleProfiles failed after retries:", err);
     return [];
   }
 }
