@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { fetchEligibleProfiles, fetchServices, type EligibleProfile } from "@/lib/profileApi";
+import { useQuery } from "@tanstack/react-query";
+import { fetchEligibleProfiles, type EligibleProfile } from "@/lib/profileSearch";
+import { fetchServices } from "@/lib/profileFilters";
 import { useLocations } from "@/hooks/useLocations";
 
 interface UseCatalogPageOptions {
@@ -13,10 +15,17 @@ export function useCatalogPage(options: UseCatalogPageOptions = {}) {
 
   const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [serviceFilter, setServiceFilter] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
   const [cityFilter, setCityFilter] = useState("");
+
+  // Services via React Query — cached for 10 minutes
+  const { data: services = [] } = useQuery({
+    queryKey: ["services"],
+    queryFn: fetchServices,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
 
   const filteredCities = useMemo(
     () => (countryFilter ? getCitiesByCountry(countryFilter) : []),
@@ -30,10 +39,6 @@ export function useCatalogPage(options: UseCatalogPageOptions = {}) {
 
   // Stable serialisation of fixedFilters to use as effect dep
   const fixedKey = JSON.stringify(fixedFilters ?? {});
-
-  useEffect(() => {
-    fetchServices().then(setServices);
-  }, []);
 
   useEffect(() => {
     const parsed = JSON.parse(fixedKey) as Record<string, string | undefined>;
