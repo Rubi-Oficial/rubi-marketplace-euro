@@ -59,6 +59,7 @@ export async function fetchEligibleProfiles(filters?: {
     const limit = Math.min(Math.max(filters?.limit ?? 50, 1), 100);
     const offset = Math.max(filters?.offset ?? 0, 0);
 
+  return withRetry(async () => {
     const { data: rows, error } = await supabase.rpc("search_profiles", {
       p_country_name: filters?.country_name || filters?.country || null,
       p_city_slug: filters?.city_slug || filters?.city || null,
@@ -72,8 +73,7 @@ export async function fetchEligibleProfiles(filters?: {
     });
 
     if (error) {
-      console.error("[profileApi] search_profiles RPC error:", error.message);
-      return [];
+      throw new Error(`search_profiles RPC error: ${error.message}`);
     }
     if (!rows || rows.length === 0) return [];
 
