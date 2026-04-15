@@ -61,7 +61,16 @@ const AdminUserManagement = lazy(() => import("@/pages/dashboard/admin/AdminUser
 
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,   // 5 min — avoid refetching on every mount
+      gcTime: 15 * 60 * 1000,     // 15 min garbage collection
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function PageLoader() {
   return (
