@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
 import { getSignedUrls } from "@/lib/storageUrls";
 
 export interface EligibleProfile {
