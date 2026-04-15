@@ -1,74 +1,35 @@
 import { useParams, Link } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { fetchEligibleProfiles, fetchServices, type EligibleProfile } from "@/lib/profileApi";
 import { ProfileCard } from "@/components/public/ProfileCard";
 import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
 import { SlidersHorizontal, MapPin, ArrowRight } from "lucide-react";
 import { CATEGORY_DB_VALUE_BY_SLUG, CATEGORY_DEFINITIONS } from "@/lib/categoryMapping";
-import { useLocations } from "@/hooks/useLocations";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 import { SeoNavigationBlocks } from "@/components/public/SeoNavigationBlocks";
+import { useCatalogPage } from "@/hooks/useCatalogPage";
 
 export default function CategoryPage() {
   const { t } = useLanguage();
   const { slug } = useParams();
-  const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
-  const [serviceFilter, setServiceFilter] = useState("");
-  const [countryFilter, setCountryFilter] = useState("");
-  const [cityFilter, setCityFilter] = useState("");
-
-  const { countries, getCitiesByCountry } = useLocations();
 
   const categoryMeta = CATEGORY_DEFINITIONS.find((c) => c.slug === slug);
   const categoryDbValue = slug ? CATEGORY_DB_VALUE_BY_SLUG[slug] : "";
   const categoryName = categoryMeta ? t(categoryMeta.key) : slug?.replace(/-/g, " ") || "";
 
-  const filteredCities = useMemo(
-    () => (countryFilter ? getCitiesByCountry(countryFilter) : []),
-    [countryFilter, getCitiesByCountry]
-  );
-
-  const countryCitySlugs = useMemo(
-    () => new Set(filteredCities.map((c) => c.slug)),
-    [filteredCities]
-  );
-
-  useEffect(() => {
-    fetchServices().then(setServices);
-  }, []);
-
-  useEffect(() => {
-    if (!categoryDbValue) {
-      setProfiles([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    fetchEligibleProfiles({
-      gender: categoryDbValue,
-      service_slug: serviceFilter || undefined,
-      city_slug: cityFilter || undefined,
-    }).then((data) => {
-      if (countryFilter && !cityFilter) {
-        setProfiles(data.filter((p) => p.city_slug && countryCitySlugs.has(p.city_slug)));
-      } else {
-        setProfiles(data);
-      }
-      setLoading(false);
-    });
-  }, [categoryDbValue, serviceFilter, cityFilter, countryFilter, countryCitySlugs]);
-
-  const countryName = countries.find((c) => c.slug === countryFilter)?.name;
-  const cityName = filteredCities.find((c) => c.slug === cityFilter)?.name;
-  const serviceName = services.find((s) => s.slug === serviceFilter)?.name;
+  const {
+    profiles, loading, services,
+    serviceFilter, countryFilter, cityFilter,
+    countryName, cityName, serviceName,
+    hasLocationFilter, hasServiceFilter, hasFilters,
+    handleApplyFilters, handleApplyLocation, handleRemoveFilter, clearFilters,
+    countries, getCitiesByCountry,
+  } = useCatalogPage({ fixedFilters: { gender: categoryDbValue || undefined } });
 
   usePageMeta({
     title: `${categoryName} — Profiles`,
@@ -91,32 +52,6 @@ export default function CategoryPage() {
       isPartOf: { "@type": "WebSite", name: "Rubi Girls", url: SITE_URL },
     },
   });
-
-  const hasLocationFilter = !!countryFilter || !!cityFilter;
-  const hasServiceFilter = !!serviceFilter;
-  const hasFilters = hasLocationFilter || hasServiceFilter;
-
-  const handleApplyFilters = (partial: Partial<{ category: string; service: string }>) => {
-    if (partial.service !== undefined) setServiceFilter(partial.service);
-  };
-
-  const handleApplyLocation = (country: string, city: string) => {
-    setCountryFilter(country);
-    setCityFilter(city);
-  };
-
-  const handleRemoveFilter = (key: string) => {
-    if (key === "country") { setCountryFilter(""); setCityFilter(""); }
-    else if (key === "city") setCityFilter("");
-    else if (key === "service") setServiceFilter("");
-  };
-
-  const clearFilters = () => {
-    setServiceFilter("");
-    setCountryFilter("");
-    setCityFilter("");
-  };
-
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">
@@ -243,7 +178,7 @@ export default function CategoryPage() {
         onOpenChange={setFilterOpen}
         filters={{ category: "", service: serviceFilter }}
         onApply={handleApplyFilters}
-        onClear={() => setServiceFilter("")}
+        onClear={() => handleApplyFilters({ service: "" })}
         resultCount={profiles.length}
         services={services}
       />
