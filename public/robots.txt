@@ -4,6 +4,7 @@ Allow: /buscar
 Allow: /perfil/
 Allow: /cidade/
 Allow: /categoria/
+Allow: /es/
 Allow: /planos
 Allow: /sobre
 Allow: /contato
@@ -27,4 +28,4 @@ User-agent: Bingbot
 Allow: /
 Crawl-delay: 2
 
-Sitemap: https://rubigirls.fun/functions/v1/sitemap
+Sitemap: https://velvetescorts.vip/functions/v1/sitemap
