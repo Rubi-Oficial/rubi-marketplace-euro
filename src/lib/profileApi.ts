@@ -1,6 +1,26 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getSignedUrls } from "@/lib/storageUrls";
 
+/** Retry a function with exponential backoff */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  { retries = 2, baseDelay = 500 }: { retries?: number; baseDelay?: number } = {}
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt < retries) {
+        const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 200;
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+  }
+  throw lastError;
+}
+
 export interface EligibleProfile {
   id: string;
   display_name: string;
