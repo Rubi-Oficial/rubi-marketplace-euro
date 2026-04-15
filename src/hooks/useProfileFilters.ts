@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { fetchEligibleProfiles, fetchServices, prefetchNextBatchUrls, type EligibleProfile } from "@/lib/profileApi";
+import { useQuery } from "@tanstack/react-query";
+import { fetchEligibleProfiles, prefetchNextBatchUrls, type EligibleProfile } from "@/lib/profileSearch";
+import { fetchServices } from "@/lib/profileFilters";
 import { useLocations } from "@/hooks/useLocations";
 
 interface UseProfileFiltersOptions {
@@ -37,9 +39,16 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
   const offsetRef = useRef(0);
+
+  // Services via React Query — cached for 10 minutes
+  const { data: services = [] } = useQuery({
+    queryKey: ["services"],
+    queryFn: fetchServices,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -52,12 +61,6 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
     () => (filters.country ? getCitiesByCountry(filters.country) : []),
     [filters.country, getCitiesByCountry]
   );
-
-  useEffect(() => {
-    fetchServices().then(setServices).catch((err: unknown) => {
-      console.error("[filters] Failed to fetch services:", err);
-    });
-  }, []);
 
   const countryObj = useMemo(
     () => countries.find((c) => c.slug === filters.country),
@@ -86,7 +89,6 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
         setHasMore(data.length >= limit);
         offsetRef.current = data.length;
         setLoading(false);
-        // Prefetch next batch's signed URLs in background
         if (data.length >= limit) {
           prefetchNextBatchUrls({ ...buildFilterParams(), offset: data.length }).catch(() => {});
         }
@@ -115,7 +117,6 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
         setHasMore(data.length >= limit);
         offsetRef.current += data.length;
         setLoadingMore(false);
-        // Prefetch next batch's signed URLs in background
         if (data.length >= limit) {
           prefetchNextBatchUrls({ ...buildFilterParams(), offset: offsetRef.current }).catch(() => {});
         }
