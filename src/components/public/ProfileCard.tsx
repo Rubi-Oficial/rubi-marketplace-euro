@@ -10,7 +10,7 @@ import { ImageCarousel } from "@/components/profile/ImageCarousel";
 import { TierBadge } from "@/components/profile/TierBadge";
 import type { EligibleProfile } from "@/lib/profileApi";
 
-// Re-export for backward compatibility
+// @deprecated — import directly from "@/lib/profileApi" instead
 export type { EligibleProfile } from "@/lib/profileApi";
 export { fetchEligibleProfiles, fetchFilterOptions, fetchServices } from "@/lib/profileApi";
 

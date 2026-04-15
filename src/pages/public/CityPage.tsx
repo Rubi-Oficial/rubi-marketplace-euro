@@ -1,12 +1,12 @@
 import { useParams, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { fetchEligibleProfiles, fetchServices, ProfileCard, type EligibleProfile } from "@/components/public/ProfileCard";
+import { ProfileCard } from "@/components/public/ProfileCard";
 import { ArrowRight } from "lucide-react";
 import { useLocations } from "@/hooks/useLocations";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta, SITE_URL } from "@/hooks/usePageMeta";
 import { SeoNavigationBlocks } from "@/components/public/SeoNavigationBlocks";
+import { useCatalogPage } from "@/hooks/useCatalogPage";
 
 const SEO_CITY_COPY: Record<string, { title: string; desc: string; h1: string }> = {
   barcelona: {
@@ -41,38 +41,25 @@ const SEO_CITY_COPY: Record<string, { title: string; desc: string; h1: string }>
   },
 };
 
-
-
 export default function CityPage() {
   const { t } = useLanguage();
   const { slug } = useParams();
-  const [profiles, setProfiles] = useState<EligibleProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [services, setServices] = useState<{ id: string; name: string; slug: string }[]>([]);
-  const [activeService, setActiveService] = useState<string>("");
 
   const { cities, countries } = useLocations();
   const cityObj = cities.find((c) => c.slug === slug);
   const cityName = cityObj?.name || slug?.replace(/-/g, " ") || "";
   const countryObj = cityObj ? countries.find((c) => c.id === cityObj.country_id) : null;
-  const activeServiceObj = services.find((s) => s.slug === activeService);
 
+  const {
+    profiles, loading, services, serviceFilter, setServiceFilter,
+  } = useCatalogPage({ fixedFilters: { city_slug: slug } });
+
+  const activeServiceObj = services.find((s) => s.slug === serviceFilter);
   const seoCopy = slug ? SEO_CITY_COPY[slug] : undefined;
   const metaTitle = seoCopy?.title || t("city.meta_title_default", { city: cityName });
   const metaDesc = seoCopy?.desc || t("city.meta_desc_default", { city: cityName });
   const introText = seoCopy?.desc || t("city.intro_default", { city: cityName });
   const h1Text = seoCopy?.h1 || t("city.h1_default", { city: cityName });
-
-  useEffect(() => { fetchServices().then(setServices); }, []);
-
-  useEffect(() => {
-    if (!slug) return;
-    setLoading(true);
-    fetchEligibleProfiles({
-      city_slug: slug,
-      service_slug: activeService || undefined,
-    }).then((data) => { setProfiles(data); setLoading(false); });
-  }, [slug, activeService]);
 
   usePageMeta({
     title: metaTitle,
@@ -110,7 +97,7 @@ export default function CityPage() {
             </>
           )}
           <li>
-            {activeService ? (
+            {serviceFilter ? (
               <Link to={`/cidade/${slug}`} className="hover:text-foreground transition-colors">{cityName}</Link>
             ) : (
               <span className="text-foreground">{cityName}</span>
@@ -130,9 +117,7 @@ export default function CityPage() {
         {countryObj && (
           <p className="text-xs text-muted-foreground mt-0.5">{countryObj.name}</p>
         )}
-        <p className="mt-1.5 text-sm text-muted-foreground max-w-2xl">
-          {introText}
-        </p>
+        <p className="mt-1.5 text-sm text-muted-foreground max-w-2xl">{introText}</p>
         <p className="mt-1 text-xs text-muted-foreground">
           {loading ? t("search.loading") : `${profiles.length} ${t("category.profiles")}`}
         </p>
@@ -141,9 +126,9 @@ export default function CityPage() {
       {services.length > 0 && (
         <nav aria-label="Service filters" className="flex flex-wrap gap-1.5 mb-5">
           <button
-            onClick={() => setActiveService("")}
+            onClick={() => setServiceFilter("")}
             className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-              !activeService ? "bg-primary text-primary-foreground" : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+              !serviceFilter ? "bg-primary text-primary-foreground" : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
             }`}
           >
             {t("city.all")}
@@ -151,9 +136,9 @@ export default function CityPage() {
           {services.map((s) => (
             <button
               key={s.slug}
-              onClick={() => setActiveService(activeService === s.slug ? "" : s.slug)}
+              onClick={() => setServiceFilter(serviceFilter === s.slug ? "" : s.slug)}
               className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                activeService === s.slug ? "bg-primary text-primary-foreground" : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                serviceFilter === s.slug ? "bg-primary text-primary-foreground" : "bg-card border border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground"
               }`}
             >
               {s.name}
@@ -170,9 +155,9 @@ export default function CityPage() {
         </div>
       ) : profiles.length === 0 ? (
         <div className="rounded-xl border border-border/30 bg-card/50 p-16 text-center">
-          <p className="text-muted-foreground">{t("city.no_profiles")}{activeService ? t("city.no_service") : t("city.no_city")}.</p>
-          {activeService && (
-            <Button variant="ghost" size="sm" className="mt-4" onClick={() => setActiveService("")}>{t("city.clear_filter")}</Button>
+          <p className="text-muted-foreground">{t("city.no_profiles")}{serviceFilter ? t("city.no_service") : t("city.no_city")}.</p>
+          {serviceFilter && (
+            <Button variant="ghost" size="sm" className="mt-4" onClick={() => setServiceFilter("")}>{t("city.clear_filter")}</Button>
           )}
           <Button variant="ghost" size="sm" className="mt-4" asChild>
             <Link to="/buscar">{t("category.browse_all")}</Link>

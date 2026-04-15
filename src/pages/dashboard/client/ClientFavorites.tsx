@@ -4,7 +4,8 @@ import { Heart, Search } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getSignedUrls } from "@/lib/storageUrls";
 import { useAuth } from "@/contexts/AuthContext";
-import { ProfileCard, EligibleProfile } from "@/components/public/ProfileCard";
+import { ProfileCard } from "@/components/public/ProfileCard";
+import type { EligibleProfile } from "@/lib/profileApi";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 
