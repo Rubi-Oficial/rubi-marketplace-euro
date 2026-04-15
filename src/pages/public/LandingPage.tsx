@@ -32,11 +32,11 @@ export default function LandingPage() {
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      name: "Rubi Girls",
-      url: "https://rubigirls.fun",
+      name: "Velvet Escorts",
+      url: "https://velvetescorts.vip",
       potentialAction: {
         "@type": "SearchAction",
-        target: "https://rubigirls.fun/buscar?q={search_term_string}",
+        target: "https://velvetescorts.vip/buscar?q={search_term_string}",
         "query-input": "required name=search_term_string",
       },
     },
