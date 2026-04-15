@@ -103,14 +103,12 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
         ref={ref}
         className={cn(
           "group relative flex flex-col overflow-hidden rounded-2xl bg-card border cursor-pointer",
-          "transition-all duration-300 ease-out animate-fade-in",
+          "transition-shadow duration-300 ease-out",
           "hover:shadow-[0_20px_60px_-12px_hsl(274_36%_4%_/_0.6),0_0_20px_hsl(var(--primary)_/_0.06)]",
-          "hover:-translate-y-1 hover:border-[hsl(var(--primary)_/_0.2)]",
+          "hover:border-[hsl(var(--primary)_/_0.2)]",
           "focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-background",
-          "active:scale-[0.98] active:transition-transform active:duration-100",
           tierClasses
         )}
-        style={{ animationDelay: `${Math.min(index * 60, 480)}ms`, animationFillMode: "backwards" }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onClick={handleNavigate}
