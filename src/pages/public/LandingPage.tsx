@@ -1,5 +1,5 @@
 import { Loader2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { useProfileFilters } from "@/hooks/useProfileFilters";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
@@ -69,6 +69,17 @@ export default function LandingPage() {
   const [locationOpen, setLocationOpen] = useState(false);
   const isMobile = useIsMobile();
 
+  // Stable callback refs to avoid re-renders in child components
+  const openFilters = useCallback(() => setFilterOpen(true), []);
+  const openLocation = useCallback(() => setLocationOpen(true), []);
+  const clearCategoryService = useCallback(() => {
+    handleRemoveFilter("category");
+    handleRemoveFilter("service");
+  }, [handleRemoveFilter]);
+  const removeCountry = useCallback(() => handleRemoveFilter("country"), [handleRemoveFilter]);
+  const removeService = useCallback(() => handleRemoveFilter("service"), [handleRemoveFilter]);
+  const removeCategory = useCallback(() => handleRemoveFilter("category"), [handleRemoveFilter]);
+
   const { containerRef: pullRef, pullDistance, refreshing } = usePullToRefresh({
     onRefresh: refresh,
   });
@@ -109,8 +120,8 @@ export default function LandingPage() {
             hasLocationFilter={hasLocationFilter}
             generalCount={generalCount}
             locationCount={locationCount}
-            onOpenFilters={() => setFilterOpen(true)}
-            onOpenLocation={() => setLocationOpen(true)}
+            onOpenFilters={openFilters}
+            onOpenLocation={openLocation}
           />
 
           <FilterBar
@@ -126,8 +137,8 @@ export default function LandingPage() {
             countryName={countryName}
             cityName={cityName}
             serviceName={serviceName}
-            onOpenFilters={() => setFilterOpen(true)}
-            onOpenLocation={() => setLocationOpen(true)}
+            onOpenFilters={openFilters}
+            onOpenLocation={openLocation}
             onRemoveFilter={handleRemoveFilter}
             onClearAll={clearFilters}
           />
@@ -157,9 +168,9 @@ export default function LandingPage() {
                 cityFilter={filters.city}
                 serviceFilter={filters.service}
                 categoryFilter={filters.category}
-                onRemoveLocation={() => handleRemoveFilter("country")}
-                onRemoveService={() => handleRemoveFilter("service")}
-                onRemoveCategory={() => handleRemoveFilter("category")}
+                onRemoveLocation={removeCountry}
+                onRemoveService={removeService}
+                onRemoveCategory={removeCategory}
                 onClearAll={clearFilters}
               />
             )}
@@ -179,7 +190,7 @@ export default function LandingPage() {
         onOpenChange={setFilterOpen}
         filters={{ category: filters.category, service: filters.service }}
         onApply={handleApplyFilters}
-        onClear={() => { handleRemoveFilter("category"); handleRemoveFilter("service"); }}
+        onClear={clearCategoryService}
         resultCount={profiles.length}
         services={services}
         categories={CATEGORIES.map((c) => t(c.key))}

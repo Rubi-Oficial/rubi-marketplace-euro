@@ -1,8 +1,8 @@
 import { useParams, Link } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { getSignedUrls } from "@/lib/storageUrls";
-import { ArrowLeft, AlertTriangle, MessageCircle, Send } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
 import { ProfileGallery } from "@/components/profile/ProfileGallery";
@@ -14,7 +14,10 @@ import { ProfileSectionNav } from "@/components/profile/ProfileSectionNav";
 import { ProfileDesktopSidebar } from "@/components/profile/ProfileDesktopSidebar";
 import { ProfileRelatedLinks } from "@/components/profile/ProfileRelatedLinks";
 import { ProfileFloatingActionsMobile } from "@/components/profile/ProfileFloatingActionsMobile";
-import { ProfileServiceChips } from "@/components/profile/ProfileServiceChips";
+import { ProfileOverviewSection } from "@/components/profile/ProfileOverviewSection";
+import { ProfileServicesSection } from "@/components/profile/ProfileServicesSection";
+import { ProfilePricingSection } from "@/components/profile/ProfilePricingSection";
+import { ProfileContactSection } from "@/components/profile/ProfileContactSection";
 
 interface PublicProfile {
   id: string;
@@ -39,6 +42,8 @@ interface MediaItem {
   sort_order: number;
   url: string;
 }
+
+const SECTION_STYLE = { scrollMarginTop: "var(--profile-section-nav-offset, 108px)" } as const;
 
 export default function ProfilePage() {
   const { t } = useLanguage();
@@ -167,10 +172,15 @@ export default function ProfilePage() {
     load();
   }, [slug]);
 
-  const trackContact = (source: "whatsapp_profile" | "telegram_profile") => {
+  const trackWhatsapp = useCallback(() => {
     if (!profile?.id) return;
-    supabase.from("leads").insert({ profile_id: profile.id, source });
-  };
+    supabase.from("leads").insert({ profile_id: profile.id, source: "whatsapp_profile" });
+  }, [profile?.id]);
+
+  const trackTelegram = useCallback(() => {
+    if (!profile?.id) return;
+    supabase.from("leads").insert({ profile_id: profile.id, source: "telegram_profile" });
+  }, [profile?.id]);
 
   const canonicalProfilePath = useMemo(() => {
     if (!slug) return "/perfil";
@@ -271,7 +281,6 @@ export default function ProfilePage() {
 
   const hasServices = services.length > 0;
   const hasMobileFloatingBar = Boolean(profile.whatsapp || profile.telegram);
-  const sectionStyle = { scrollMarginTop: "var(--profile-section-nav-offset, 108px)" };
 
   const navItems = [
     { id: "overview", label: "Visão geral", enabled: true },
@@ -309,8 +318,8 @@ export default function ProfilePage() {
               services={services}
               showContactButtons={false}
               maxServices={6}
-              onWhatsappClick={() => trackContact("whatsapp_profile")}
-              onTelegramClick={() => trackContact("telegram_profile")}
+              onWhatsappClick={trackWhatsapp}
+              onTelegramClick={trackTelegram}
             />
           </div>
         </div>
@@ -319,8 +328,8 @@ export default function ProfilePage() {
           <ProfileDesktopSidebar
             profile={profile}
             services={services}
-            onWhatsappClick={() => trackContact("whatsapp_profile")}
-            onTelegramClick={() => trackContact("telegram_profile")}
+            onWhatsappClick={trackWhatsapp}
+            onTelegramClick={trackTelegram}
           />
         </div>
       </section>
@@ -328,62 +337,19 @@ export default function ProfilePage() {
       <ProfileSectionNav items={navItems} className="sticky top-0 z-30 mt-4 lg:mt-6" />
 
       <main className={`mt-6 space-y-6 ${hasMobileFloatingBar ? "pb-28" : "pb-10"}`}>
-        <section id="overview" style={sectionStyle} className="rounded-2xl border border-border/30 bg-card/60 p-5">
-          <h2 className="font-display text-xl font-semibold text-foreground">Resumo do perfil</h2>
-          <p className="mt-2 max-w-3xl whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-            {profile.bio || "Perfil com atendimento dedicado. Entre em contato para confirmar agenda e detalhes do atendimento."}
-          </p>
-        </section>
+        <ProfileOverviewSection bio={profile.bio} sectionStyle={SECTION_STYLE} />
 
-        {hasServices && (
-          <section id="services" style={sectionStyle} className="rounded-2xl border border-border/30 bg-card/60 p-5">
-            <h2 className="font-display text-xl font-semibold text-foreground">Serviços em destaque</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Escolha o serviço e continue sua busca com filtros prontos.</p>
-            <ProfileServiceChips services={services} className="mt-4" />
-          </section>
-        )}
+        <ProfileServicesSection services={services} sectionStyle={SECTION_STYLE} />
 
-        <section id="pricing" style={sectionStyle} className="rounded-2xl border border-border/30 bg-card/60 p-5">
-          <h2 className="font-display text-xl font-semibold text-foreground">Faixa de valores</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {profile.pricing_from
-              ? `Atendimentos a partir de €${Number(profile.pricing_from).toLocaleString("de-DE")}. Valores podem variar conforme serviço e duração.`
-              : "Valores sob consulta. Fale diretamente no WhatsApp ou Telegram para detalhes atualizados."}
-          </p>
-        </section>
+        <ProfilePricingSection pricingFrom={profile.pricing_from} sectionStyle={SECTION_STYLE} />
 
-        <section id="contact" style={sectionStyle} className="rounded-2xl border border-border/30 bg-card/60 p-5">
-          <h2 className="font-display text-xl font-semibold text-foreground">Contato direto</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Resposta pelos canais oficiais do perfil.</p>
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-            {profile.whatsapp && (
-              <Button className="bg-green-600 hover:bg-green-700 sm:flex-1" asChild>
-                <a
-                  href={`https://wa.me/${profile.whatsapp.replace(/\D/g, "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Entrar em contato por WhatsApp"
-                  onClick={() => trackContact("whatsapp_profile")}
-                >
-                  <MessageCircle className="mr-2 h-4 w-4" /> Falar no WhatsApp
-                </a>
-              </Button>
-            )}
-            {profile.telegram && (
-              <Button variant="outline" className="sm:flex-1" asChild>
-                <a
-                  href={`https://t.me/${profile.telegram.replace("@", "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Entrar em contato por Telegram"
-                  onClick={() => trackContact("telegram_profile")}
-                >
-                  <Send className="mr-2 h-4 w-4" /> Conversar no Telegram
-                </a>
-              </Button>
-            )}
-          </div>
-        </section>
+        <ProfileContactSection
+          whatsapp={profile.whatsapp}
+          telegram={profile.telegram}
+          sectionStyle={SECTION_STYLE}
+          onWhatsappClick={trackWhatsapp}
+          onTelegramClick={trackTelegram}
+        />
 
         <ProfileRelatedLinks
           cityName={profile.city}
@@ -396,8 +362,8 @@ export default function ProfilePage() {
       <ProfileFloatingActionsMobile
         whatsapp={profile.whatsapp}
         telegram={profile.telegram}
-        onWhatsappClick={() => trackContact("whatsapp_profile")}
-        onTelegramClick={() => trackContact("telegram_profile")}
+        onWhatsappClick={trackWhatsapp}
+        onTelegramClick={trackTelegram}
       />
     </div>
   );
