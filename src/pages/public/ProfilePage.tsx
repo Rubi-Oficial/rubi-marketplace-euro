@@ -174,12 +174,12 @@ export default function ProfilePage() {
 
   const trackWhatsapp = useCallback(() => {
     if (!profile?.id) return;
-    supabase.from("leads").insert({ profile_id: profile.id, source: "whatsapp_profile" });
+    supabase.from("leads").insert({ profile_id: profile.id, source: "whatsapp_click" });
   }, [profile?.id]);
 
   const trackTelegram = useCallback(() => {
     if (!profile?.id) return;
-    supabase.from("leads").insert({ profile_id: profile.id, source: "telegram_profile" });
+    supabase.from("leads").insert({ profile_id: profile.id, source: "telegram_click" });
   }, [profile?.id]);
 
   const canonicalProfilePath = useMemo(() => {

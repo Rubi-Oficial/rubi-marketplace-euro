@@ -15,16 +15,36 @@ interface ImageCarouselProps {
 
 /**
  * Auto-rotating image carousel with manual navigation controls.
+ * Uses IntersectionObserver to pause intervals when off-screen.
  */
 function ImageCarouselInner({ urls, displayName, hovered }: ImageCarouselProps) {
   const hasMultiple = urls.length > 1;
   const [activeIdx, setActiveIdx] = useState(0);
   const pausedUntilRef = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isVisibleRef = useRef(false);
+
+  // Track visibility to avoid running intervals for off-screen cards
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisibleRef.current = entry.isIntersecting;
+      },
+      { rootMargin: "100px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!hasMultiple) return;
     const id = setInterval(() => {
       if (hovered) return;
+      if (!isVisibleRef.current) return;
       if (Date.now() < pausedUntilRef.current) return;
       setActiveIdx((i) => (i + 1) % urls.length);
     }, ROTATION_INTERVAL);
@@ -66,7 +86,7 @@ function ImageCarouselInner({ urls, displayName, hovered }: ImageCarouselProps) 
   }
 
   return (
-    <>
+    <div ref={containerRef}>
       {urls.map((url, idx) => (
         <div
           key={url}
@@ -122,7 +142,7 @@ function ImageCarouselInner({ urls, displayName, hovered }: ImageCarouselProps) 
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 }
 
