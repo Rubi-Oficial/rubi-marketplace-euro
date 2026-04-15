@@ -117,36 +117,26 @@ export async function prefetchNextBatchUrls(filters?: {
     const limit = Math.min(Math.max(filters?.limit ?? 50, 1), 100);
     const offset = Math.max(filters?.offset ?? 0, 0);
 
-    let query = supabase
-      .from("eligible_profiles")
-      .select("id")
-      .order("tier_rank" as any, { ascending: false })
-      .order("effective_sort_key" as any, { ascending: false })
-      .order("is_featured", { ascending: false })
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: false })
-      .range(offset, offset + limit - 1);
+    // Use the same RPC to get image_paths in one call
+    const { data: rows } = await supabase.rpc("search_profiles", {
+      p_country_name: filters?.country_name || filters?.country || null,
+      p_city_slug: filters?.city_slug || filters?.city || null,
+      p_city_slugs: filters?.city_slugs?.length ? filters.city_slugs : null,
+      p_category: filters?.category || null,
+      p_gender: filters?.gender || null,
+      p_search: filters?.search || null,
+      p_service_slug: filters?.service_slug || null,
+      p_limit: limit,
+      p_offset: offset,
+    });
 
-    if (filters?.country_name) query = query.ilike("country", filters.country_name);
-    else if (filters?.country) query = query.ilike("country", filters.country);
-    if (filters?.city_slugs && filters.city_slugs.length > 0) query = query.in("city_slug", filters.city_slugs);
-    if (filters?.city_slug) query = query.eq("city_slug", filters.city_slug);
-    if (filters?.category) query = query.ilike("category", filters.category);
+    if (!rows || rows.length === 0) return;
 
-    const { data: profiles } = await query;
-    if (!profiles || profiles.length === 0) return;
-
-    const ids = profiles.map((p) => p.id).filter(Boolean) as string[];
-
-    const { data: images } = await supabase
-      .from("profile_images")
-      .select("storage_path")
-      .in("profile_id", ids)
-      .eq("moderation_status", "approved");
-
-    if (!images || images.length === 0) return;
-
-    await getSignedUrls(images.map((img) => img.storage_path));
+    const allPaths: string[] = [];
+    for (const row of rows as any[]) {
+      if (row.image_paths) allPaths.push(...(row.image_paths as string).split(","));
+    }
+    if (allPaths.length > 0) await getSignedUrls(allPaths);
   } catch {
     // Prefetch is best-effort
   }
