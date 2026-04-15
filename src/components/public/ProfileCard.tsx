@@ -1,13 +1,15 @@
 import { forwardRef, useState, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Euro, Heart, ArrowRight, MessageCircle, ShieldCheck, Zap, Globe } from "lucide-react";
+import { MapPin, Euro, Heart, ShieldCheck } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { ImageCarousel } from "@/components/profile/ImageCarousel";
 import { TierBadge } from "@/components/profile/TierBadge";
+import { CardBadges, isNewProfile } from "@/components/public/card/CardBadges";
+import { CardMetaBadges } from "@/components/public/card/CardMetaBadges";
+import { CardActions } from "@/components/public/card/CardActions";
 import type { EligibleProfile } from "@/lib/profileApi";
 
 // @deprecated — import directly from "@/lib/profileApi" instead
@@ -15,18 +17,6 @@ export type { EligibleProfile } from "@/lib/profileApi";
 export { fetchEligibleProfiles, fetchFilterOptions, fetchServices } from "@/lib/profileApi";
 
 const BIO_MAX_LENGTH = 150;
-const NEW_PROFILE_DAYS = 7;
-
-/** Language code to flag emoji mapping */
-const LANG_FLAGS: Record<string, string> = {
-  pt: "🇧🇷", en: "🇬🇧", es: "🇪🇸", fr: "🇫🇷", de: "🇩🇪", it: "🇮🇹", ru: "🇷🇺", zh: "🇨🇳", ja: "🇯🇵", ko: "🇰🇷", ar: "🇸🇦", nl: "🇳🇱",
-};
-
-function isNewProfile(createdAt: string | null): boolean {
-  if (!createdAt) return false;
-  const diff = Date.now() - new Date(createdAt).getTime();
-  return diff < NEW_PROFILE_DAYS * 24 * 60 * 60 * 1000;
-}
 
 /** Returns tier-specific border/glow classes for subtle visual hierarchy */
 function getTierStyles(tier: string | null, expiresAt: string | null, isFeatured: boolean) {
@@ -92,11 +82,7 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
 
     if (!profile.slug) return null;
 
-    const tierClasses = getTierStyles(
-      profile.highlight_tier,
-      profile.highlight_expires_at,
-      profile.is_featured
-    );
+    const tierClasses = getTierStyles(profile.highlight_tier, profile.highlight_expires_at, profile.is_featured);
 
     return (
       <div
@@ -114,36 +100,20 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
         role="article"
         aria-label={`${profile.display_name}${profile.age ? `, ${profile.age}` : ""}${profile.city ? ` — ${profile.city}` : ""}`}
       >
-        {/* Image section with overlay gradient */}
+        {/* Image section */}
         <div className="relative h-[320px] sm:h-[380px] overflow-hidden bg-muted">
           <ImageCarousel urls={urls} displayName={profile.display_name} hovered={hovered} />
-
-          {/* Multi-layer gradient for depth */}
           <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-card via-card/40 to-transparent pointer-events-none" />
 
-          {/* Tier badge — top center */}
           <TierBadge
             highlight_tier={profile.highlight_tier}
             highlight_expires_at={profile.highlight_expires_at}
             is_featured={profile.is_featured}
           />
 
-          {/* Top-right badges stack: category + new */}
-          <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5 z-10">
-            {isNew && (
-              <div className="flex items-center gap-1 rounded-full bg-[hsl(var(--success)_/_0.85)] backdrop-blur-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-success-foreground border border-[hsl(var(--success)_/_0.3)] shadow-sm">
-                <Zap className="h-2.5 w-2.5" />
-                {t("common.new") || "New"}
-              </div>
-            )}
-            {profile.category && (
-              <div className="rounded-full bg-background/60 backdrop-blur-md px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground/90 border border-border/20">
-                {profile.category}
-              </div>
-            )}
-          </div>
+          <CardBadges isNew={isNew} category={profile.category} />
 
-          {/* Favorite button overlay - top-left */}
+          {/* Favorite button */}
           <button
             className={cn(
               "absolute top-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-md transition-all duration-200",
@@ -169,7 +139,6 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
             {profile.age && (
               <span className="text-lg font-bold text-primary shrink-0">{profile.age}</span>
             )}
-            {/* Verified badge inline with name */}
             <ShieldCheck className="h-4 w-4 text-primary/70 shrink-0" aria-label={t("common.verified") || "Verified"} />
           </div>
 
@@ -182,29 +151,7 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
             )}
           </div>
 
-          {/* Meta badges row: languages + services */}
-          {(profile.languages?.length || profile.service_count > 0) && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              {profile.languages && profile.languages.length > 0 && (
-                <div className="flex items-center gap-1 rounded-full bg-accent/30 px-2 py-0.5 text-[10px] text-muted-foreground border border-border/15">
-                  <Globe className="h-2.5 w-2.5 text-primary/50" />
-                  <span className="flex gap-0.5">
-                    {profile.languages.slice(0, 4).map((l) => (
-                      <span key={l} title={l}>{LANG_FLAGS[l.toLowerCase()] || l.toUpperCase()}</span>
-                    ))}
-                    {profile.languages.length > 4 && (
-                      <span className="text-muted-foreground/60">+{profile.languages.length - 4}</span>
-                    )}
-                  </span>
-                </div>
-              )}
-              {profile.service_count > 0 && (
-                <div className="rounded-full bg-accent/30 px-2 py-0.5 text-[10px] text-muted-foreground border border-border/15">
-                  {profile.service_count} {profile.service_count === 1 ? (t("common.service") || "serviço") : (t("common.services") || "serviços")}
-                </div>
-              )}
-            </div>
-          )}
+          <CardMetaBadges languages={profile.languages} serviceCount={profile.service_count} />
 
           {truncatedBio && (
             <div className="rounded-xl bg-[hsl(var(--surface-light)_/_0.6)] backdrop-blur-sm px-3.5 py-2.5 border border-border/10">
@@ -224,34 +171,13 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
             )}
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-2 pt-1 mt-auto" onClick={(e) => e.stopPropagation()}>
-            <Button
-              size="sm"
-              className="flex-1 gap-1.5 rounded-xl text-sm font-semibold h-10 transition-all duration-300 hover:shadow-[0_4px_16px_hsl(var(--primary)_/_0.25)] hover:-translate-y-0.5 active:scale-[0.97]"
-              onClick={handleNavigate}
-              aria-label={`${t("common.view_profile")} - ${profile.display_name}`}
-            >
-              {t("common.view_profile")}
-              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
-            </Button>
-
-            {profile.has_whatsapp && (
-              <Button
-                size="sm"
-                className="shrink-0 rounded-xl px-3 h-10 bg-success hover:bg-success/90 text-success-foreground border-0 transition-smooth hover:shadow-[0_4px_12px_hsl(var(--success)_/_0.3)]"
-                disabled={whatsappLoading}
-                onClick={handleWhatsApp}
-                aria-label={`WhatsApp — ${profile.display_name}`}
-              >
-                {whatsappLoading ? (
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-success-foreground border-t-transparent" />
-                ) : (
-                  <MessageCircle className="h-4 w-4" />
-                )}
-              </Button>
-            )}
-          </div>
+          <CardActions
+            displayName={profile.display_name}
+            hasWhatsapp={profile.has_whatsapp}
+            whatsappLoading={whatsappLoading}
+            onNavigate={handleNavigate}
+            onWhatsApp={handleWhatsApp}
+          />
         </div>
       </div>
     );
@@ -259,7 +185,6 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; 
 );
 ProfileCardInner.displayName = "ProfileCardInner";
 
-// Memoize to prevent re-renders when parent re-renders
 export const ProfileCard = memo(ProfileCardInner, (prev, next) => {
   return prev.profile.id === next.profile.id
     && prev.profile.image_urls === next.profile.image_urls
