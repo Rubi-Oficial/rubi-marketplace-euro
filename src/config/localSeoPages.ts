@@ -25,7 +25,7 @@ export interface SeoCityConfig {
   pages: SeoLocalPageConfig[];
 }
 
-export const LOCAL_SEO_SITE_URL = "https://rubigirls.fun";
+export const LOCAL_SEO_SITE_URL = "https://velvetescorts.vip";
 export const INDEX_MIN_PROFILES = 8;
 
 export const MARKET_LABEL: Record<SeoMarket, string> = {
