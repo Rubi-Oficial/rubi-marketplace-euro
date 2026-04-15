@@ -6,7 +6,7 @@ import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { useProfileFilters } from "@/hooks/useProfileFilters";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { VideoSection } from "@/components/public/VideoSection";
+import { LazyVideoSection } from "@/components/public/LazyVideoSection";
 import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
 import { FilterBar } from "@/components/public/FilterBar";
@@ -209,7 +209,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <VideoSection filters={{ activeCity: filters.city, activeService: filters.service }} />
+      <LazyVideoSection filters={{ activeCity: filters.city, activeService: filters.service }} />
 
       {/* CTA Section */}
       <section className="relative py-20 md:py-28 overflow-hidden">

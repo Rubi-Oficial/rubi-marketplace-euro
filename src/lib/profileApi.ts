@@ -283,17 +283,37 @@ export async function fetchFilterOptions() {
   return filterOptionsPromise;
 }
 
+const SERVICES_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+let servicesCache: { data: { id: string; name: string; slug: string }[]; ts: number } | null = null;
+let servicesPromise: Promise<{ id: string; name: string; slug: string }[]> | null = null;
+
 export async function fetchServices() {
-  try {
-    const { data, error } = await supabase
-      .from("services").select("id, name, slug").eq("is_active", true).order("sort_order", { ascending: true });
-    if (error) {
-      console.error("[profileApi] Failed to fetch services:", error.message);
-      return [];
-    }
-    return (data || []) as { id: string; name: string; slug: string }[];
-  } catch (err) {
-    console.error("[profileApi] Unexpected error in fetchServices:", err);
-    return [];
+  // Return cached if fresh
+  if (servicesCache && Date.now() - servicesCache.ts < SERVICES_CACHE_TTL) {
+    return servicesCache.data;
   }
+
+  // Deduplicate concurrent calls
+  if (servicesPromise) return servicesPromise;
+
+  servicesPromise = (async () => {
+    try {
+      const { data, error } = await supabase
+        .from("services").select("id, name, slug").eq("is_active", true).order("sort_order", { ascending: true });
+      if (error) {
+        console.error("[profileApi] Failed to fetch services:", error.message);
+        return [];
+      }
+      const result = (data || []) as { id: string; name: string; slug: string }[];
+      servicesCache = { data: result, ts: Date.now() };
+      return result;
+    } catch (err) {
+      console.error("[profileApi] Unexpected error in fetchServices:", err);
+      return [];
+    } finally {
+      servicesPromise = null;
+    }
+  })();
+
+  return servicesPromise;
 }
