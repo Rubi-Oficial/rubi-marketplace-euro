@@ -19,9 +19,6 @@ import { SectionErrorBoundary } from "@/components/shared/SectionErrorBoundary";
 import { CATEGORIES } from "@/components/shared/CategoryBar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { usePageMeta } from "@/hooks/usePageMeta";
-import { CATEGORIES } from "@/components/shared/CategoryBar";
-import { useLanguage } from "@/i18n/LanguageContext";
-import { usePageMeta } from "@/hooks/usePageMeta";
 
 
 export default function LandingPage() {
