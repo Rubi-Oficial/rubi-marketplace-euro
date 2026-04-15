@@ -12,9 +12,7 @@ import { CardMetaBadges } from "@/components/public/card/CardMetaBadges";
 import { CardActions } from "@/components/public/card/CardActions";
 import type { EligibleProfile } from "@/lib/profileApi";
 
-// @deprecated — import directly from "@/lib/profileApi" instead
-export type { EligibleProfile } from "@/lib/profileApi";
-export { fetchEligibleProfiles, fetchFilterOptions, fetchServices } from "@/lib/profileApi";
+// Import directly from "@/lib/profileApi"
 
 const BIO_MAX_LENGTH = 150;
 
