@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import type { ServiceOption } from "@/components/onboarding/types";
 
 interface ServicesPickerProps {

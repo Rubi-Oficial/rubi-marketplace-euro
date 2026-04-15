@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useLocations } from "@/hooks/useLocations";
 import type { ProfileDraft, ServiceOption } from "./types";
 import { CATEGORIES } from "./types";

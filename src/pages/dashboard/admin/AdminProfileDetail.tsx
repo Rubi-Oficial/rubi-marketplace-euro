@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { compressImage } from "@/lib/imageCompression";
 import { getSignedUrls } from "@/lib/storageUrls";
 import { Button } from "@/components/ui/button";

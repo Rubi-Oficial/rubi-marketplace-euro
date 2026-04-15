@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { getSignedUrls } from "@/lib/storageUrls";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
