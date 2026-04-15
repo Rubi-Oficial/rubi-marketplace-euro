@@ -7,13 +7,15 @@ interface ProfileGridProps {
   columns?: string;
 }
 
-export const ProfileGrid = React.forwardRef<HTMLDivElement, ProfileGridProps>(
-  ({ profiles, columns = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" }, ref) => (
-    <div ref={ref} className={`grid gap-5 sm:gap-6 lg:gap-7 stagger-children ${columns}`}>
-      {profiles.map((p, i) => (
-        <ProfileCard key={p.id} profile={p} index={i} />
-      ))}
-    </div>
+export const ProfileGrid = React.memo(
+  React.forwardRef<HTMLDivElement, ProfileGridProps>(
+    ({ profiles, columns = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" }, ref) => (
+      <div ref={ref} className={`grid gap-5 sm:gap-6 lg:gap-7 stagger-children ${columns}`}>
+        {profiles.map((p) => (
+          <ProfileCard key={p.id} profile={p} />
+        ))}
+      </div>
+    )
   )
 );
 ProfileGrid.displayName = "ProfileGrid";

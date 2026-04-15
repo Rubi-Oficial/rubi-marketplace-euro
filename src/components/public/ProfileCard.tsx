@@ -34,8 +34,8 @@ function getTierStyles(tier: string | null, expiresAt: string | null, isFeatured
   return "border-border/30";
 }
 
-const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile; index?: number }>(
-  ({ profile, index = 0 }, ref) => {
+const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile }>(
+  ({ profile }, ref) => {
     const navigate = useNavigate();
     const { t, lang } = useLanguage();
     const urls = profile.image_urls;
@@ -188,6 +188,5 @@ ProfileCardInner.displayName = "ProfileCardInner";
 export const ProfileCard = memo(ProfileCardInner, (prev, next) => {
   return prev.profile.id === next.profile.id
     && prev.profile.image_urls === next.profile.image_urls
-    && prev.profile.highlight_tier === next.profile.highlight_tier
-    && prev.index === next.index;
+    && prev.profile.highlight_tier === next.profile.highlight_tier;
 });
