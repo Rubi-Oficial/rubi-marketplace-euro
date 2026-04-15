@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ProfileCard } from "@/components/public/ProfileCard";
+import { ProfileGridSkeleton } from "@/components/public/ProfileGrid";
 import { FilterModal } from "@/components/public/FilterModal";
 import { LocationModal } from "@/components/public/LocationModal";
 import { ActiveFilterChips } from "@/components/public/ActiveFilterChips";
@@ -130,11 +131,7 @@ export default function CategoryPage() {
       </div>
 
       {loading ? (
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-muted" />
-          ))}
-        </div>
+        <ProfileGridSkeleton count={6} columns="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
       ) : profiles.length === 0 ? (
         <div className="rounded-xl border border-border/40 bg-card/50 p-16 text-center">
           <p className="text-muted-foreground">{t("category.no_profiles")}</p>
