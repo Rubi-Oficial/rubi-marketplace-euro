@@ -67,15 +67,21 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
     [countries, filters.country]
   );
 
+  // Stable join key for filteredCities to keep buildFilterParams identity steady
+  const cityFiltersKey = useMemo(
+    () => filteredCities.map((c) => c.slug).join(","),
+    [filteredCities]
+  );
+
   const buildFilterParams = useCallback(() => ({
     search: debouncedSearch || undefined,
     country_name: countryObj?.name || undefined,
-    city_slugs: filters.country && !filters.city ? filteredCities.map((c) => c.slug) : undefined,
+    city_slugs: filters.country && !filters.city ? cityFiltersKey.split(",").filter(Boolean) : undefined,
     city_slug: filters.city || undefined,
     category: filters.category || undefined,
     service_slug: filters.service || undefined,
     limit,
-  }), [debouncedSearch, countryObj, filters.country, filters.city, filters.category, filters.service, filteredCities, limit]);
+  }), [debouncedSearch, countryObj, filters.country, filters.city, filters.category, filters.service, cityFiltersKey, limit]);
 
   // Initial load + filter changes
   useEffect(() => {

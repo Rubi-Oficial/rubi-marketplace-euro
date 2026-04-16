@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Country {
@@ -53,17 +53,40 @@ export function useLocations() {
       });
   }, []);
 
+  // Pre-build O(1) lookup maps to avoid repeated linear scans across consumers
+  const countryBySlug = useMemo(() => {
+    const m = new Map<string, Country>();
+    for (const c of countries) m.set(c.slug, c);
+    return m;
+  }, [countries]);
+
+  const citiesByCountryId = useMemo(() => {
+    const m = new Map<string, City[]>();
+    for (const c of cities) {
+      const arr = m.get(c.country_id);
+      if (arr) arr.push(c);
+      else m.set(c.country_id, [c]);
+    }
+    return m;
+  }, [cities]);
+
+  const cityBySlug = useMemo(() => {
+    const m = new Map<string, City>();
+    for (const c of cities) m.set(c.slug, c);
+    return m;
+  }, [cities]);
+
   const getCitiesByCountry = useCallback((countrySlug: string) => {
-    const country = countries.find((c) => c.slug === countrySlug);
+    const country = countryBySlug.get(countrySlug);
     if (!country) return [];
-    return cities.filter((c) => c.country_id === country.id);
-  }, [countries, cities]);
+    return citiesByCountryId.get(country.id) ?? [];
+  }, [countryBySlug, citiesByCountryId]);
 
   const getCountryByCity = useCallback((citySlug: string) => {
-    const city = cities.find((c) => c.slug === citySlug);
+    const city = cityBySlug.get(citySlug);
     if (!city) return null;
     return countries.find((c) => c.id === city.country_id) || null;
-  }, [countries, cities]);
+  }, [cityBySlug, countries]);
 
   return { countries, cities, loading, getCitiesByCountry, getCountryByCity };
 }
