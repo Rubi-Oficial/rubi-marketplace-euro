@@ -1,8 +1,7 @@
 import { cn } from "@/lib/utils";
+import logoVelvetVip from "@/assets/logo-velvet-vip.png";
 
 interface PhotoWatermarkProps {
-  /** Override the brand label. Defaults to "Velvet". */
-  label?: string;
   /** Visual size variant. */
   size?: "sm" | "md" | "lg";
   className?: string;
@@ -10,16 +9,16 @@ interface PhotoWatermarkProps {
 
 /**
  * Subtle centered watermark overlay applied on top of profile photos
- * to discourage unauthorized reuse. Pointer-events disabled so it never
- * blocks card clicks or carousel navigation.
+ * using the Velvet Escorts VIP logo to discourage unauthorized reuse.
+ * Pointer-events disabled so it never blocks card clicks or navigation.
  */
-export function PhotoWatermark({ label = "Velvet", size = "md", className }: PhotoWatermarkProps) {
+export function PhotoWatermark({ size = "md", className }: PhotoWatermarkProps) {
   const sizeClass =
     size === "sm"
-      ? "text-2xl tracking-[0.4em]"
+      ? "w-24 md:w-28"
       : size === "lg"
-      ? "text-6xl tracking-[0.55em]"
-      : "text-4xl tracking-[0.5em]";
+      ? "w-56 md:w-72"
+      : "w-40 md:w-48";
 
   return (
     <div
@@ -29,17 +28,16 @@ export function PhotoWatermark({ label = "Velvet", size = "md", className }: Pho
         className
       )}
     >
-      <span
+      <img
+        src={logoVelvetVip}
+        alt=""
+        draggable={false}
         className={cn(
-          "font-display font-semibold uppercase text-white/15",
-          "drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
-          "rotate-[-18deg]",
+          "object-contain opacity-20 mix-blend-screen rotate-[-12deg]",
+          "drop-shadow-[0_2px_4px_rgba(0,0,0,0.45)]",
           sizeClass
         )}
-        style={{ WebkitTextStroke: "0.5px rgba(255,255,255,0.18)" }}
-      >
-        {label}
-      </span>
+      />
     </div>
   );
 }

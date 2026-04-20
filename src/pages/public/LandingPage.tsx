@@ -63,7 +63,7 @@ export default function LandingPage() {
     countryName,
     cityName,
     serviceNames,
-  } = useProfileFilters({ limit: 20 });
+  } = useProfileFilters({ limit: 20, fixedFilters: { gender: "Women" } });
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);

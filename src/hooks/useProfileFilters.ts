@@ -13,6 +13,8 @@ interface UseProfileFiltersOptions {
     services?: string[];
     search?: string;
   };
+  /** Fixed filter applied to every query (e.g. gender="Women"). Cannot be cleared by the user. */
+  fixedFilters?: { gender?: string };
 }
 
 export interface FilterState {
@@ -24,7 +26,7 @@ export interface FilterState {
 }
 
 export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
-  const { limit = 50, initialFilters } = options;
+  const { limit = 50, initialFilters, fixedFilters } = options;
   const { countries, getCitiesByCountry } = useLocations();
 
   const [filters, setFilters] = useState<FilterState>({
@@ -74,15 +76,18 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
   // Stable key for services array
   const servicesKey = useMemo(() => filters.services.join(","), [filters.services]);
 
+  const fixedGender = fixedFilters?.gender;
+
   const buildFilterParams = useCallback(() => ({
     search: debouncedSearch || undefined,
     country_name: countryObj?.name || undefined,
     city_slugs: filters.country && !filters.city ? cityFiltersKey.split(",").filter(Boolean) : undefined,
     city_slug: filters.city || undefined,
     category: filters.category || undefined,
+    gender: fixedGender || undefined,
     service_slugs: filters.services.length ? filters.services : undefined,
     limit,
-  }), [debouncedSearch, countryObj, filters.country, filters.city, filters.category, servicesKey, cityFiltersKey, limit]);
+  }), [debouncedSearch, countryObj, filters.country, filters.city, filters.category, servicesKey, cityFiltersKey, limit, fixedGender]);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- servicesKey replaces filters.services for stability
 
   useEffect(() => {
