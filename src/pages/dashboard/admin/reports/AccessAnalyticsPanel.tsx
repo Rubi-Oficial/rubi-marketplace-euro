@@ -13,6 +13,7 @@ import {
 import { StatCard } from "./StatCard";
 import { DEVICE_COLORS } from "./constants";
 import { classifyBot, BOT_SEVERITY_STYLES } from "./botClassification";
+import { getCountryFlag, getCountryLabel } from "./countryFlags";
 import type { AccessAnalytics } from "./types";
 
 interface Props {
