@@ -99,7 +99,7 @@ const ProfileCardInner = forwardRef<HTMLDivElement, { profile: EligibleProfile }
         aria-label={`${profile.display_name}${profile.age ? `, ${profile.age}` : ""}${profile.city ? ` — ${profile.city}` : ""}`}
       >
         {/* Image section */}
-        <div className="relative h-[320px] sm:h-[380px] overflow-hidden bg-muted">
+        <div className="relative h-[420px] sm:h-[380px] overflow-hidden bg-muted">
           <ImageCarousel urls={urls} displayName={profile.display_name} hovered={hovered} />
           <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-card via-card/40 to-transparent pointer-events-none" />
 
