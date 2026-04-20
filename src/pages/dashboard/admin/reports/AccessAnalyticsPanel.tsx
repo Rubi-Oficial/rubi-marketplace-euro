@@ -144,7 +144,14 @@ export function AccessAnalyticsPanel({ data, onRefresh, refreshing }: Props) {
                       {data.suspicious_ips.map((ip, i) => (
                         <tr key={i} className="border-b border-border/50 last:border-0">
                           <td className="px-2 py-1.5 font-mono text-foreground">{ip.ip_hash.substring(0, 12)}…</td>
-                          <td className="px-2 py-1.5 text-muted-foreground">{ip.country_code || "—"}{ip.city_name ? ` / ${ip.city_name}` : ""}</td>
+                          <td className="px-2 py-1.5 text-muted-foreground">
+                            <span className="inline-flex items-center gap-1">
+                              <span className="text-base leading-none" aria-label={getCountryLabel(ip.country_code)}>
+                                {getCountryFlag(ip.country_code)}
+                              </span>
+                              {ip.city_name ? <span>{ip.city_name}</span> : <span>{getCountryLabel(ip.country_code)}</span>}
+                            </span>
+                          </td>
                           <td className="px-2 py-1.5 text-right tabular-nums text-destructive font-medium">{ip.hits}</td>
                           <td className="px-2 py-1.5 text-right tabular-nums">{ip.unique_pages}</td>
                           <td className="px-2 py-1.5 text-center">{ip.is_known_bot ? "✓" : "—"}</td>
@@ -349,7 +356,14 @@ export function AccessAnalyticsPanel({ data, onRefresh, refreshing }: Props) {
                 <tbody>
                   {data.top_countries.map((c, i) => (
                     <tr key={i} className="border-b border-border last:border-0">
-                      <td className="px-4 py-2 text-foreground">{c.country}</td>
+                      <td className="px-4 py-2 text-foreground">
+                        <span className="inline-flex items-center gap-2">
+                          <span className="text-lg leading-none" aria-label={getCountryLabel(c.country)}>
+                            {getCountryFlag(c.country)}
+                          </span>
+                          <span>{getCountryLabel(c.country)}</span>
+                        </span>
+                      </td>
                       <td className="px-4 py-2 text-muted-foreground">{data.top_cities[i]?.city || "—"}</td>
                       <td className="px-4 py-2 text-right tabular-nums font-medium">{c.visits}</td>
                     </tr>
@@ -487,7 +501,14 @@ export function AccessAnalyticsPanel({ data, onRefresh, refreshing }: Props) {
                             <span className="text-foreground/80">{cls.intent}</span>
                           </td>
                           <td className="px-3 py-1.5 font-mono text-foreground">{b.ip_hash?.substring(0, 12) || "—"}…</td>
-                          <td className="px-3 py-1.5 text-muted-foreground">{b.country_code || "—"}{b.city_name ? ` / ${b.city_name}` : ""}</td>
+                          <td className="px-3 py-1.5 text-muted-foreground">
+                            <span className="inline-flex items-center gap-1">
+                              <span className="text-base leading-none" aria-label={getCountryLabel(b.country_code)}>
+                                {getCountryFlag(b.country_code)}
+                              </span>
+                              {b.city_name ? <span>{b.city_name}</span> : null}
+                            </span>
+                          </td>
                           <td className="px-3 py-1.5 text-foreground">{b.page_path}</td>
                           <td className="px-3 py-1.5 text-right tabular-nums">{new Date(b.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</td>
                           <td className="px-3 py-1.5 text-right">
