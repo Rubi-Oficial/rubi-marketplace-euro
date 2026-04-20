@@ -26,7 +26,7 @@ export interface FilterState {
 }
 
 export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
-  const { limit = 50, initialFilters } = options;
+  const { limit = 50, initialFilters, fixedFilters } = options;
   const { countries, getCitiesByCountry } = useLocations();
 
   const [filters, setFilters] = useState<FilterState>({
