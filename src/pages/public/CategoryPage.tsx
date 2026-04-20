@@ -114,11 +114,11 @@ export default function CategoryPage() {
         </Button>
 
         <ActiveFilterChips
-          filters={{ country: countryFilter, city: cityFilter, category: "", service: serviceFilter }}
+          filters={{ country: countryFilter, city: cityFilter, category: "", services: serviceFilter ? [serviceFilter] : [] }}
           countryName={countryName}
           cityName={cityName}
-          serviceName={serviceName}
-          onRemove={handleRemoveFilter}
+          serviceNames={serviceName ? [serviceName] : []}
+          onRemove={(key) => handleRemoveFilter(key.startsWith("service:") ? "service" : key)}
           onClearAll={clearFilters}
           inline
         />
@@ -173,8 +173,11 @@ export default function CategoryPage() {
       <FilterModal
         open={filterOpen}
         onOpenChange={setFilterOpen}
-        filters={{ category: "", service: serviceFilter }}
-        onApply={handleApplyFilters}
+        filters={{ category: "", services: serviceFilter ? [serviceFilter] : [] }}
+        onApply={(p) => {
+          if (p.services !== undefined) handleApplyFilters({ service: p.services[0] ?? "" });
+          if (p.category !== undefined) handleApplyFilters({ category: p.category });
+        }}
         onClear={() => handleApplyFilters({ service: "" })}
         resultCount={profiles.length}
         services={services}
