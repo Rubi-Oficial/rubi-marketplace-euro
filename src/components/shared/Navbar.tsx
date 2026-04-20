@@ -75,15 +75,54 @@ export default function Navbar() {
 
         <DesktopNav />
 
-        <button
-          className="p-2 text-foreground rounded-full hover:bg-accent transition-colors md:hidden"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-expanded={mobileOpen}
-          aria-controls="mobile-menu"
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
-        >
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          <div className="scale-90">
+            <LanguageSelectorDropdown />
+          </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="p-2 text-foreground rounded-full hover:bg-accent transition-colors"
+                aria-label={user ? t("nav.dashboard") : t("nav.sign_in")}
+              >
+                <User className="h-5 w-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[180px]">
+              {user ? (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link to={dashboardPath}>{t("nav.dashboard")}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    {t("nav.sign_out")}
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link to="/login">{t("nav.sign_in")}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/cadastro">{t("nav.get_started")}</Link>
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <button
+            className="p-2 text-foreground rounded-full hover:bg-accent transition-colors"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-menu"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       <CategoryRow activeSlug={activeSlug} isAllActive={isAllActive} />
