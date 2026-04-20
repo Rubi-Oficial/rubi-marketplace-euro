@@ -15,6 +15,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StatCard } from "@/components/shared/StatCard";
 
 interface ReferredUser {
   id: string;
@@ -361,18 +362,6 @@ export default function AffiliateDashboard() {
   );
 }
 
-function StatCard({ icon, label, value, sublabel, highlight }: { icon: React.ReactNode; label: string; value: string; sublabel?: string; highlight?: boolean }) {
-  return (
-    <div className={`rounded-lg border bg-card p-5 ${highlight ? "border-primary/30" : "border-border"}`}>
-      <div className="flex items-center gap-2 text-muted-foreground">
-        {icon}
-        <p className="text-xs sm:text-sm">{label}</p>
-      </div>
-      <p className={`mt-1 font-display text-2xl font-bold tabular-nums ${highlight ? "text-primary" : "text-foreground"}`}>{value}</p>
-      {sublabel && <p className="mt-0.5 text-xs text-muted-foreground">{sublabel}</p>}
-    </div>
-  );
-}
 
 function CommissionCard({ label, sublabel, amount, variant }: { label: string; sublabel: string; amount: number; variant: "pending" | "approved" | "paid" }) {
   const styles = { pending: "border-yellow-500/20", approved: "border-primary/20", paid: "border-green-500/20" };
