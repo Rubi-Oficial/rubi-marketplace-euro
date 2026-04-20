@@ -1,13 +1,22 @@
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Menu, X } from "lucide-react";
+import { Search, Menu, X, User } from "lucide-react";
 import { useState, useCallback } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import BrandLogo from "@/components/shared/BrandLogo";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileMenu from "./navbar/MobileMenu";
 import CategoryRow from "./navbar/CategoryRow";
+import { LanguageSelectorDropdown } from "./navbar/LanguageSelector";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 export default function Navbar() {
   const { t } = useLanguage();
