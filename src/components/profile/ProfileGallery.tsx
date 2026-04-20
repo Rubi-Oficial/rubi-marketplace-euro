@@ -8,6 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { PhotoWatermark } from "./PhotoWatermark";
 
 interface MediaItem {
   id: string;
@@ -70,12 +71,15 @@ export function ProfileGallery({
             <CarouselItem key={item.id}>
               <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-muted animate-fade-in lg:aspect-[16/18]">
                 {item.type === "image" ? (
-                  <img
-                    src={item.url}
-                    alt={`${name} — photo ${idx + 1}`}
-                    className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.02]"
-                    loading={idx === 0 ? "eager" : "lazy"}
-                  />
+                  <>
+                    <img
+                      src={item.url}
+                      alt={`${name} — photo ${idx + 1}`}
+                      className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.02]"
+                      loading={idx === 0 ? "eager" : "lazy"}
+                    />
+                    <PhotoWatermark size="md" />
+                  </>
                 ) : (
                   <button
                     type="button"
