@@ -1,16 +1,26 @@
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Menu, X } from "lucide-react";
+import { Search, Menu, X, User } from "lucide-react";
 import { useState, useCallback } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useAuth, getRoleDashboard } from "@/contexts/AuthContext";
 import BrandLogo from "@/components/shared/BrandLogo";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileMenu from "./navbar/MobileMenu";
 import CategoryRow from "./navbar/CategoryRow";
+import { LanguageSelectorDropdown } from "./navbar/LanguageSelector";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 export default function Navbar() {
   const { t } = useLanguage();
+  const { user, userRole, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,6 +30,7 @@ export default function Navbar() {
   const isCategory = location.pathname.startsWith("/categoria/");
   const activeSlug = isCategory ? slug : "";
   const isAllActive = !isCategory && (location.pathname === "/" || location.pathname === "/buscar");
+  const dashboardPath = getRoleDashboard(userRole as any);
 
   const handleSearch = useCallback(
     (e: React.FormEvent) => {
@@ -64,15 +75,54 @@ export default function Navbar() {
 
         <DesktopNav />
 
-        <button
-          className="p-2 text-foreground rounded-full hover:bg-accent transition-colors md:hidden"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-expanded={mobileOpen}
-          aria-controls="mobile-menu"
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
-        >
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          <div className="scale-90">
+            <LanguageSelectorDropdown />
+          </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="p-2 text-foreground rounded-full hover:bg-accent transition-colors"
+                aria-label={user ? t("nav.dashboard") : t("nav.sign_in")}
+              >
+                <User className="h-5 w-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[180px]">
+              {user ? (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link to={dashboardPath}>{t("nav.dashboard")}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    {t("nav.sign_out")}
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link to="/login">{t("nav.sign_in")}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/cadastro">{t("nav.get_started")}</Link>
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <button
+            className="p-2 text-foreground rounded-full hover:bg-accent transition-colors"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-menu"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       <CategoryRow activeSlug={activeSlug} isAllActive={isAllActive} />
