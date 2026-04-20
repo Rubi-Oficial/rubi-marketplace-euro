@@ -19,7 +19,7 @@ export const MobileFilterBar = React.forwardRef<HTMLDivElement, MobileFilterBarP
     return (
       <div
         ref={ref}
-        className="sticky top-0 z-30 -mx-4 px-4 py-3 md:hidden border-b border-border/10 glass-elevated"
+        className="sticky top-[6.5rem] z-30 -mx-4 px-4 py-3 md:hidden border-b border-border/10 glass-elevated"
         role="toolbar"
         aria-label="Filters"
       >
