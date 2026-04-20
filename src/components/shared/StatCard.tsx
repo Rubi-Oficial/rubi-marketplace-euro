@@ -1,16 +1,39 @@
 import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
+
+interface StatCardProps {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+  sublabel?: string;
+  highlight?: boolean;
+}
 
 /**
- * Small stat card with icon, label, and value.
+ * Unified stat card. Supports optional icon, sublabel, and highlighted variant.
+ * Use across all dashboards (admin reports, affiliates, client, escort).
  */
-export function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+export function StatCard({ icon, label, value, sublabel, highlight }: StatCardProps) {
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div
+      className={cn(
+        "rounded-lg border bg-card p-4 sm:p-5",
+        highlight ? "border-primary/30" : "border-border"
+      )}
+    >
       <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
-        <p className="text-sm">{label}</p>
+        <p className="text-xs sm:text-sm">{label}</p>
       </div>
-      <p className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground">{value}</p>
+      <p
+        className={cn(
+          "mt-1 font-display text-2xl font-bold tabular-nums",
+          highlight ? "text-primary" : "text-foreground"
+        )}
+      >
+        {value}
+      </p>
+      {sublabel && <p className="mt-0.5 text-xs text-muted-foreground">{sublabel}</p>}
     </div>
   );
 }
