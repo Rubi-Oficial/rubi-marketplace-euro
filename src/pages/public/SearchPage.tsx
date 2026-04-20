@@ -24,7 +24,8 @@ export default function SearchPage() {
   const urlCountry = searchParams.get("country") || "";
   const urlCity = searchParams.get("city") || "";
   const urlCategory = searchParams.get("category") || "";
-  const urlService = searchParams.get("service") || "";
+  const urlServicesParam = searchParams.get("services") || searchParams.get("service") || "";
+  const urlServices = urlServicesParam ? urlServicesParam.split(",").filter(Boolean) : [];
 
   const {
     filters,
@@ -40,26 +41,22 @@ export default function SearchPage() {
     countryName,
     cityName,
     serviceName,
+    serviceNames,
   } = useProfileFilters({
     limit: 50,
     initialFilters: {
       country: urlCountry,
       city: urlCity,
       category: urlCategory,
-      service: urlService,
+      services: urlServices,
       search: searchQuery,
     },
   });
 
-  const syncToUrl = (next: Record<string, string>) => {
-    const params = new URLSearchParams(searchParams);
-    Object.entries(next).forEach(([k, v]) => {
-      const paramKey = k === "search" ? "q" : k;
-      if (v) params.set(paramKey, v);
-      else params.delete(paramKey);
-    });
-    params.delete("search");
-    setSearchParams(params);
+  const writeServicesParam = (params: URLSearchParams, services: string[]) => {
+    params.delete("service");
+    if (services.length) params.set("services", services.join(","));
+    else params.delete("services");
   };
 
   const updateParam = (key: string, value: string) => {
@@ -78,37 +75,67 @@ export default function SearchPage() {
   };
 
   const clearFilters = () => {
-    setFilters((prev) => ({ ...prev, country: "", city: "", category: "", service: "" }));
+    setFilters((prev) => ({ ...prev, country: "", city: "", category: "", services: [] }));
     setSearchParams(searchQuery ? { q: searchQuery } : {});
   };
 
-  const handleApplyFilters = (partial: Partial<{ category: string; service: string }>) => {
+  const handleApplyFilters = (partial: Partial<{ category: string; services: string[] }>) => {
     setFilters((prev) => ({ ...prev, ...partial }));
-    syncToUrl({ ...filters, ...partial });
+    const params = new URLSearchParams(searchParams);
+    if (partial.category !== undefined) {
+      if (partial.category) params.set("category", partial.category);
+      else params.delete("category");
+    }
+    if (partial.services !== undefined) {
+      writeServicesParam(params, partial.services);
+    }
+    setSearchParams(params);
   };
 
   const handleApplyLocation = (country: string, city: string) => {
     setFilters((prev) => ({ ...prev, country, city }));
-    syncToUrl({ ...filters, country, city });
+    const params = new URLSearchParams(searchParams);
+    if (country) params.set("country", country);
+    else params.delete("country");
+    if (city) params.set("city", city);
+    else params.delete("city");
+    setSearchParams(params);
   };
 
   const handleClearGeneralFilters = () => {
-    setFilters((prev) => ({ ...prev, category: "", service: "" }));
+    setFilters((prev) => ({ ...prev, category: "", services: [] }));
     const params = new URLSearchParams(searchParams);
     params.delete("category");
+    params.delete("services");
     params.delete("service");
     setSearchParams(params);
   };
 
   const handleRemoveFilter = (key: string) => {
     setFilters((prev) => {
-      const next = { ...prev, [key]: "" };
-      if (key === "country") next.city = "";
-      return next;
+      if (key === "country") return { ...prev, country: "", city: "" };
+      if (key === "services") return { ...prev, services: [] };
+      if (key.startsWith("service:")) {
+        const slug = key.slice("service:".length);
+        return { ...prev, services: prev.services.filter((s) => s !== slug) };
+      }
+      return { ...prev, [key]: "" };
     });
+
     const params = new URLSearchParams(searchParams);
-    params.delete(key);
-    if (key === "country") params.delete("city");
+    if (key === "country") {
+      params.delete("country");
+      params.delete("city");
+    } else if (key === "services") {
+      params.delete("services");
+      params.delete("service");
+    } else if (key.startsWith("service:")) {
+      const slug = key.slice("service:".length);
+      const next = filters.services.filter((s) => s !== slug);
+      writeServicesParam(params, next);
+    } else {
+      params.delete(key);
+    }
     setSearchParams(params);
   };
 
@@ -125,7 +152,7 @@ export default function SearchPage() {
       : t("search.subtitle_default");
 
   const searchTitle = cityName ? `${t("nav.explore")} in ${cityName}` : t("nav.explore");
-  const generalCount = [filters.category, filters.service].filter(Boolean).length;
+  const generalCount = (filters.category ? 1 : 0) + filters.services.length;
   const locationCount = [filters.country, filters.city].filter(Boolean).length;
 
   usePageMeta({
@@ -146,7 +173,6 @@ export default function SearchPage() {
 
   return (
     <div className="container mx-auto px-4 py-4 md:py-6 animate-fade-in">
-      {/* Breadcrumb — desktop only */}
       <nav aria-label="Breadcrumb" className="hidden md:block mb-4 text-xs text-muted-foreground">
         <ol className="flex items-center gap-1.5">
           <li><Link to="/" className="hover:text-foreground transition-colors">Home</Link></li>
@@ -159,11 +185,11 @@ export default function SearchPage() {
               <li className="text-foreground">{cityName}</li>
             </>
           )}
-          {!countryName && <li>{(filters.service || filters.category) ? <Link to="/buscar" className="hover:text-foreground transition-colors">{t("nav.explore")}</Link> : <span className="text-foreground">{t("nav.explore")}</span>}</li>}
+          {!countryName && <li>{(filters.services.length > 0 || filters.category) ? <Link to="/buscar" className="hover:text-foreground transition-colors">{t("nav.explore")}</Link> : <span className="text-foreground">{t("nav.explore")}</span>}</li>}
           {serviceName && (
             <>
               <li className="text-border">/</li>
-              <li className="text-foreground">{serviceName}</li>
+              <li className="text-foreground">{serviceName}{filters.services.length > 1 ? ` +${filters.services.length - 1}` : ""}</li>
             </>
           )}
           {filters.category && (
@@ -211,10 +237,10 @@ export default function SearchPage() {
         countryFilter={filters.country}
         cityFilter={filters.city}
         categoryFilter={filters.category}
-        serviceFilter={filters.service}
+        serviceFilters={filters.services}
         countryName={countryName}
         cityName={cityName}
-        serviceName={serviceName}
+        serviceNames={serviceNames}
         onOpenFilters={() => setFilterOpen(true)}
         onOpenLocation={() => setLocationOpen(true)}
         onRemoveFilter={handleRemoveFilter}
@@ -225,7 +251,7 @@ export default function SearchPage() {
         {loading ? t("search.loading") : [
           `${profiles.length} ${t("search.profiles")}`,
           cityName && t("search.in_city", { city: cityName }),
-          serviceName && t("search.for_service", { service: serviceName }),
+          serviceNames.length > 0 && t("search.for_service", { service: serviceNames.join(", ") }),
         ].filter(Boolean).join(" · ")}
       </p>
 
@@ -236,10 +262,10 @@ export default function SearchPage() {
           hasFilters={hasFilters || !!filters.search}
           countryFilter={filters.country}
           cityFilter={filters.city}
-          serviceFilter={filters.service}
+          serviceFilter={filters.services[0] ?? ""}
           categoryFilter={filters.category}
           onRemoveLocation={() => handleRemoveFilter("country")}
-          onRemoveService={() => handleRemoveFilter("service")}
+          onRemoveService={() => handleRemoveFilter("services")}
           onRemoveCategory={() => handleRemoveFilter("category")}
           onClearAll={clearFilters}
         />
@@ -252,7 +278,7 @@ export default function SearchPage() {
       <FilterModal
         open={filterOpen}
         onOpenChange={setFilterOpen}
-        filters={{ category: filters.category, service: filters.service }}
+        filters={{ category: filters.category, services: filters.services }}
         onApply={handleApplyFilters}
         onClear={handleClearGeneralFilters}
         resultCount={profiles.length}

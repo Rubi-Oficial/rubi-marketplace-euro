@@ -10,7 +10,7 @@ interface UseProfileFiltersOptions {
     country?: string;
     city?: string;
     category?: string;
-    service?: string;
+    services?: string[];
     search?: string;
   };
 }
@@ -19,7 +19,7 @@ export interface FilterState {
   country: string;
   city: string;
   category: string;
-  service: string;
+  services: string[];
   search: string;
 }
 
@@ -31,7 +31,7 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
     country: initialFilters?.country ?? "",
     city: initialFilters?.city ?? "",
     category: initialFilters?.category ?? "",
-    service: initialFilters?.service ?? "",
+    services: initialFilters?.services ?? [],
     search: initialFilters?.search ?? "",
   });
 
@@ -42,7 +42,6 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
   const [debouncedSearch, setDebouncedSearch] = useState(filters.search);
   const offsetRef = useRef(0);
 
-  // Services via React Query — cached for 10 minutes
   const { data: services = [] } = useQuery({
     queryKey: ["services"],
     queryFn: fetchServices,
@@ -67,11 +66,13 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
     [countries, filters.country]
   );
 
-  // Stable join key for filteredCities to keep buildFilterParams identity steady
   const cityFiltersKey = useMemo(
     () => filteredCities.map((c) => c.slug).join(","),
     [filteredCities]
   );
+
+  // Stable key for services array
+  const servicesKey = useMemo(() => filters.services.join(","), [filters.services]);
 
   const buildFilterParams = useCallback(() => ({
     search: debouncedSearch || undefined,
@@ -79,11 +80,11 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
     city_slugs: filters.country && !filters.city ? cityFiltersKey.split(",").filter(Boolean) : undefined,
     city_slug: filters.city || undefined,
     category: filters.category || undefined,
-    service_slug: filters.service || undefined,
+    service_slugs: filters.services.length ? filters.services : undefined,
     limit,
-  }), [debouncedSearch, countryObj, filters.country, filters.city, filters.category, filters.service, cityFiltersKey, limit]);
+  }), [debouncedSearch, countryObj, filters.country, filters.city, filters.category, servicesKey, cityFiltersKey, limit]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- servicesKey replaces filters.services for stability
 
-  // Initial load + filter changes
   useEffect(() => {
     setLoading(true);
     setHasMore(true);
@@ -133,23 +134,33 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
       });
   }, [loadingMore, hasMore, buildFilterParams, limit]);
 
-  const hasFilters = !!filters.country || !!filters.city || !!filters.category || !!filters.service;
+  const hasFilters = !!filters.country || !!filters.city || !!filters.category || filters.services.length > 0;
   const hasLocationFilter = !!filters.country || !!filters.city;
-  const hasGeneralFilter = !!filters.category || !!filters.service;
+  const hasGeneralFilter = !!filters.category || filters.services.length > 0;
 
-  const updateFilter = (key: keyof FilterState, value: string) => {
+  const updateFilter = (key: keyof FilterState, value: string | string[]) => {
     setFilters((prev) => {
-      const next = { ...prev, [key]: value };
+      const next = { ...prev, [key]: value } as FilterState;
       if (key === "country") next.city = "";
       return next;
     });
   };
 
   const clearFilters = () => {
-    setFilters((prev) => ({ ...prev, country: "", city: "", category: "", service: "" }));
+    setFilters((prev) => ({ ...prev, country: "", city: "", category: "", services: [] }));
   };
 
-  const handleApplyFilters = (partial: Partial<{ category: string; service: string }>) => {
+  const toggleService = useCallback((slug: string) => {
+    setFilters((prev) => {
+      const exists = prev.services.includes(slug);
+      return {
+        ...prev,
+        services: exists ? prev.services.filter((s) => s !== slug) : [...prev.services, slug],
+      };
+    });
+  }, []);
+
+  const handleApplyFilters = (partial: Partial<{ category: string; services: string[] }>) => {
     setFilters((prev) => ({ ...prev, ...partial }));
   };
 
@@ -160,6 +171,11 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
   const handleRemoveFilter = (key: string) => {
     if (key === "country") {
       setFilters((prev) => ({ ...prev, country: "", city: "" }));
+    } else if (key === "services") {
+      setFilters((prev) => ({ ...prev, services: [] }));
+    } else if (key.startsWith("service:")) {
+      const slug = key.slice("service:".length);
+      setFilters((prev) => ({ ...prev, services: prev.services.filter((s) => s !== slug) }));
     } else {
       setFilters((prev) => ({ ...prev, [key]: "" }));
     }
@@ -167,7 +183,14 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
 
   const countryName = countryObj?.name;
   const cityName = filteredCities.find((c) => c.slug === filters.city)?.name;
-  const serviceName = services.find((s) => s.slug === filters.service)?.name;
+  const serviceNames = useMemo(
+    () => filters.services
+      .map((slug) => services.find((s) => s.slug === slug)?.name)
+      .filter(Boolean) as string[],
+    [filters.services, services]
+  );
+  // Backward-compat single name (first selected) for existing chip/title displays
+  const serviceName = serviceNames[0];
 
   return {
     filters,
@@ -186,6 +209,7 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
     hasLocationFilter,
     hasGeneralFilter,
     updateFilter,
+    toggleService,
     clearFilters,
     handleApplyFilters,
     handleApplyLocation,
@@ -193,5 +217,6 @@ export function useProfileFilters(options: UseProfileFiltersOptions = {}) {
     countryName,
     cityName,
     serviceName,
+    serviceNames,
   };
 }

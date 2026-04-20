@@ -62,32 +62,37 @@ export default function LandingPage() {
     handleRemoveFilter,
     countryName,
     cityName,
-    serviceName,
+    serviceNames,
   } = useProfileFilters({ limit: 20 });
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
   const isMobile = useIsMobile();
 
-  // Stable callback refs to avoid re-renders in child components
   const openFilters = useCallback(() => setFilterOpen(true), []);
   const openLocation = useCallback(() => setLocationOpen(true), []);
   const clearCategoryService = useCallback(() => {
     handleRemoveFilter("category");
-    handleRemoveFilter("service");
+    handleRemoveFilter("services");
   }, [handleRemoveFilter]);
   const removeCountry = useCallback(() => handleRemoveFilter("country"), [handleRemoveFilter]);
-  const removeService = useCallback(() => handleRemoveFilter("service"), [handleRemoveFilter]);
+  const removeService = useCallback(() => handleRemoveFilter("services"), [handleRemoveFilter]);
   const removeCategory = useCallback(() => handleRemoveFilter("category"), [handleRemoveFilter]);
 
   const { containerRef: pullRef, pullDistance, refreshing } = usePullToRefresh({
     onRefresh: refresh,
   });
 
-  const generalCount = [filters.category, filters.service].filter(Boolean).length;
+  const generalCount = (filters.category ? 1 : 0) + filters.services.length;
   const locationCount = [filters.country, filters.city].filter(Boolean).length;
 
-  // Infinite scroll with IntersectionObserver
+  // Contextual heading shown when location filter is active
+  const contextualHeading = cityName
+    ? t("search.heading_city", { city: cityName })
+    : countryName
+      ? t("search.heading_country", { country: countryName })
+      : null;
+
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -115,6 +120,17 @@ export default function LandingPage() {
 
       <section className="pt-2 pb-8 md:pb-10">
         <div className="container mx-auto px-4">
+          {contextualHeading && (
+            <div className="mb-4 md:mb-6 animate-fade-in">
+              <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                {contextualHeading}
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {!loading && `${profiles.length} ${t("search.profiles")}`}
+              </p>
+            </div>
+          )}
+
           <MobileFilterBar
             hasGeneralFilter={hasGeneralFilter}
             hasLocationFilter={hasLocationFilter}
@@ -133,10 +149,10 @@ export default function LandingPage() {
             countryFilter={filters.country}
             cityFilter={filters.city}
             categoryFilter={filters.category}
-            serviceFilter={filters.service}
+            serviceFilters={filters.services}
             countryName={countryName}
             cityName={cityName}
-            serviceName={serviceName}
+            serviceNames={serviceNames}
             onOpenFilters={openFilters}
             onOpenLocation={openLocation}
             onRemoveFilter={handleRemoveFilter}
@@ -166,7 +182,7 @@ export default function LandingPage() {
                 hasFilters={hasFilters}
                 countryFilter={filters.country}
                 cityFilter={filters.city}
-                serviceFilter={filters.service}
+                serviceFilter={filters.services[0] ?? ""}
                 categoryFilter={filters.category}
                 onRemoveLocation={removeCountry}
                 onRemoveService={removeService}
@@ -178,7 +194,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <LazyVideoSection filters={{ activeCity: filters.city, activeService: filters.service }} />
+      <LazyVideoSection filters={{ activeCity: filters.city, activeService: filters.services[0] }} />
 
       <CtaSection />
 
@@ -188,7 +204,7 @@ export default function LandingPage() {
       <FilterModal
         open={filterOpen}
         onOpenChange={setFilterOpen}
-        filters={{ category: filters.category, service: filters.service }}
+        filters={{ category: filters.category, services: filters.services }}
         onApply={handleApplyFilters}
         onClear={clearCategoryService}
         resultCount={profiles.length}
