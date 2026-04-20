@@ -19,11 +19,11 @@ export const MobileFilterBar = React.forwardRef<HTMLDivElement, MobileFilterBarP
     return (
       <div
         ref={ref}
-        className="sticky top-[6.5rem] z-30 -mx-4 px-4 py-3 md:hidden border-b border-border/10 glass-elevated"
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 px-4 md:hidden w-full max-w-md"
         role="toolbar"
         aria-label="Filters"
       >
-        <div className="mx-auto flex max-w-lg items-center gap-3">
+        <div className="mx-auto flex items-center gap-3 rounded-full border border-border/30 bg-background/80 backdrop-blur-xl px-3 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
           <Button
             variant="outline"
             size="sm"
