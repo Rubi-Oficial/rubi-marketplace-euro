@@ -10,7 +10,7 @@ import {
   Eye, Bot, AlertTriangle, ChevronDown, ChevronUp, RefreshCw, UserCheck,
   TrendingDown, Layers,
 } from "lucide-react";
-import { StatCard } from "./StatCard";
+import { StatCard } from "@/components/shared/StatCard";
 import { DEVICE_COLORS } from "./constants";
 import { classifyBot, BOT_SEVERITY_STYLES } from "./botClassification";
 import { getCountryFlag, getCountryLabel } from "./countryFlags";

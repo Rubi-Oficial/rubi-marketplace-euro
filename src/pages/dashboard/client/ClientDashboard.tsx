@@ -15,6 +15,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StatCard } from "@/components/shared/StatCard";
 
 interface ClientStats {
   fullName: string | null;
@@ -193,17 +194,6 @@ export default function ClientDashboard() {
   );
 }
 
-function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-border bg-card p-5">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        {icon}
-        <p className="text-sm">{label}</p>
-      </div>
-      <p className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground">{value}</p>
-    </div>
-  );
-}
 
 function CommissionCard({ icon, label, value, colorClass }: { icon: React.ReactNode; label: string; value: string; colorClass: string }) {
   return (

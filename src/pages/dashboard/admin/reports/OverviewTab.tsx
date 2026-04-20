@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from "recharts";
-import { StatCard } from "./StatCard";
+import { StatCard } from "@/components/shared/StatCard";
 import { COLORS } from "./constants";
 import type { ReportStats } from "./types";
 
