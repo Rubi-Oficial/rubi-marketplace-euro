@@ -183,13 +183,42 @@ export function VideoSection({ filters }: { filters: { activeCity: string; activ
   if (!loading && videos.length === 0) return null;
 
   return (
-    <section className="border-t border-border/20 py-8">
-      <div className="container mx-auto px-4">
-        <div className="mb-6 text-center">
-          <h2 className="font-display text-lg font-semibold text-foreground">
+    <section className="relative py-14 md:py-20 overflow-hidden">
+      {/* Base deep gradient — premium dark with ruby/purple depth */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(274_36%_10%)] via-[hsl(275_48%_18%)] to-[hsl(278_31%_12%)]" />
+
+      {/* Ruby glow accent — top center */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,hsl(278_55%_45%_/_0.35),transparent_60%)]" />
+
+      {/* Gold luminous accent — bottom */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_120%,hsl(41_49%_69%_/_0.15),transparent_55%)]" />
+
+      {/* Side vignette for depth */}
+      <div className="absolute inset-0 bg-gradient-to-r from-background/40 via-transparent to-background/40" />
+
+      {/* Subtle grain texture */}
+      <div
+        className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+        }}
+      />
+
+      {/* Decorative diagonal light streak */}
+      <div className="absolute -top-1/2 -right-1/4 w-[60%] h-[200%] bg-gradient-to-b from-transparent via-[hsl(41_49%_69%_/_0.06)] to-transparent rotate-12 blur-3xl pointer-events-none" />
+
+      {/* Hairline gold dividers top + bottom */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[hsl(41_49%_69%_/_0.4)] to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[hsl(41_49%_69%_/_0.4)] to-transparent" />
+
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-transparent via-[hsl(41_49%_69%_/_0.7)] to-transparent" />
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground drop-shadow-[0_2px_20px_hsl(0_0%_0%_/_0.5)]">
             {t("video.latest")}
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-foreground/70">
             {t("video.exclusive")}
           </p>
         </div>
@@ -197,7 +226,7 @@ export function VideoSection({ filters }: { filters: { activeCity: string; activ
         {loading ? (
           <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="animate-pulse rounded-lg bg-muted aspect-[3/4]" />
+              <div key={i} className="animate-pulse rounded-lg bg-muted/30 aspect-[3/4]" />
             ))}
           </div>
         ) : (
