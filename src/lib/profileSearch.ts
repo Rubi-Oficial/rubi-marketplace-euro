@@ -52,6 +52,7 @@ export interface ProfileSearchParams {
   gender?: string;
   search?: string;
   service_slug?: string;
+  service_slugs?: string[];
   limit?: number;
   offset?: number;
 }
@@ -70,6 +71,7 @@ export async function fetchEligibleProfiles(filters?: ProfileSearchParams): Prom
         p_gender: filters?.gender || null,
         p_search: filters?.search || null,
         p_service_slug: filters?.service_slug || null,
+        p_service_slugs: filters?.service_slugs?.length ? filters.service_slugs : null,
         p_limit: limit,
         p_offset: offset,
       });
@@ -133,6 +135,7 @@ export async function prefetchNextBatchUrls(filters?: ProfileSearchParams): Prom
       p_gender: filters?.gender || null,
       p_search: filters?.search || null,
       p_service_slug: filters?.service_slug || null,
+      p_service_slugs: filters?.service_slugs?.length ? filters.service_slugs : null,
       p_limit: limit,
       p_offset: offset,
     });
