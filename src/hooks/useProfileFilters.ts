@@ -13,6 +13,8 @@ interface UseProfileFiltersOptions {
     services?: string[];
     search?: string;
   };
+  /** Fixed filter applied to every query (e.g. gender="Women"). Cannot be cleared by the user. */
+  fixedFilters?: { gender?: string };
 }
 
 export interface FilterState {
