@@ -1020,41 +1020,78 @@ export type Database = {
         Returns: boolean
       }
       reactivate_profile: { Args: { _profile_id: string }; Returns: undefined }
-      search_profiles: {
-        Args: {
-          p_category?: string
-          p_city_slug?: string
-          p_city_slugs?: string[]
-          p_country_name?: string
-          p_gender?: string
-          p_limit?: number
-          p_offset?: number
-          p_search?: string
-          p_service_slug?: string
-        }
-        Returns: {
-          age: number
-          bio: string
-          category: string
-          city: string
-          city_slug: string
-          created_at: string
-          display_name: string
-          effective_sort_key: number
-          gender: string
-          has_whatsapp: boolean
-          highlight_expires_at: string
-          highlight_tier: string
-          id: string
-          image_paths: string
-          is_featured: boolean
-          languages: string[]
-          pricing_from: number
-          service_count: number
-          slug: string
-          tier_rank: number
-        }[]
-      }
+      search_profiles:
+        | {
+            Args: {
+              p_category?: string
+              p_city_slug?: string
+              p_city_slugs?: string[]
+              p_country_name?: string
+              p_gender?: string
+              p_limit?: number
+              p_offset?: number
+              p_search?: string
+              p_service_slug?: string
+            }
+            Returns: {
+              age: number
+              bio: string
+              category: string
+              city: string
+              city_slug: string
+              created_at: string
+              display_name: string
+              effective_sort_key: number
+              gender: string
+              has_whatsapp: boolean
+              highlight_expires_at: string
+              highlight_tier: string
+              id: string
+              image_paths: string
+              is_featured: boolean
+              languages: string[]
+              pricing_from: number
+              service_count: number
+              slug: string
+              tier_rank: number
+            }[]
+          }
+        | {
+            Args: {
+              p_category?: string
+              p_city_slug?: string
+              p_city_slugs?: string[]
+              p_country_name?: string
+              p_gender?: string
+              p_limit?: number
+              p_offset?: number
+              p_search?: string
+              p_service_slug?: string
+              p_service_slugs?: string[]
+            }
+            Returns: {
+              age: number
+              bio: string
+              category: string
+              city: string
+              city_slug: string
+              created_at: string
+              display_name: string
+              effective_sort_key: number
+              gender: string
+              has_whatsapp: boolean
+              highlight_expires_at: string
+              highlight_tier: string
+              id: string
+              image_paths: string
+              is_featured: boolean
+              languages: string[]
+              pricing_from: number
+              service_count: number
+              slug: string
+              tier_rank: number
+            }[]
+          }
     }
     Enums: {
       app_role: "client" | "professional" | "admin"
