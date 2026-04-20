@@ -20,6 +20,7 @@ import {
 
 export default function Navbar() {
   const { t } = useLanguage();
+  const { user, userRole, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,6 +30,7 @@ export default function Navbar() {
   const isCategory = location.pathname.startsWith("/categoria/");
   const activeSlug = isCategory ? slug : "";
   const isAllActive = !isCategory && (location.pathname === "/" || location.pathname === "/buscar");
+  const dashboardPath = getRoleDashboard(userRole as any);
 
   const handleSearch = useCallback(
     (e: React.FormEvent) => {
