@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, ChevronDown } from "lucide-react";
+import { Search, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,7 +11,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 
 interface Filters {
   category: string;
-  service: string;
+  services: string[];
 }
 
 interface FilterModalProps {
@@ -25,7 +25,7 @@ interface FilterModalProps {
   categories?: string[];
 }
 
-function FilterItem({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function FilterItem({ label, active, onClick, multi }: { label: string; active: boolean; onClick: () => void; multi?: boolean }) {
   return (
     <button
       onClick={onClick}
@@ -34,21 +34,39 @@ function FilterItem({ label, active, onClick }: { label: string; active: boolean
           ? "bg-primary/10 text-primary font-medium"
           : "text-foreground hover:bg-accent"
       }`}
+      aria-pressed={active}
     >
+      {multi && (
+        <span
+          className={`mr-2.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+            active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-transparent"
+          }`}
+          aria-hidden="true"
+        >
+          {active && <Check className="h-3 w-3" />}
+        </span>
+      )}
       <span className="flex-1">{label}</span>
-      {active && (
+      {!multi && active && (
         <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
       )}
     </button>
   );
 }
 
-function FilterSection({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+function FilterSection({ title, defaultOpen = false, badge, children }: { title: string; defaultOpen?: boolean; badge?: number; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="border-b border-border/20 last:border-0">
       <CollapsibleTrigger className="flex w-full items-center justify-between py-3 text-sm font-medium text-foreground hover:text-primary transition-colors">
-        {title}
+        <span className="flex items-center gap-2">
+          {title}
+          {badge ? (
+            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+              {badge}
+            </span>
+          ) : null}
+        </span>
         <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
       </CollapsibleTrigger>
       <CollapsibleContent className="pb-4">
@@ -74,11 +92,19 @@ function FilterBody({ filters, onApply, onClear, resultCount, services, categori
     return categories.filter((c) => c.toLowerCase().includes(q));
   }, [categories, searchInModal]);
 
-  const activeCount = [filters.category, filters.service].filter(Boolean).length;
+  const activeCount = (filters.category ? 1 : 0) + filters.services.length;
+
+  const toggleService = (slug: string) => {
+    const next = filters.services.includes(slug)
+      ? filters.services.filter((s) => s !== slug)
+      : [...filters.services, slug];
+    onApply({ services: next });
+  };
+
+  const clearServices = () => onApply({ services: [] });
 
   return (
     <div className="flex flex-col h-full">
-      {/* Search inside modal */}
       <div className="pb-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -91,17 +117,30 @@ function FilterBody({ filters, onApply, onClear, resultCount, services, categori
         </div>
       </div>
 
-      {/* Filter sections */}
       <ScrollArea className="flex-1 -mx-1 px-1">
         {filteredServices.length > 0 && (
-          <FilterSection title={t("filter.services")} defaultOpen={!!filters.service || true}>
+          <FilterSection title={t("filter.services")} defaultOpen badge={filters.services.length}>
+            {filters.services.length > 0 && (
+              <div className="mb-2 flex items-center justify-between px-1">
+                <span className="text-[11px] text-muted-foreground">
+                  {filters.services.length} selected
+                </span>
+                <button
+                  onClick={clearServices}
+                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {t("filter.clear_all")}
+                </button>
+              </div>
+            )}
             <div className="space-y-0.5">
               {filteredServices.map((s) => (
                 <FilterItem
                   key={s.slug}
                   label={s.name}
-                  active={filters.service === s.slug}
-                  onClick={() => onApply({ service: filters.service === s.slug ? "" : s.slug })}
+                  active={filters.services.includes(s.slug)}
+                  onClick={() => toggleService(s.slug)}
+                  multi
                 />
               ))}
             </div>
@@ -126,7 +165,6 @@ function FilterBody({ filters, onApply, onClear, resultCount, services, categori
         )}
       </ScrollArea>
 
-      {/* Footer */}
       <div className="flex items-center justify-between gap-3 border-t border-border/20 pt-4 mt-2">
         {activeCount > 0 ? (
           <button onClick={onClear} className="text-xs text-muted-foreground hover:text-foreground transition-colors">

@@ -6,23 +6,26 @@ interface ActiveFilterChipsProps {
     country: string;
     city: string;
     category: string;
-    service: string;
+    services: string[];
   };
   countryName?: string;
   cityName?: string;
-  serviceName?: string;
+  serviceNames?: string[];
   onRemove: (key: string) => void;
   onClearAll: () => void;
   inline?: boolean;
 }
 
-export function ActiveFilterChips({ filters, countryName, cityName, serviceName, onRemove, onClearAll, inline }: ActiveFilterChipsProps) {
+export function ActiveFilterChips({ filters, countryName, cityName, serviceNames = [], onRemove, onClearAll, inline }: ActiveFilterChipsProps) {
   const { t } = useLanguage();
   const chips: { key: string; label: string }[] = [];
 
   if (filters.country && countryName) chips.push({ key: "country", label: countryName });
   if (filters.city && cityName) chips.push({ key: "city", label: cityName });
-  if (filters.service && serviceName) chips.push({ key: "service", label: serviceName });
+  filters.services.forEach((slug, idx) => {
+    const label = serviceNames[idx];
+    if (label) chips.push({ key: `service:${slug}`, label });
+  });
   if (filters.category) chips.push({ key: "category", label: filters.category });
 
   if (chips.length === 0) return null;
@@ -36,6 +39,7 @@ export function ActiveFilterChips({ filters, countryName, cityName, serviceName,
       <button
         onClick={() => onRemove(chip.key)}
         className="ml-0.5 rounded-full p-0.5 hover:bg-primary/20 transition-colors"
+        aria-label={`Remove ${chip.label}`}
       >
         <X className="h-2.5 w-2.5" />
       </button>

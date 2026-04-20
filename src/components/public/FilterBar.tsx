@@ -12,10 +12,10 @@ interface FilterBarProps {
   countryFilter: string;
   cityFilter: string;
   categoryFilter: string;
-  serviceFilter: string;
+  serviceFilters: string[];
   countryName?: string;
   cityName?: string;
-  serviceName?: string;
+  serviceNames?: string[];
   onOpenFilters: () => void;
   onOpenLocation: () => void;
   onRemoveFilter: (key: string) => void;
@@ -31,10 +31,10 @@ export function FilterBar({
   countryFilter,
   cityFilter,
   categoryFilter,
-  serviceFilter,
+  serviceFilters,
   countryName,
   cityName,
-  serviceName,
+  serviceNames,
   onOpenFilters,
   onOpenLocation,
   onRemoveFilter,
@@ -75,10 +75,10 @@ export function FilterBar({
       </Button>
 
       <ActiveFilterChips
-        filters={{ country: countryFilter, city: cityFilter, category: categoryFilter, service: serviceFilter }}
+        filters={{ country: countryFilter, city: cityFilter, category: categoryFilter, services: serviceFilters }}
         countryName={countryName}
         cityName={cityName}
-        serviceName={serviceName}
+        serviceNames={serviceNames}
         onRemove={onRemoveFilter}
         onClearAll={onClearAll}
         inline
