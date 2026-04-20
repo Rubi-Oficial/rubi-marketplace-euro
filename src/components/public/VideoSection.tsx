@@ -143,7 +143,7 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
         <div className="min-w-0">
           <Link
             to={video.slug ? `/perfil/${video.slug}` : "#"}
-            className="block truncate text-sm font-semibold text-primary hover:underline"
+            className="block truncate text-sm font-semibold text-foreground transition-colors group-hover:text-[hsl(41_49%_69%)]"
           >
             {video.display_name}
           </Link>
@@ -156,7 +156,7 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
         </div>
         <Link
           to={video.slug ? `/perfil/${video.slug}` : "#"}
-          className="shrink-0 rounded-md border border-border/40 px-3 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+          className="shrink-0 rounded-md border border-[hsl(41_49%_69%_/_0.3)] px-3 py-1 text-[11px] font-medium text-foreground/80 transition-all hover:border-[hsl(41_49%_69%)] hover:bg-[hsl(41_49%_69%_/_0.1)] hover:text-[hsl(41_49%_69%)]"
         >
           {t("common.details")}
         </Link>
