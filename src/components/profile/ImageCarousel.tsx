@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProgressiveImage } from "./ProgressiveImage";
 import { ProfilePlaceholder } from "./ProfilePlaceholder";
+import { PhotoWatermark } from "./PhotoWatermark";
 
 const ROTATION_INTERVAL = 5000;
 const PAUSE_AFTER_MANUAL = 10000;
@@ -105,7 +106,9 @@ function ImageCarouselInner({ urls, displayName, hovered }: ImageCarouselProps) 
         </div>
       ))}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+      <PhotoWatermark size="sm" />
+
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-[3]" />
 
       {hasMultiple && (
         <>
