@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
-import { StatCard } from "./StatCard";
+import { StatCard } from "@/components/shared/StatCard";
 import { fmtCurrency } from "./constants";
 import type { ReportStats } from "./types";
 
