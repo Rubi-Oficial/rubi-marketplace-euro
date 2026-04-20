@@ -109,13 +109,13 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
   };
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm transition-all hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5">
+    <div className="group relative flex flex-col overflow-hidden rounded-lg border border-[hsl(41_49%_69%_/_0.15)] bg-card/80 backdrop-blur-sm shadow-sm transition-all duration-300 hover:border-[hsl(41_49%_69%_/_0.6)] hover:shadow-[0_8px_32px_hsl(41_49%_69%_/_0.25)] hover:-translate-y-0.5">
       <div className="relative aspect-[3/4] w-full cursor-pointer overflow-hidden bg-muted" onClick={togglePlay}>
         <video
           ref={videoRef}
           src={video.video_url}
           poster={video.thumb_url || undefined}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           preload="metadata"
           playsInline
           muted
@@ -123,9 +123,11 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
         />
+        {/* Gold overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[hsl(41_49%_69%_/_0.15)] via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none" />
         {!isPlaying && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity group-hover:bg-black/10">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/90 text-primary-foreground shadow-lg backdrop-blur-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(41_49%_69%)] text-[hsl(274_36%_8%)] shadow-[0_4px_16px_hsl(41_49%_69%_/_0.5)] backdrop-blur-sm transition-transform duration-300 group-hover:scale-110">
               <Play className="h-5 w-5 ml-0.5" fill="currentColor" />
             </div>
           </div>
@@ -141,7 +143,7 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
         <div className="min-w-0">
           <Link
             to={video.slug ? `/perfil/${video.slug}` : "#"}
-            className="block truncate text-sm font-semibold text-primary hover:underline"
+            className="block truncate text-sm font-semibold text-foreground transition-colors group-hover:text-[hsl(41_49%_69%)]"
           >
             {video.display_name}
           </Link>
@@ -154,7 +156,7 @@ const VideoCard = forwardRef<HTMLDivElement, { video: ProfileVideo }>(({ video }
         </div>
         <Link
           to={video.slug ? `/perfil/${video.slug}` : "#"}
-          className="shrink-0 rounded-md border border-border/40 px-3 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+          className="shrink-0 rounded-md border border-[hsl(41_49%_69%_/_0.3)] px-3 py-1 text-[11px] font-medium text-foreground/80 transition-all hover:border-[hsl(41_49%_69%)] hover:bg-[hsl(41_49%_69%_/_0.1)] hover:text-[hsl(41_49%_69%)]"
         >
           {t("common.details")}
         </Link>
