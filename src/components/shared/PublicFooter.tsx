@@ -69,12 +69,23 @@ export default function PublicFooter() {
           <FooterColumn title="SEO Local" ariaLabel="Local SEO links">
             <FooterLink to="/es/escorts-barcelona">Barcelona</FooterLink>
             <FooterLink to="/es/escorts-madrid">Madrid</FooterLink>
+            <FooterLink to="/es/escorts-ibiza">Ibiza</FooterLink>
+            <FooterLink to="/es/escorts-marbella">Marbella</FooterLink>
             <FooterLink to="/es/escorts-paris">Paris</FooterLink>
+            <FooterLink to="/es/escorts-monaco">Monaco</FooterLink>
             <FooterLink to="/es/escorts-lisbon">Lisbon</FooterLink>
             <FooterLink to="/es/escorts-milan">Milan</FooterLink>
-            <FooterLink to="/es/escorts-marbella">Marbella</FooterLink>
+            <FooterLink to="/es/escorts-rome">Rome</FooterLink>
+            <FooterLink to="/es/escorts-london">London</FooterLink>
+            <FooterLink to="/es/escorts-berlin">Berlin</FooterLink>
+            <FooterLink to="/es/escorts-amsterdam">Amsterdam</FooterLink>
+            <FooterLink to="/es/escorts-vienna">Vienna</FooterLink>
+            <FooterLink to="/es/escorts-zurich">Zurich</FooterLink>
+            <FooterLink to="/es/escorts-mykonos">Mykonos</FooterLink>
             <FooterLink to="/es/escorts-barcelona/vip">VIP Barcelona</FooterLink>
+            <FooterLink to="/es/escorts-madrid/vip">VIP Madrid</FooterLink>
             <FooterLink to="/es/escorts-paris/jantar">Jantar Paris</FooterLink>
+            <FooterLink to="/es/escorts-ibiza/vip">VIP Ibiza</FooterLink>
           </FooterColumn>
         </div>
 
