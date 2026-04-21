@@ -31,6 +31,46 @@ export default function LocalSeoPage() {
     load();
   }, [data]);
 
+  // Compute derived values defensively so hooks run unconditionally below
+  const path = data?.page
+    ? `${data.city.basePath}${data.page.slug ? `/${data.page.slug}` : ""}`
+    : "";
+  const shouldNoIndex = data?.page
+    ? data.page.type !== "city" &&
+      profiles.length < (data.page.indexMinProfiles ?? INDEX_MIN_PROFILES)
+    : true;
+
+  const breadcrumbs = data?.page
+    ? [
+        { name: "Home", url: SITE_URL },
+        { name: MARKET_LABEL[data.city.market], url: `${SITE_URL}/${data.city.market}` },
+        { name: data.city.cityName, url: `${SITE_URL}${data.city.basePath}` },
+        ...(data.page.slug ? [{ name: data.page.h1, url: `${SITE_URL}${path}` }] : []),
+      ]
+    : [{ name: "Home", url: SITE_URL }];
+
+  // Hook must always run — Rules of Hooks
+  usePageMeta({
+    title: data?.page?.title ?? "Página no encontrada",
+    description: data?.page?.description ?? "",
+    path,
+    noindex: shouldNoIndex,
+    breadcrumbs,
+    jsonLd: data?.page
+      ? {
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: data.page.h1,
+          description: data.page.description,
+          url: `${SITE_URL}${path}`,
+          mainEntity: {
+            "@type": "ItemList",
+            numberOfItems: profiles.length,
+          },
+        }
+      : undefined,
+  });
+
   if (!data?.page) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -39,41 +79,12 @@ export default function LocalSeoPage() {
     );
   }
 
-  const path = `${data.city.basePath}${data.page.slug ? `/${data.page.slug}` : ""}`;
-  const shouldNoIndex = data.page.type !== "city" && profiles.length < (data.page.indexMinProfiles ?? INDEX_MIN_PROFILES);
-
-  const breadcrumbs = [
-    { name: "Home", url: SITE_URL },
-    { name: MARKET_LABEL[data.city.market], url: `${SITE_URL}/${data.city.market}` },
-    { name: data.city.cityName, url: `${SITE_URL}${data.city.basePath}` },
-    ...(data.page.slug ? [{ name: data.page.h1, url: `${SITE_URL}${path}` }] : []),
-  ];
-
   const relatedLinks = data.city.pages
     .filter((p) => p.slug && p.slug !== data.page.slug)
     .slice(0, 6)
     .map((p) => ({ label: p.h1, to: `${data.city.basePath}/${p.slug}` }));
   const serviceLabel = data.page.serviceSlug ? data.page.serviceSlug.replace(/-/g, " ") : "";
   const relatedCities = LOCAL_SEO_CITIES.filter((c) => c.citySlug !== data.city.citySlug).slice(0, 4);
-
-  usePageMeta({
-    title: data.page.title,
-    description: data.page.description,
-    path,
-    noindex: shouldNoIndex,
-    breadcrumbs,
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "CollectionPage",
-      name: data.page.h1,
-      description: data.page.description,
-      url: `${SITE_URL}${path}`,
-      mainEntity: {
-        "@type": "ItemList",
-        numberOfItems: profiles.length,
-      },
-    },
-  });
 
   return (
     <div className="container mx-auto px-4 py-6 animate-fade-in">

@@ -10,19 +10,23 @@ export default function MarketHubPage() {
 
   const cities = useMemo(() => LOCAL_SEO_CITIES.filter((c) => c.market === marketKey), [marketKey]);
 
+  // Hooks must always run unconditionally — fall back to safe values when hub is missing
+  usePageMeta({
+    title: hub?.title ?? "Página não encontrada",
+    description: hub?.description ?? "",
+    path: `/${marketKey ?? ""}`,
+    breadcrumbs: hub
+      ? [
+          { name: "Home", url: SITE_URL },
+          { name: MARKET_LABEL[marketKey], url: `${SITE_URL}/${marketKey}` },
+        ]
+      : [{ name: "Home", url: SITE_URL }],
+    noindex: !hub,
+  });
+
   if (!hub) {
     return <div className="container mx-auto px-4 py-12">Página não encontrada.</div>;
   }
-
-  usePageMeta({
-    title: hub.title,
-    description: hub.description,
-    path: `/${marketKey}`,
-    breadcrumbs: [
-      { name: "Home", url: SITE_URL },
-      { name: MARKET_LABEL[marketKey], url: `${SITE_URL}/${marketKey}` },
-    ],
-  });
 
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in">
