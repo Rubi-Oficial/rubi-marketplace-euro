@@ -86,6 +86,9 @@ export default function PublicFooter() {
             <FooterLink to="/es/escorts-madrid/vip">VIP Madrid</FooterLink>
             <FooterLink to="/es/escorts-paris/jantar">Jantar Paris</FooterLink>
             <FooterLink to="/es/escorts-ibiza/vip">VIP Ibiza</FooterLink>
+            <FooterLink to="/seo-local">
+              <span className="text-[hsl(41_49%_69%)] font-medium">Ver diretório completo →</span>
+            </FooterLink>
           </FooterColumn>
         </div>
 

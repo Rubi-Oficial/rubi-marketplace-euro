@@ -28,6 +28,7 @@ const PrivacyPage = lazy(() => import("@/pages/public/PrivacyPage"));
 const CookiesPage = lazy(() => import("@/pages/public/CookiesPage"));
 const MarketHubPage = lazy(() => import("@/pages/public/MarketHubPage"));
 const LocalSeoPage = lazy(() => import("@/pages/public/LocalSeoPage"));
+const SeoLocalIndexPage = lazy(() => import("@/pages/public/SeoLocalIndexPage"));
 
 const LoginPage = lazy(() => import("@/pages/auth/LoginPage"));
 const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage"));
@@ -112,6 +113,7 @@ const App = () => (
               <Route path="/termos" element={<TermsPage />} />
               <Route path="/privacidade" element={<PrivacyPage />} />
               <Route path="/cookies" element={<CookiesPage />} />
+              <Route path="/seo-local" element={<SeoLocalIndexPage />} />
               <Route path="/:market" element={<MarketHubPage />} />
               <Route path="/:market/:cityBase" element={<LocalSeoPage />} />
               <Route path="/:market/:cityBase/:pageSlug" element={<LocalSeoPage />} />
